@@ -12,7 +12,7 @@ The app does not provide live monitoring or stream telemetry to a phone.
 Download from the [README download table](../README.md#download-the-app) or
 [GitHub Releases](https://github.com/SaberDinp/ACCCT/releases/latest). Choose an
 installer, not GitHub's **Source code** archives. Local builds write version
-**1.2.1** packages to `dist/`. Match both the operating system and CPU:
+**1.2.2** packages to `dist/`. Match both the operating system and CPU:
 
 | Computer | Release target | Package formats |
 | --- | --- | --- |
@@ -22,9 +22,9 @@ installer, not GitHub's **Source code** archives. Local builds write version
 | Linux desktop, 64-bit Intel/AMD | `linux-x64` | `.AppImage`, `.deb`, `.rpm`, `.tar.gz` |
 | Linux desktop, 64-bit ARM/AArch64 | `linux-arm64` | `.AppImage`, `.deb`, `.rpm`, `.tar.gz` |
 
-Mac and Windows filenames follow `ACCC-Telemetry-1.2.1-<target>.<extension>`.
+Mac and Windows filenames follow `ACCC-Telemetry-1.2.2-<target>.<extension>`.
 Linux package formats use different spellings for the same CPU architecture.
-Every filename begins with `ACCC-Telemetry-1.2.1-`, followed by:
+Every filename begins with `ACCC-Telemetry-1.2.2-`, followed by:
 
 | Format | Intel/AMD 64-bit suffix | ARM64 suffix |
 | --- | --- | --- |
@@ -54,7 +54,7 @@ Keep the application bundle intact.
 
 ### Windows
 
-Double-click `ACCC-Telemetry-1.2.1-win-x64.exe`. The one-click installer installs
+Double-click `ACCC-Telemetry-1.2.2-win-x64.exe`. The one-click installer installs
 for your user, creates Start menu and Desktop shortcuts, and opens the app when
 finished. You do not need administrator access for this installation.
 
@@ -87,13 +87,13 @@ or use these Intel/AMD examples from the download folder. On ARM64, use
 
 ```sh
 # Ubuntu, Debian, Linux Mint
-sudo apt install ./ACCC-Telemetry-1.2.1-linux-amd64.deb
+sudo apt install ./ACCC-Telemetry-1.2.2-linux-amd64.deb
 
 # Fedora
-sudo dnf install ./ACCC-Telemetry-1.2.1-linux-x86_64.rpm
+sudo dnf install ./ACCC-Telemetry-1.2.2-linux-x86_64.rpm
 
 # openSUSE
-sudo zypper install ./ACCC-Telemetry-1.2.1-linux-x86_64.rpm
+sudo zypper install ./ACCC-Telemetry-1.2.2-linux-x86_64.rpm
 ```
 
 Then choose **ACCC Telemetry** in the applications menu. DEB and RPM installation
@@ -103,11 +103,11 @@ For AppImage, mark the file executable in its Properties dialog and open it.
 The terminal equivalent is:
 
 ```sh
-chmod +x ACCC-Telemetry-1.2.1-linux-x86_64.AppImage
-./ACCC-Telemetry-1.2.1-linux-x86_64.AppImage
+chmod +x ACCC-Telemetry-1.2.2-linux-x86_64.AppImage
+./ACCC-Telemetry-1.2.2-linux-x86_64.AppImage
 ```
 
-For ARM64, use `ACCC-Telemetry-1.2.1-linux-arm64.AppImage` instead. AppImage may
+For ARM64, use `ACCC-Telemetry-1.2.2-linux-arm64.AppImage` instead. AppImage may
 require FUSE 2 compatibility libraries (`libfuse2` on Ubuntu 22.04,
 `libfuse2t64` on Ubuntu 24.04). Keep any existing FUSE 3 installation. See the
 [AppImage FUSE instructions](https://docs.appimage.org/user-guide/troubleshooting/fuse.html).

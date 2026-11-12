@@ -15,6 +15,7 @@ import sys
 import tempfile
 import threading
 import time
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 
@@ -62,10 +63,14 @@ def main():
                         if value is not None:
                             body = json.dumps(value).encode()
                             headers["Content-Type"] = "application/json"
-                        with urlopen(Request(origin + path, data=body, headers=headers, method=method), timeout=15) as response:
-                            content = response.read()
-                            assert response.status == 200
-                            return json.loads(content) if "application/json" in response.headers.get("content-type", "") else content
+                        try:
+                            with urlopen(Request(origin + path, data=body, headers=headers, method=method), timeout=15) as response:
+                                content = response.read()
+                                assert response.status == 200
+                                return json.loads(content) if "application/json" in response.headers.get("content-type", "") else content
+                        except HTTPError as error:
+                            detail = error.read().decode("utf-8", errors="replace")
+                            raise AssertionError(f"{method or 'GET'} {path}: HTTP {error.code}: {detail}") from error
 
                     assert b"ACCC Telemetry" in request("/")
                     assert b"--accent" in request("/static/styles.css")
@@ -123,6 +128,11 @@ def main():
                     process.stdin.write("shutdown\n")
                     process.stdin.flush()
                     assert process.wait(timeout=30) == 0
+                except Exception:
+                    stderr.flush()
+                    stderr.seek(0)
+                    print(f"Backend stderr (launch {attempt + 1}):\n{stderr.read()}", file=sys.stderr)
+                    raise
                 finally:
                     if process.poll() is None:
                         process.kill()

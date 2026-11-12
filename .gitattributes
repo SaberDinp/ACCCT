@@ -1,0 +1,8 @@
+# Keep source files and scripts portable regardless of core.autocrlf.
+* text=auto eol=lf
+
+# These upstream datasets have pinned SHA-256 checksums. Preserve their exact
+# bytes on checkout and commit, including any original upstream line endings.
+/assets/tracks/raceiq/** -text
+/assets/tracks/lovely/** -text
+/assets/tracks/lovely-name-sources/** -text

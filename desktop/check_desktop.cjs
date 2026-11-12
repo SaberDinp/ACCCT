@@ -63,6 +63,7 @@ async function main() {
         if (attempt === 0) {
           assert.deepEqual(await api('/api/sessions'), []);
           for (const role of ['current', 'reference']) {
+            console.log(`Importing ${role} recording…`);
             await page.locator('#importRecording').click();
             await page.locator('#referenceImportDialog').waitFor({ state: 'visible' });
             await page.locator('#recordingImportRole').selectOption(role);
@@ -100,6 +101,8 @@ async function main() {
           document.getElementById('track' + role + 'Native')?.videoWidth > 0), undefined, { timeout: 60000 });
         await page.screenshot({ path: path.join(output, `desktop-analysis-${attempt + 1}.png`), fullPage: false });
 
+        console.log('Checking recording library and CSV export…');
+        await page.locator('.main-tabs [data-view="analysis"]').click();
         await page.getByRole('button', { name: 'Recordings', exact: true }).click();
         await page.locator('#view-sessions').waitFor({ state: 'visible' });
         await application.evaluate(({ session }, savePath) => {
@@ -119,6 +122,7 @@ async function main() {
         await page.locator('.main-tabs [data-view="analysis"]').click();
         await page.getByRole('button', { name: 'Calibration', exact: true }).click();
         await page.locator('#view-calibration').waitFor({ state: 'visible' });
+        console.log('Checking credits, copy and external donation link…');
         await page.locator('.main-tabs [data-view="credits"]').click();
         await page.locator('#creditsTitle').waitFor({ state: 'visible' });
         assert.match(await page.locator('#creditsTitle').innerText(), /Rice Racing/);
@@ -133,6 +137,7 @@ async function main() {
           await page.locator('#copyRiceRacingName').click();
           await page.waitForFunction(() => document.getElementById('riceRacingCopyStatus').textContent.startsWith('Copied.'));
           assert.equal(await application.evaluate(({ clipboard }) => clipboard.readText()), 'Rice Formula SAE Club');
+          console.log('Donation designation copied successfully.');
           await page.locator('.rr-donate').click();
           assert.deepEqual(await application.evaluate(({ app }) => app.acccTestExternalLinks), ['https://giving.rice.edu/']);
         } finally {

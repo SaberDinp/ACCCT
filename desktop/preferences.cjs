@@ -53,17 +53,22 @@ class PreferenceStore {
 
 function installPreferenceHandler(ipcMain, { getWindow, trusted, store, onError = () => {} }) {
   ipcMain.on(CHANNEL, (event, operation, key, value) => {
-    event.returnValue = { ok: false };
+    let response = { ok: false };
     const contents = getWindow()?.webContents;
     if (!contents || event.sender !== contents || event.senderFrame !== contents.mainFrame ||
-        !trusted(event.senderFrame?.url) || !allowedKey(key)) return;
+        !trusted(event.senderFrame?.url) || !allowedKey(key)) {
+      event.returnValue = response;
+      return;
+    }
     try {
-      if (operation === 'get') event.returnValue = { ok: true, value: store.getItem(key) };
+      if (operation === 'get') response = { ok: true, value: store.getItem(key) };
       else if (operation === 'set') {
         store.setItem(key, value);
-        event.returnValue = { ok: true };
+        response = { ok: true };
       }
     } catch (error) { onError(error); }
+    // Assign once: Electron sends the synchronous reply immediately.
+    event.returnValue = response;
   });
 }
 

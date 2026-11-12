@@ -46,8 +46,11 @@ test('IPC rejects other windows, child frames, untrusted origins, and unsupporte
   installPreferenceHandler(ipc, { getWindow: () => ({ webContents: contents }), store,
     trusted: url => url === frame.url && url === 'http://127.0.0.1:12345/' });
   const call = (event, operation = 'set', key = 'accc.comparison.v1') => {
+    const replies = [];
+    Object.defineProperty(event, 'returnValue', { set: value => replies.push(value) });
     ipc.emit('accc:analysis-preferences', event, operation, key, '{}');
-    return event.returnValue;
+    assert.equal(replies.length, 1, 'Electron sends a reply immediately on assignment; there must be exactly one.');
+    return replies[0];
   };
   assert.equal(call({ sender: {}, senderFrame: frame }).ok, false);
   assert.equal(call({ sender: contents, senderFrame: { ...frame } }).ok, false);

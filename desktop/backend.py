@@ -65,8 +65,12 @@ def serve(data_root: Path, host: str, port: int) -> None:
         try:
             listener.bind((host, port))
         except OSError as error:
-            if not port or (error.errno not in {errno.EADDRINUSE, 10048}
-                            and getattr(error, "winerror", None) != 10048):
+            unavailable = error.errno in {errno.EADDRINUSE, 10048} or getattr(error, "winerror", None) == 10048
+            # An exclusive Windows wildcard listener can reject this bind
+            # with WSAEACCES instead of WSAEADDRINUSE. Try an OS-assigned port.
+            exclusive_collision = sys.platform == "win32" and (
+                error.errno in {errno.EACCES, 10013} or getattr(error, "winerror", None) == 10013)
+            if not port or not (unavailable or exclusive_collision):
                 raise
             # A saved port preserves the browser's local settings between runs.
             # If another app has claimed it, start our own server on a fresh

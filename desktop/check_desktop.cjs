@@ -107,10 +107,15 @@ async function main() {
         }
         assert.equal((await api('/api/sessions')).length, 2);
         await page.waitForFunction(() => document.getElementById('comparisonValues').textContent.includes('Source'));
+        await page.waitForFunction(ids => !document.getElementById('trackReviewPlay').disabled &&
+          ['current', 'reference'].every(role => {
+            const video = document.getElementById('track' + role + 'Native');
+            return video?.videoWidth > 0 && !video.hidden && video.currentSrc.includes(`/api/sessions/${ids[role]}/`);
+          }), sessionIds, { timeout: 60000 });
         if (attempt === 0) await page.locator('#trackSelect').selectOption('silverstone');
         else await page.waitForFunction(() => document.getElementById('trackSelect').value === 'silverstone');
-        await page.waitForFunction(() => ['current', 'reference'].every(role =>
-          document.getElementById('track' + role + 'Native')?.videoWidth > 0), undefined, { timeout: 60000 });
+        await page.waitForFunction(ids => document.getElementById('trackAnnotations').dataset.trackId === 'silverstone' &&
+          JSON.parse(window.ACCCDesktopPreferences.getItem(`accc.track-review.v2.${ids.current}:${ids.reference}`) || '{}').track === 'silverstone', sessionIds);
         await page.screenshot({ path: path.join(output, `desktop-analysis-${attempt + 1}.png`), fullPage: false });
 
         console.log('Checking recording library and CSV export…');
@@ -161,6 +166,10 @@ async function main() {
         report.launches.push({ ...desktop, origin, recordedImports: 'passed', comparison: 'passed', videoPlayback: 'passed',
           csvExport: 'passed', persistence: 'passed', credits: 'passed', donationCopyAndLink: 'passed', javascriptErrors: errors });
       } catch (error) {
+        for (const filename of ['desktop-settings.json', 'analysis-preferences.json']) {
+          const source = path.join(env.ACCC_DESKTOP_USER_DATA, filename);
+          if (fs.existsSync(source)) fs.copyFileSync(source, path.join(output, `failure-${filename}`));
+        }
         if (application) {
           const page = application.windows()[0];
           if (page) await page.screenshot({ path: path.join(output, 'failure.png') }).catch(() => {});

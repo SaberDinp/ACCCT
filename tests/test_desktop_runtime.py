@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import errno
 import os
 from pathlib import Path
 import queue
@@ -10,6 +11,7 @@ import sqlite3
 import subprocess
 import sys
 import threading
+from types import SimpleNamespace
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 
@@ -63,7 +65,11 @@ def test_desktop_javascript_runtime_preserves_spaces(monkeypatch):
 def test_backend_readiness_storage_and_graceful_exit(tmp_path, stop, occupied):
     data_root = tmp_path / "Application Support" / "ACCC Telemetry"
     with (tmp_path / "backend.log").open("w+") as log, socket.socket() as foreign:
-        foreign.bind(("127.0.0.1", 0))
+        if sys.platform == "win32":
+            # This real Windows collision returns WSAEACCES, whereas two
+            # specific loopback listeners usually return WSAEADDRINUSE.
+            foreign.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        foreign.bind(("0.0.0.0" if sys.platform == "win32" else "127.0.0.1", 0))
         foreign.listen()
         requested_port = foreign.getsockname()[1] if occupied else 0
         process = subprocess.Popen(
@@ -124,6 +130,34 @@ def test_backend_readiness_storage_and_graceful_exit(tmp_path, stop, occupied):
             process.stdout.close()
             if not process.stdin.closed:
                 process.stdin.close()
+
+
+@pytest.mark.parametrize("platform,port,code,fallback", [
+    ("win32", 54321, 10013, True),
+    ("win32", 54321, errno.EACCES, True),
+    ("win32", 0, errno.EACCES, False),
+    ("linux", 54321, errno.EACCES, False),
+])
+def test_access_denied_fallback_is_only_for_a_saved_windows_port(monkeypatch, tmp_path, platform, port, code, fallback):
+    from desktop import backend
+
+    denied = OSError(code, "Port unavailable")
+    calls = []
+
+    class Listener:
+        def __enter__(self): return self
+        def __exit__(self, *_): pass
+        def setsockopt(self, *_): pass
+        def bind(self, address):
+            calls.append(address)
+            raise denied
+
+    monkeypatch.setattr(backend, "sys", SimpleNamespace(platform=platform))
+    monkeypatch.setattr(backend, "socket", SimpleNamespace(**{**vars(socket), "socket": lambda *_: Listener()}))
+    with pytest.raises(OSError) as error:
+        backend.serve(tmp_path, "127.0.0.1", port)
+    assert error.value is denied
+    assert calls == [("127.0.0.1", port)] + ([("127.0.0.1", 0)] if fallback else [])
 
 
 @pytest.mark.parametrize("module", ["yt_dlp", "streamlink"])

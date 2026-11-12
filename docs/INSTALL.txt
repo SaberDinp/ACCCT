@@ -39,7 +39,8 @@ DEB/RPM is recommended if AppImage cannot start on your distribution.
 TAR.GZ alternatives are available for both CPU architectures.
 
 FIRST LAUNCH
-These builds are unsigned; Mac builds are not Apple-notarized.
+Mac builds use ad-hoc signing for bundle integrity, without Apple Developer ID
+signing or notarization. Windows builds are unsigned. First launch may be blocked.
 On macOS, after trying to launch, System Settings > Privacy & Security may
 offer Open Anyway. On Windows, More info > Run anyway may be offered.
 Only approve a download you trust from this project's repository.

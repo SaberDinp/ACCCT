@@ -23,7 +23,7 @@ def main():
         raise SystemExit("Provide the backend executable, followed by its optional entry script.")
     command = [str(Path(value).resolve()) for value in sys.argv[1:]]
     environment = dict(os.environ)
-    for name in ("PYTHONPATH", "PYTHONHOME", "ACCC_JS_RUNTIME", "APEX_JS_RUNTIME"):
+    for name in ("PYTHONPATH", "PYTHONHOME", "__PYVENV_LAUNCHER__", "ACCC_JS_RUNTIME", "APEX_JS_RUNTIME"):
         environment.pop(name, None)
     reports = {}
     with tempfile.TemporaryDirectory(prefix="accc packaged backend ") as temporary:

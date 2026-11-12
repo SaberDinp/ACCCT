@@ -17,6 +17,7 @@ on:
       - 'tests/test_linux_bundle.py'
       - '.github/workflows/desktop.yml'
       - '.github/workflows/release.yml'
+      - '.github/scripts/**'
 
 permissions:
   contents: read
@@ -99,7 +100,7 @@ jobs:
         if: matrix.platform == 'linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y ruby ruby-dev build-essential rpm xvfb xauth dbus-x11 libgtk-3-0t64 libnss3 libasound2t64 libcups2t64 libgbm1 libdrm2 libxss1 libxtst6 libnotify4 libatspi2.0-0t64 libx11-xcb1 libxkbcommon0 libsecret-1-0
+          sudo apt-get install -y ruby ruby-dev build-essential rpm xvfb xauth dbus-x11
           sudo gem install fpm --version 1.18.0 --no-document
       - run: npm ci --prefix desktop
       - name: Test lifecycle, migration, and packaging contracts
@@ -130,6 +131,9 @@ jobs:
       - name: Package Mac application
         if: matrix.platform == 'mac'
         run: npm run pack:mac:${{ matrix.architecture }} --prefix desktop
+      - name: Verify Mac application signature and sealed resources
+        if: matrix.platform == 'mac'
+        run: codesign --verify --deep --strict --verbose=2 "dist/${{ matrix.app_directory }}/ACCC Telemetry.app"
       - name: Package Windows application
         if: matrix.platform == 'win'
         run: npm run pack:win --prefix desktop
@@ -138,29 +142,33 @@ jobs:
         env:
           USE_SYSTEM_FPM: 'true'
         run: npm run pack:linux:${{ matrix.architecture }} --prefix desktop
+      - name: Install and verify the per-user Windows setup
+        if: matrix.platform == 'win'
+        shell: pwsh
+        run: ./.github/scripts/check_windows_installer.ps1
+      - name: Install and verify the native Linux DEB
+        if: matrix.platform == 'linux'
+        run: bash .github/scripts/check_linux_installer.sh
       - name: Check backend inside Mac application
         if: matrix.platform == 'mac'
         run: ${{ matrix.python }} desktop/check_packaged_backend.py "dist/${{ matrix.app_directory }}/ACCC Telemetry.app/Contents/Resources/backend/accc-backend"
-      - name: Check backend inside Windows application
+      - name: Check backend inside installed Windows application
         if: matrix.platform == 'win'
-        run: ${{ matrix.python }} desktop/check_packaged_backend.py "dist/win-unpacked/resources/backend/python.exe" "dist/win-unpacked/resources/backend/app/desktop/backend.py"
-      - name: Check backend inside Linux application
+        shell: pwsh
+        run: ${{ matrix.python }} desktop/check_packaged_backend.py "$env:ACCC_INSTALLED_BACKEND_ROOT/python.exe" "$env:ACCC_INSTALLED_BACKEND_ROOT/app/desktop/backend.py"
+      - name: Check backend inside installed Linux application
         if: matrix.platform == 'linux'
-        run: ${{ matrix.python }} desktop/check_packaged_backend.py "dist/${{ matrix.app_directory }}/resources/backend/python/bin/python3" "dist/${{ matrix.app_directory }}/resources/backend/app/desktop/backend.py"
+        run: ${{ matrix.python }} desktop/check_packaged_backend.py "$ACCC_INSTALLED_BACKEND_ROOT/python/bin/python3" "$ACCC_INSTALLED_BACKEND_ROOT/app/desktop/backend.py"
       - name: Check packaged Mac UI
         if: matrix.platform == 'mac'
         run: node desktop/check_desktop.cjs "dist/${{ matrix.app_directory }}/ACCC Telemetry.app/Contents/MacOS/ACCC Telemetry"
-      - name: Check packaged Windows UI
+      - name: Check installed Windows UI
         if: matrix.platform == 'win'
-        run: node desktop/check_desktop.cjs "dist/win-unpacked/ACCC Telemetry.exe"
-      - name: Enable the packaged Chromium sandbox on this disposable Linux runner
+        shell: pwsh
+        run: node desktop/check_desktop.cjs "$env:ACCC_INSTALLED_EXECUTABLE"
+      - name: Check installed Linux UI with sandbox enabled
         if: matrix.platform == 'linux'
-        run: |
-          sudo chown root:root "dist/${{ matrix.app_directory }}/chrome-sandbox"
-          sudo chmod 4755 "dist/${{ matrix.app_directory }}/chrome-sandbox"
-      - name: Check packaged Linux UI with sandbox enabled
-        if: matrix.platform == 'linux'
-        run: dbus-run-session -- xvfb-run --auto-servernum node desktop/check_desktop.cjs "dist/${{ matrix.app_directory }}/accc-telemetry"
+        run: dbus-run-session -- xvfb-run --auto-servernum node desktop/check_desktop.cjs "$ACCC_INSTALLED_EXECUTABLE"
       - name: Upload installers
         uses: actions/upload-artifact@v7
         with:

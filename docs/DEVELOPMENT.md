@@ -118,7 +118,7 @@ download is not proof of accurate telemetry for that car/HUD combination.
 
 Update `desktop/package.json`, its lockfile, the README download filenames, and
 the release notes together. Run source checks and inspect the UI before creating
-a version tag such as `v1.2.0` matching the desktop package version.
+a version tag such as `v1.2.1` matching the desktop package version.
 
 The release workflow builds and exercises all five targets on native runners:
 Apple Silicon Mac, Intel Mac, Windows x64, Linux x64, and Linux ARM64. It only
@@ -127,8 +127,10 @@ installers/archives is present. The upload includes `SHA256SUMS.txt` and
 `INSTALL.txt`; source archives are not substitutes for those installers.
 
 A published release is not overwritten by a workflow retry. Fixes to published
-app code get a new version and tag. Signing/notarization requires project-owned
-publisher credentials; never commit them. A runner smoke test does not certify
+app code get a new version and tag. Mac bundles use ad-hoc signing without a
+certificate for bundle integrity; CI checks that signature before launching.
+Apple Developer ID signing, notarization, and Windows publisher signing require
+project-owned credentials; never commit them. A runner smoke test does not certify
 every OS release, Linux distribution, or GPU. Record its actual test scope in the
 release notes.
 

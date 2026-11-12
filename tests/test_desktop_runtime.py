@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 import queue
 import socket
@@ -19,6 +20,21 @@ from telemetry import runtime
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def backend_launch(*arguments):
+    """Keep the owned process PID on Windows without losing venv dependencies.
+
+    CPython's Windows multiprocessing launcher uses this same recipe to avoid
+    spawning through the venv redirector (which has a different process PID).
+    """
+    executable = sys.executable
+    environment = dict(os.environ)
+    base = getattr(sys, "_base_executable", executable)
+    if sys.platform == "win32" and os.path.normcase(base) != os.path.normcase(executable):
+        environment["__PYVENV_LAUNCHER__"] = executable
+        executable = base
+    return {"args": [executable, str(ROOT / "desktop/backend.py"), *arguments], "env": environment}
 
 
 def test_helper_commands_reenter_frozen_backend(monkeypatch):
@@ -51,8 +67,7 @@ def test_backend_readiness_storage_and_graceful_exit(tmp_path, stop, occupied):
         foreign.listen()
         requested_port = foreign.getsockname()[1] if occupied else 0
         process = subprocess.Popen(
-            [sys.executable, str(ROOT / "desktop/backend.py"), "--data-root", str(data_root),
-             "--port", str(requested_port)],
+            **backend_launch("--data-root", str(data_root), "--port", str(requested_port)),
             cwd=tmp_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=log, text=True)
         lines = queue.Queue()
         reader = threading.Thread(target=lambda: lines.put(process.stdout.readline()), daemon=True)
@@ -114,7 +129,7 @@ def test_backend_readiness_storage_and_graceful_exit(tmp_path, stop, occupied):
 @pytest.mark.parametrize("module", ["yt_dlp", "streamlink"])
 def test_helper_dispatch_executes_packaged_cli_entry_points(module):
     result = subprocess.run(
-        [sys.executable, str(ROOT / "desktop/backend.py"), "--run-module", module, "--version"],
+        **backend_launch("--run-module", module, "--version"),
         text=True, capture_output=True, timeout=25)
     assert result.returncode == 0, result.stderr
     assert any(character.isdigit() for character in result.stdout)
@@ -125,8 +140,8 @@ def test_restart_keeps_saved_port_after_http_shutdown(tmp_path):
     for attempt in range(2):
         with (tmp_path / f"restart-{attempt}.log").open("w+") as log:
             process = subprocess.Popen(
-                [sys.executable, str(ROOT / "desktop/backend.py"), "--data-root", str(tmp_path / "library"),
-                 "--host", "127.0.0.1", "--port", str(port)],
+                **backend_launch("--data-root", str(tmp_path / "library"),
+                                 "--host", "127.0.0.1", "--port", str(port)),
                 cwd=tmp_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=log, text=True)
             records = queue.Queue()
             threading.Thread(target=lambda: records.put(process.stdout.readline()), daemon=True).start()
@@ -153,8 +168,7 @@ def test_restart_keeps_saved_port_after_http_shutdown(tmp_path):
 
 
 def test_desktop_backend_rejects_network_binding(tmp_path):
-    result = subprocess.run([sys.executable, str(ROOT / "desktop/backend.py"),
-                             "--data-root", str(tmp_path), "--host", "0.0.0.0"],
+    result = subprocess.run(**backend_launch("--data-root", str(tmp_path), "--host", "0.0.0.0"),
                             capture_output=True, text=True, timeout=10)
     assert result.returncode != 0
     assert "invalid choice" in result.stderr

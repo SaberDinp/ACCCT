@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="web/brand/accc-mark.svg" width="104" height="104" alt="ACCC Telemetry: an A inside three nested C letters">
+  <img src="desktop/icons/icon.png" width="104" height="104" alt="ACCC Telemetry: an A inside three nested C letters">
 </p>
 
 # ACCC Telemetry
@@ -19,15 +19,15 @@ telemetry. Your recordings and analysis stay on your computer.
 
 **Download an installer below. You do not need Python, Node.js, or the source-code ZIP.**
 
-| Your computer | Download v1.2.0 | How to install |
+| Your computer | Download v1.2.1 | How to install |
 | --- | --- | --- |
-| **Mac with Apple Silicon** — M-series; macOS 14+ | [Download for Apple Silicon](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.2.0-mac-arm64.dmg) | Open the DMG, drag the app into **Applications**, then open it. |
-| **Mac with an Intel processor** — macOS 13+ | [Download for Intel Mac](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.2.0-mac-x64.dmg) | Open the DMG, drag the app into **Applications**, then open it. |
-| **Windows 10/11** — 64-bit Intel/AMD | [Download for Windows](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.2.0-win-x64.exe) | Run the installer, then open **ACCC Telemetry** from Start or the Desktop shortcut. |
-| **Ubuntu / Debian / Linux Mint** — Intel/AMD 64-bit | [Download DEB](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.2.0-linux-amd64.deb) | Open it in your software installer and choose **Install**. |
-| **Fedora / openSUSE** — Intel/AMD 64-bit | [Download RPM](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.2.0-linux-x86_64.rpm) | Open it in your software installer and choose **Install**. |
-| **Other compatible Linux desktops** — Intel/AMD 64-bit | [Download AppImage](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.2.0-linux-x86_64.AppImage) | In file Properties, allow executing it as a program, then open it. |
-| **Linux ARM64 / AArch64** | [DEB](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.2.0-linux-arm64.deb) · [RPM](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.2.0-linux-aarch64.rpm) · [AppImage](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.2.0-linux-arm64.AppImage) | Choose the package for your distribution, as above. |
+| **Mac with Apple Silicon** — M-series; macOS 14+ | [Download for Apple Silicon](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.2.1-mac-arm64.dmg) | Open the DMG, drag the app into **Applications**, then open it. |
+| **Mac with an Intel processor** — macOS 13+ | [Download for Intel Mac](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.2.1-mac-x64.dmg) | Open the DMG, drag the app into **Applications**, then open it. |
+| **Windows 10/11** — 64-bit Intel/AMD | [Download for Windows](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.2.1-win-x64.exe) | Run the installer, then open **ACCC Telemetry** from Start or the Desktop shortcut. |
+| **Ubuntu / Debian / Linux Mint** — Intel/AMD 64-bit | [Download DEB](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.2.1-linux-amd64.deb) | Open it in your software installer and choose **Install**. |
+| **Fedora / openSUSE** — Intel/AMD 64-bit | [Download RPM](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.2.1-linux-x86_64.rpm) | Open it in your software installer and choose **Install**. |
+| **Other compatible Linux desktops** — Intel/AMD 64-bit | [Download AppImage](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.2.1-linux-x86_64.AppImage) | In file Properties, allow executing it as a program, then open it. |
+| **Linux ARM64 / AArch64** | [DEB](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.2.1-linux-arm64.deb) · [RPM](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.2.1-linux-aarch64.rpm) · [AppImage](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.2.1-linux-arm64.AppImage) | Choose the package for your distribution, as above. |
 
 Not sure which Mac you have? **Apple menu → About This Mac** shows an Apple chip
 or an Intel processor. On Linux, `uname -m` shows `x86_64` or `aarch64`.
@@ -36,8 +36,8 @@ or an Intel processor. On Linux, `uname -m` shows `x86_64` or `aarch64`.
 · [Checksums](https://github.com/SaberDinp/ACCCT/releases/latest/download/SHA256SUMS.txt)
 · [Detailed installation help](desktop/README.md)
 
-These community builds are currently **unsigned**; Mac builds are not Apple
-notarized. A first launch may be blocked. On macOS, after attempting to open the
+Mac builds are not Apple-notarized; Windows builds are unsigned. A first launch
+may be blocked. On macOS, after attempting to open the
 app, use **System Settings → Privacy & Security → Open Anyway** if shown. On
 Windows, an unknown-publisher prompt may offer **More info → Run anyway**.
 Use these options only for a download you trust from this repository.

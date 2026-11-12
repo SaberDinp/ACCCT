@@ -1,7 +1,7 @@
 {
   "name": "accc-telemetry",
   "productName": "ACCC Telemetry",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Recorded-lap analysis and comparison for console racers, by Rice Racing",
   "author": "Rice Racing",
   "private": true,
@@ -47,13 +47,14 @@
       "category": "public.app-category.sports",
       "minimumSystemVersion": "14.0",
       "icon": "icons/icon.icns",
-      "identity": null,
+      "identity": "-",
       "extraResources": [
         {
           "from": "build/backend-macos-${arch}/accc-backend",
           "to": "backend"
         }
-      ]
+      ],
+      "hardenedRuntime": false
     },
     "dmg": {
       "title": "ACCC Telemetry",

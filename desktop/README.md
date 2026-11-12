@@ -12,7 +12,7 @@ The app does not provide live monitoring or stream telemetry to a phone.
 Download from the [README download table](../README.md#download-the-app) or
 [GitHub Releases](https://github.com/SaberDinp/ACCCT/releases/latest). Choose an
 installer, not GitHub's **Source code** archives. Local builds write version
-**1.2.0** packages to `dist/`. Match both the operating system and CPU:
+**1.2.1** packages to `dist/`. Match both the operating system and CPU:
 
 | Computer | Release target | Package formats |
 | --- | --- | --- |
@@ -22,9 +22,9 @@ installer, not GitHub's **Source code** archives. Local builds write version
 | Linux desktop, 64-bit Intel/AMD | `linux-x64` | `.AppImage`, `.deb`, `.rpm`, `.tar.gz` |
 | Linux desktop, 64-bit ARM/AArch64 | `linux-arm64` | `.AppImage`, `.deb`, `.rpm`, `.tar.gz` |
 
-Mac and Windows filenames follow `ACCC-Telemetry-1.2.0-<target>.<extension>`.
+Mac and Windows filenames follow `ACCC-Telemetry-1.2.1-<target>.<extension>`.
 Linux package formats use different spellings for the same CPU architecture.
-Every filename begins with `ACCC-Telemetry-1.2.0-`, followed by:
+Every filename begins with `ACCC-Telemetry-1.2.1-`, followed by:
 
 | Format | Intel/AMD 64-bit suffix | ARM64 suffix |
 | --- | --- | --- |
@@ -54,7 +54,7 @@ Keep the application bundle intact.
 
 ### Windows
 
-Double-click `ACCC-Telemetry-1.2.0-win-x64.exe`. The one-click installer installs
+Double-click `ACCC-Telemetry-1.2.1-win-x64.exe`. The one-click installer installs
 for your user, creates Start menu and Desktop shortcuts, and opens the app when
 finished. You do not need administrator access for this installation.
 
@@ -62,8 +62,10 @@ For the portable ZIP, right-click it and choose **Extract All**, then open
 **ACCC Telemetry.exe** inside the extracted folder. Do not open it from inside
 the ZIP; keep its `resources` folder and the other extracted files beside it.
 
-The supplied Mac and Windows packages are unsigned, and Mac builds are not
-notarized. First launch can therefore show a publisher warning. macOS may offer
+Mac builds use ad-hoc signing for bundle integrity, without Apple Developer ID
+signing or notarization. This does not establish a verified publisher or remove
+Gatekeeper's first-launch checks. Windows builds are unsigned. First launch can
+therefore show a publisher warning. macOS may offer
 **System Settings > Privacy & Security > Open Anyway** after a blocked launch;
 Windows may offer **More info > Run anyway**. Use these only for a package whose
 source you trust. Publisher signing/notarization is a separate release step.
@@ -85,13 +87,13 @@ or use these Intel/AMD examples from the download folder. On ARM64, use
 
 ```sh
 # Ubuntu, Debian, Linux Mint
-sudo apt install ./ACCC-Telemetry-1.2.0-linux-amd64.deb
+sudo apt install ./ACCC-Telemetry-1.2.1-linux-amd64.deb
 
 # Fedora
-sudo dnf install ./ACCC-Telemetry-1.2.0-linux-x86_64.rpm
+sudo dnf install ./ACCC-Telemetry-1.2.1-linux-x86_64.rpm
 
 # openSUSE
-sudo zypper install ./ACCC-Telemetry-1.2.0-linux-x86_64.rpm
+sudo zypper install ./ACCC-Telemetry-1.2.1-linux-x86_64.rpm
 ```
 
 Then choose **ACCC Telemetry** in the applications menu. DEB and RPM installation
@@ -101,11 +103,11 @@ For AppImage, mark the file executable in its Properties dialog and open it.
 The terminal equivalent is:
 
 ```sh
-chmod +x ACCC-Telemetry-1.2.0-linux-x86_64.AppImage
-./ACCC-Telemetry-1.2.0-linux-x86_64.AppImage
+chmod +x ACCC-Telemetry-1.2.1-linux-x86_64.AppImage
+./ACCC-Telemetry-1.2.1-linux-x86_64.AppImage
 ```
 
-For ARM64, use `ACCC-Telemetry-1.2.0-linux-arm64.AppImage` instead. AppImage may
+For ARM64, use `ACCC-Telemetry-1.2.1-linux-arm64.AppImage` instead. AppImage may
 require FUSE 2 compatibility libraries (`libfuse2` on Ubuntu 22.04,
 `libfuse2t64` on Ubuntu 24.04). Keep any existing FUSE 3 installation. See the
 [AppImage FUSE instructions](https://docs.appimage.org/user-guide/troubleshooting/fuse.html).

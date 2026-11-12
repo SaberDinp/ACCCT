@@ -1,7 +1,26 @@
 const { spawn } = require('node:child_process');
 const { createInterface } = require('node:readline');
 const { EventEmitter } = require('node:events');
+const fs = require('node:fs');
 const path = require('node:path');
+
+function pythonLaunch(command, platform = process.platform, files = fs) {
+  if (platform !== 'win32') return { command };
+  const [executable, ...args] = command;
+  const paths = path.win32;
+  const name = paths.basename(executable).toLowerCase();
+  if (!['python.exe', 'pythonw.exe'].includes(name) || !paths.isAbsolute(executable)) return { command };
+  const config = paths.join(paths.dirname(executable), '..', 'pyvenv.cfg');
+  if (!files.existsSync(config)) return { command };
+  // Windows venv python.exe is a redirector that creates another process.
+  // Use the same direct-interpreter recipe as CPython's multiprocessing module:
+  // retain venv imports, while our subprocess handle and readiness PID agree.
+  const home = files.readFileSync(config, 'utf8').match(/^home\s*=\s*(.+)$/im)?.[1].trim();
+  if (!home || !paths.isAbsolute(home)) throw new Error('The Windows Python environment has no absolute base-interpreter home.');
+  const interpreter = paths.join(home, name);
+  if (!files.existsSync(interpreter)) throw new Error(`The Windows Python base interpreter is missing: ${interpreter}`);
+  return { command: [interpreter, ...args], launcher: executable };
+}
 
 function backendCommand({ packaged, platform, resourcesPath, projectRoot, python }) {
   if (!packaged) return [python || path.join(projectRoot, '.venv', platform === 'win32' ? 'Scripts/python.exe' : 'bin/python'),
@@ -25,12 +44,17 @@ class BackendProcess extends EventEmitter {
     if (this.started || this.stopping) return Promise.reject(new Error('The analysis engine has already been started or stopped.'));
     this.started = true;
     const { dataRoot, log, runtime, host, port } = this.options;
-    const [executable, ...args] = this.command;
+    let launch;
+    try { launch = pythonLaunch(this.command); }
+    catch (error) { return Promise.reject(error); }
+    const [executable, ...args] = launch.command;
     const env = { ...process.env, PYTHONUNBUFFERED: '1', PYTHONNOUSERSITE: '1',
       ELECTRON_RUN_AS_NODE: '1', ACCC_JS_RUNTIME: `node:${runtime}` };
     // Keep a developer's Python configuration out of a packaged runtime.
     delete env.PYTHONHOME;
     delete env.PYTHONPATH;
+    delete env.__PYVENV_LAUNCHER__;
+    if (launch.launcher) env.__PYVENV_LAUNCHER__ = launch.launcher;
     this.child = spawn(executable, [...args, '--data-root', dataRoot, '--host', host, '--port', String(port)], {
       cwd: dataRoot, env, stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true,
       detached: process.platform !== 'win32'
@@ -105,4 +129,4 @@ class BackendProcess extends EventEmitter {
   }
 }
 
-module.exports = { BackendProcess, backendCommand };
+module.exports = { BackendProcess, backendCommand, pythonLaunch };

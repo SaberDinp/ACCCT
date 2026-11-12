@@ -4,7 +4,7 @@ const { once } = require('node:events');
 const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
-const { BackendProcess, backendCommand } = require('../backend-process.cjs');
+const { BackendProcess, backendCommand, pythonLaunch } = require('../backend-process.cjs');
 
 const fakeBackend = `
   const fs = require('node:fs');
@@ -33,7 +33,8 @@ const fakeBackend = `
       cwd: process.cwd(), argv: process.argv,
       runtime: process.env.ACCC_JS_RUNTIME,
       asNode: process.env.ELECTRON_RUN_AS_NODE,
-      pythonHome: process.env.PYTHONHOME, pythonPath: process.env.PYTHONPATH
+      pythonHome: process.env.PYTHONHOME, pythonPath: process.env.PYTHONPATH,
+      pythonLauncher: process.env.__PYVENV_LAUNCHER__
     })), 10);
     if (mode === 'crash') setTimeout(() => process.exit(5), 100);
   }
@@ -67,16 +68,46 @@ test('source and packaged commands keep executable paths with spaces as separate
     path.join(resourcesPath, 'backend/python/bin/python3'), path.join(resourcesPath, 'backend/app/desktop/backend.py')]);
 });
 
+test('Windows venv launches its base interpreter directly while preserving its environment identity', () => {
+  const executable = 'C:\\ACCC Source\\.venv\\Scripts\\python.exe';
+  const base = 'C:\\Program Files\\Python314\\python.exe';
+  const config = 'C:\\ACCC Source\\.venv\\pyvenv.cfg';
+  const files = {
+    existsSync: value => [config, base].includes(value),
+    readFileSync: value => { assert.equal(value, config); return 'home = C:\\Program Files\\Python314\r\ninclude-system-site-packages = false\r\n'; }
+  };
+  const command = [executable, 'C:\\ACCC Source\\desktop\\backend.py'];
+  assert.deepEqual(pythonLaunch(command, 'win32', files), {
+    command: [base, command[1]], launcher: executable
+  });
+  assert.deepEqual(pythonLaunch(command, 'darwin', files), { command });
+  const packaged = ['C:\\ACCC Telemetry\\resources\\backend\\python.exe', 'app\\desktop\\backend.py'];
+  assert.deepEqual(pythonLaunch(packaged, 'win32', files), { command: packaged });
+});
+
+test('an incomplete Windows venv fails clearly instead of accepting an unrelated process', () => {
+  const command = ['C:\\ACCC Source\\.venv\\Scripts\\python.exe', 'backend.py'];
+  assert.throws(() => pythonLaunch(command, 'win32', {
+    existsSync: () => true, readFileSync: () => 'home = relative\\Python\n'
+  }), /absolute base-interpreter/);
+  assert.throws(() => pythonLaunch(command, 'win32', {
+    existsSync: value => value.endsWith('pyvenv.cfg'),
+    readFileSync: () => 'home = C:\\Missing Python\n'
+  }), /base interpreter is missing/);
+});
+
 test('readiness belongs to the spawned process and shutdown is graceful and idempotent', async t => {
   const { backend, directory, chunks } = await fixture(t, 'ready', { port: 27182 });
-  const oldHome = process.env.PYTHONHOME, oldPath = process.env.PYTHONPATH;
+  const oldHome = process.env.PYTHONHOME, oldPath = process.env.PYTHONPATH, oldLauncher = process.env.__PYVENV_LAUNCHER__;
   process.env.PYTHONHOME = '/incorrect/home';
   process.env.PYTHONPATH = '/incorrect/path';
+  process.env.__PYVENV_LAUNCHER__ = '/incorrect/launcher';
   let readiness;
   try { readiness = backend.start(3000); }
   finally {
     if (oldHome === undefined) delete process.env.PYTHONHOME; else process.env.PYTHONHOME = oldHome;
     if (oldPath === undefined) delete process.env.PYTHONPATH; else process.env.PYTHONPATH = oldPath;
+    if (oldLauncher === undefined) delete process.env.__PYVENV_LAUNCHER__; else process.env.__PYVENV_LAUNCHER__ = oldLauncher;
   }
   const ready = await readiness;
   assert.equal(ready.url, 'http://127.0.0.1:12345');
@@ -89,6 +120,7 @@ test('readiness belongs to the spawned process and shutdown is graceful and idem
   assert.equal(ready.asNode, '1');
   assert.equal(ready.pythonHome, undefined);
   assert.equal(ready.pythonPath, undefined);
+  assert.equal(ready.pythonLauncher, undefined);
   assert.match(chunks.join(''), /ordinary log output/);
   await assert.rejects(backend.start(), /already been started/);
   const stopping = backend.stop();

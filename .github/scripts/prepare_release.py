@@ -18,7 +18,7 @@ SUFFIXES = (
 
 
 def prepare(folder: Path) -> None:
-    version = json.loads((ROOT / "desktop/package.json").read_text())["version"]
+    version = json.loads((ROOT / "desktop/package.json").read_text(encoding="utf-8"))["version"]
     if not re.fullmatch(r"\d+\.\d+\.\d+", version):
         raise SystemExit("Expected a stable x.y.z version.")
     release_tag = os.environ.get("RELEASE_TAG", f"v{version}")
@@ -43,9 +43,9 @@ def prepare(folder: Path) -> None:
             raise SystemExit(f"Installer changed while hashing: {name}")
         lines.append(f"{digest}  {name}\n")
     (folder / "SHA256SUMS.txt").write_text("".join(lines), encoding="ascii")
-    install = (ROOT / "docs/INSTALL.txt").read_text().replace("{version}", version)
-    (folder / "INSTALL.txt").write_text(install)
-    notes = (ROOT / "docs/RELEASE_NOTES.md").read_text()
+    install = (ROOT / "docs/INSTALL.txt").read_text(encoding="utf-8").replace("{version}", version)
+    (folder / "INSTALL.txt").write_text(install, encoding="utf-8")
+    notes = (ROOT / "docs/RELEASE_NOTES.md").read_text(encoding="utf-8")
     if f"# {version}" not in notes:
         raise SystemExit("Update docs/RELEASE_NOTES.md for this app version before publishing.")
     run_url = "https://github.com/{}/actions/runs/{}".format(
@@ -54,7 +54,7 @@ def prepare(folder: Path) -> None:
     )
     if os.environ.get("GITHUB_RUN_ID"):
         notes += f"\nNative build and desktop smoke checks passed for all five targets in [this Actions run]({run_url}).\n"
-    (ROOT / "release-notes.md").write_text(notes)
+    (ROOT / "release-notes.md").write_text(notes, encoding="utf-8")
     print(f"Prepared {len(expected)} installers/archives, SHA256SUMS.txt, and INSTALL.txt for {release_tag}.")
 
 

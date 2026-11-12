@@ -21,7 +21,7 @@ COMMIT = "f1551541a01f2711ba01f4d1020babf78a2b90ff"
 REPOSITORY = "https://github.com/SpeedHQ/RaceIQ"
 ANNOTATIONS_COMMIT = "eb4af9572aeb247e6406bc154d73a3bd16d8c28a"
 ANNOTATIONS_REPOSITORY = "https://github.com/Lovely-Sim-Racing/lovely-track-data"
-_CATALOG = json.loads((ASSETS / "index.json").read_text())
+_CATALOG = json.loads((ASSETS / "index.json").read_text(encoding="utf-8"))
 
 
 def _finite(value, label: str) -> float:
@@ -120,7 +120,7 @@ def _interval_midpoint(start: float, end: float) -> float:
 def _annotations(track_id: str, data: dict) -> dict:
     """Keep source positions and flag approximate repairs instead of inventing apexes."""
     supplements_file = ASSETS / "corner-numbering.json"
-    supplements = json.loads(supplements_file.read_text()).get(track_id, {}) if supplements_file.exists() else {}
+    supplements = json.loads(supplements_file.read_text(encoding="utf-8")).get(track_id, {}) if supplements_file.exists() else {}
     overrides = supplements.get("turns", [])
     corners, warnings, seen = [], [], set()
     for index, turn in enumerate(data.get("turn", [])):
@@ -193,7 +193,7 @@ def _annotations(track_id: str, data: dict) -> dict:
     for annotation in corners + straights:
         source_urls.update(annotation.get("source_urls", []))
     names_index = ASSETS / "name-source-index.json"
-    name_sources = json.loads(names_index.read_text()) if names_index.exists() else {}
+    name_sources = json.loads(names_index.read_text(encoding="utf-8")) if names_index.exists() else {}
     supplementary_sources = []
     for url in sorted(source_urls):
         if url in name_sources:

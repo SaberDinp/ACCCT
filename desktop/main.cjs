@@ -1,8 +1,9 @@
-const { app, BrowserWindow, Menu, dialog, shell, session } = require('electron');
+const { app, BrowserWindow, Menu, dialog, shell, session, ipcMain } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
 const { BackendProcess, backendCommand } = require('./backend-process.cjs');
 const { loadSettings } = require('./settings.cjs');
+const { PreferenceStore, installPreferenceHandler } = require('./preferences.cjs');
 
 app.setName('ACCC Telemetry');
 const customUserData = process.env.ACCC_DESKTOP_USER_DATA || process.env.APEX_DESKTOP_USER_DATA;
@@ -87,12 +88,16 @@ async function start() {
   log = fs.createWriteStream(logPath, { flags: 'a' });
   log.on('error', error => console.error('Could not write desktop log:', error.message));
   log.write(`\nACCC ${app.getVersion()} starting ${new Date().toISOString()}\n`);
+  installPreferenceHandler(ipcMain, { getWindow: () => window, trusted,
+    store: new PreferenceStore(path.join(app.getPath('userData'), 'analysis-preferences.json')),
+    onError: error => log.write(`Analysis preferences: ${error.message}\n`) });
   const bounds = settings.bounds || {};
   const size = (value, fallback) => Number.isFinite(value) && value >= 600 && value <= 10000 ? Math.round(value) : fallback;
   window = new BrowserWindow({ width: size(bounds.width, 1440), height: size(bounds.height, 960), minWidth: 900, minHeight: 600,
     title: 'ACCC Telemetry', backgroundColor: '#101212', show: false,
     icon: path.join(__dirname, 'icons', 'icon.png'),
-    webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true }
+    webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true,
+      preload: path.join(__dirname, 'preload.cjs') }
   });
   window.once('ready-to-show', () => window.show());
   window.on('close', () => { settings.bounds = window.getNormalBounds(); persist(); });

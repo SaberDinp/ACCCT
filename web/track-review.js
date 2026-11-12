@@ -89,13 +89,22 @@ window.ACCCTrackReview = (() => {
   function settingsKey() {return `accc.track-review.v2.${state.pairKey}`;}
   function save() {
     if (!state.pairKey) return;
-    try {localStorage.setItem(settingsKey(), JSON.stringify({track: state.track?.id || '', origin: state.origin,
-      reverse: state.reverse, aligned: state.aligned, progressMode: state.progressMode, selectionKey: state.selectionKey}));} catch {}
+    const value = JSON.stringify({track: state.track?.id || '', origin: state.origin,
+      reverse: state.reverse, aligned: state.aligned, progressMode: state.progressMode, selectionKey: state.selectionKey});
+    try {window.ACCCDesktopPreferences?.setItem(settingsKey(), value);} catch {}
+    try {localStorage.setItem(settingsKey(), value);} catch {}
   }
   function restore() {
     if (!state.pairKey || !$('trackSelect')?.options.length) return;
     let saved;
-    try {saved = JSON.parse(localStorage.getItem(settingsKey()) ?? localStorage.getItem(`apex.track-review.v2.${state.pairKey}`) ?? '{}');} catch {saved = {};}
+    try {
+      const desktop = window.ACCCDesktopPreferences;
+      let value;
+      try {value = desktop?.getItem(settingsKey());} catch {}
+      value ??= localStorage.getItem(settingsKey()) ?? localStorage.getItem(`apex.track-review.v2.${state.pairKey}`);
+      saved = JSON.parse(value ?? '{}');
+      try {if (value !== null) desktop?.setItem(settingsKey(), value);} catch {}
+    } catch {saved = {};}
     const matching = [...$('trackSelect').options].some(option => option.value === saved.track && saved.track);
     if (!matching) {
       const inferred = helpers.trackId?.();

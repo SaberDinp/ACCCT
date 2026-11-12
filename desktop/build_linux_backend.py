@@ -165,7 +165,7 @@ def validate_runtime(folder, architecture, minimum_glibc):
 
 
 def build(architecture):
-    lock = json.loads((ROOT / f"desktop/requirements-linux-{architecture}.lock.json").read_text())
+    lock = json.loads((ROOT / f"desktop/requirements-linux-{architecture}.lock.json").read_text(encoding="utf-8"))
     if lock["architecture"] != architecture:
         raise RuntimeError("Linux lock architecture mismatch")
     runtime = lock["python"]
@@ -177,7 +177,7 @@ def build(architecture):
     requirements = BUILD / f"linux-{architecture}-resolved-requirements.txt"
     requirements.write_text("\n".join(
         f"{item['name']}=={item['version']} --hash=sha256:{item['sha256']}" for item in lock["packages"]
-    ) + "\n")
+    ) + "\n", encoding="utf-8")
     selection = ["--only-binary=:all:", *pip_platforms(architecture), "--python-version", "3.14",
                  "--implementation", "cp", "--abi", "cp314"]
     subprocess.run([sys.executable, "-m", "pip", "download", "--disable-pip-version-check",
@@ -242,7 +242,7 @@ def build(architecture):
             subprocess.run([str(entry), "-c", "import av, cv2, fastapi, numpy, streamlink, yt_dlp; "
                             "print('Linux backend imports passed')"], cwd=staging, env=environment, check=True)
             report["runtime_tested"] = True
-        (staging / "bundle-manifest.json").write_text(json.dumps(report, indent=2) + "\n")
+        (staging / "bundle-manifest.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
         if output.exists():
             if not (output / "bundle-manifest.json").is_file():
                 raise RuntimeError(f"Refusing to replace an unrecognized directory: {output}")

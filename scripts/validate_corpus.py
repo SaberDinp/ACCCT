@@ -163,7 +163,7 @@ def _analyze_run(folder, video, path, mode, frame_count, evidence, trace_path):
     iterator = full_frames(path) if mode == "full" else smoke_frames(path, frame_count)
     last_frame_saved, last_stamp = -100, 0
     last_revision = last_thumb = unchanged_since = None
-    with trace_path.open("w") as trace:
+    with trace_path.open("w", encoding="utf-8") as trace:
         for stamp, frame in iterator:
             if time.monotonic() - started > 900:
                 raise ValueError("Analysis exceeded 15-minute budget")

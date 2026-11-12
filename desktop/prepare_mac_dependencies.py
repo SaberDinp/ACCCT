@@ -68,7 +68,7 @@ def main():
               "includes_development_dependencies": not arguments.without_dev,
               "wheels": inventory}
     output = build / f"macos-{architecture}-dependency-inventory.json"
-    output.write_text(json.dumps(report, indent=2) + "\n")
+    output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(f"Installed {len(inventory)} wheels for {architecture}, macOS {minimum}+; inventory: {output}")
 
 

@@ -158,8 +158,8 @@ def export(args):
         shutil.copyfile(TEMPLATE / name, destination / name)
     for name in ('styles.css', 'comparison.css', 'track-review.css', 'track-pace.js'):
         shutil.copyfile(ROOT / 'web' / name, destination / name)
-    (destination / 'comparison.js').write_text(transform.transform_comparison((ROOT / 'web/comparison.js').read_text()))
-    (destination / 'track-review.js').write_text(transform.transform_track_review((ROOT / 'web/track-review.js').read_text()))
+    (destination / 'comparison.js').write_text(transform.transform_comparison((ROOT / 'web/comparison.js').read_text(encoding="utf-8")), encoding="utf-8")
+    (destination / 'track-review.js').write_text(transform.transform_track_review((ROOT / 'web/track-review.js').read_text(encoding="utf-8")), encoding="utf-8")
     shutil.copyfile(ROOT / 'web/vendor/lucide.min.js', destination / 'vendor/lucide.min.js')
     for source in (ROOT / 'web/vendor/LICENSE-lucide.txt',
                    ROOT / 'assets/tracks/LICENSE-RaceIQ-AGPL-3.0.txt',
@@ -170,11 +170,11 @@ def export(args):
         shutil.copyfile(source, destination / 'credits' / source.name)
     encoded = json.dumps(data, separators=(',', ':'), ensure_ascii=False, allow_nan=False)
     assert '/Users/' not in encoded and str(ROOT) not in encoded, 'Private path in shared data.'
-    (destination / 'data.js').write_text('window.SHARED_COMPARISON = ' + encoded + ';\n')
+    (destination / 'data.js').write_text('window.SHARED_COMPARISON = ' + encoded + ';\n', encoding="utf-8")
     timing = {side: {**selections[session_id], 'duration': round(selections[session_id]['end_time'] - selections[session_id]['start_time'], 6)} for side, session_id in ids.items()}
     timing['delta_seconds'] = round(timing['current']['duration'] - timing['reference']['duration'], 6)
     report = {'selections': timing, 'comparison_parity': parity, 'media': media, 'output': str(destination)}
-    (review / 'build-report.json').write_text(json.dumps(report, indent=2) + '\n')
+    (review / 'build-report.json').write_text(json.dumps(report, indent=2) + '\n', encoding="utf-8")
     package(destination, review)
     return report
 
@@ -191,7 +191,7 @@ def package(destination, review):
         entries.append({'path': path.relative_to(destination).as_posix(), 'bytes': path.stat().st_size, 'sha256': digest})
     manifest = {'entry': 'index.html', 'static': True, 'backend_required': False,
                 'files': entries, 'total_bytes': sum(entry['bytes'] for entry in entries)}
-    (destination / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+    (destination / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding="utf-8")
     archive = destination.with_suffix('.zip')
     with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=6) as bundle:
         for path in sorted(destination.rglob('*')):
@@ -205,7 +205,7 @@ def package(destination, review):
                 assert hashlib.file_digest(source, 'sha256').hexdigest() == entry['sha256']
     report = {'zip': str(archive), 'bytes': archive.stat().st_size, 'all_hashes_verified': True,
               'no_python_or_database': True, 'file_count': len(entries) + 1}
-    (review / 'package-report.json').write_text(json.dumps(report, indent=2) + '\n')
+    (review / 'package-report.json').write_text(json.dumps(report, indent=2) + '\n', encoding="utf-8")
     print(json.dumps(report, indent=2), flush=True)
 
 

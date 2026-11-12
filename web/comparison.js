@@ -142,7 +142,12 @@ window.ACCCComparison = (() => {
     $('alignmentSetEnd').insertAdjacentHTML('afterend', '<button class="button primary compact" id="alignmentSetLandmark" hidden><i data-lucide="map-pin"></i>Use landmark</button>');
     try {
       // Keep existing recording selections when upgrading from the old name.
-      state.saved = JSON.parse(localStorage.getItem('accc.comparison.v1') ?? localStorage.getItem('apex.comparison.v1') ?? '{}');
+      const key = 'accc.comparison.v1', desktop = window.ACCCDesktopPreferences;
+      let value;
+      try {value = desktop?.getItem(key);} catch { /* Browser fallback below. */ }
+      value ??= localStorage.getItem(key) ?? localStorage.getItem('apex.comparison.v1');
+      state.saved = JSON.parse(value ?? '{}');
+      try {if (value !== null) desktop?.setItem(key, value);} catch { /* Keep the restored choices. */ }
     } catch {
       state.saved = {};
     }
@@ -1179,8 +1184,10 @@ window.ACCCComparison = (() => {
   }
 
   function persistPreferences(preferences) {
+    const value = JSON.stringify(preferences);
+    try { window.ACCCDesktopPreferences?.setItem('accc.comparison.v1', value); } catch { /* Browser fallback below. */ }
     try {
-      localStorage.setItem('accc.comparison.v1', JSON.stringify(preferences));
+      localStorage.setItem('accc.comparison.v1', value);
     } catch {
       /* Browser storage can be disabled. */
     }

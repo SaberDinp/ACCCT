@@ -126,7 +126,7 @@ def copy_application(destination):
 
 
 def build():
-    lock = json.loads(LOCK.read_text())
+    lock = json.loads(LOCK.read_text(encoding="utf-8"))
     runtime = lock["python"]
     BUILD.mkdir(exist_ok=True)
     archive = BUILD / runtime["filename"]
@@ -137,7 +137,7 @@ def build():
     locked_requirements.write_text("\n".join(
         f"{item['name']}=={item['version']} --hash=sha256:{item['sha256']}"
         for item in lock["packages"]
-    ) + "\n")
+    ) + "\n", encoding="utf-8")
     subprocess.run([
         sys.executable, "-m", "pip", "download", "--disable-pip-version-check",
         "--dest", str(wheelhouse), "--only-binary=:all:", "--platform", "win_amd64",
@@ -190,7 +190,7 @@ def build():
                             "from telemetry.profiles import default_profile; "
                             "HUDExtractor(default_profile()); print('Windows backend imports passed')"],
                            cwd=staging, check=True)
-        (staging / "bundle-manifest.json").write_text(json.dumps(report, indent=2) + "\n")
+        (staging / "bundle-manifest.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
         if OUTPUT.exists():
             if not (OUTPUT / "bundle-manifest.json").is_file():
                 raise RuntimeError(f"Refusing to replace an unrecognized directory: {OUTPUT}")

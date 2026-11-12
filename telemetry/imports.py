@@ -246,7 +246,7 @@ class ReferenceImports:
         if videos[0].stat().st_size > MAX_BYTES:
             raise ValueError("Reference exceeds the 4 GB import limit.")
         metadata_path = directory / "media.info.json"
-        metadata = json.loads(metadata_path.read_text()) if metadata_path.exists() else {}
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8")) if metadata_path.exists() else {}
         path = self._remux_twitch_hls(videos[0], stop, started) if provider == "Twitch" else videos[0]
         return path, metadata.get("title") or source["url"]
 

@@ -33,7 +33,7 @@ class TelemetryEngine:
         self.lock = threading.RLock()
         self.lifecycle_lock = threading.RLock()
         profile_path = self.data_dir / "profile.json"
-        self.profile = json.loads(profile_path.read_text()) if profile_path.exists() else default_profile()
+        self.profile = json.loads(profile_path.read_text(encoding="utf-8")) if profile_path.exists() else default_profile()
         self.extractor = HUDExtractor(self.profile)
         self.profile = self.extractor.profile
         self.analyzer = SessionAnalyzer(retain_samples=False)
@@ -379,7 +379,7 @@ class TelemetryEngine:
             self.profile = candidate.profile
             self.extractor = candidate
             self._calibration_revision = None
-            (self.data_dir / "profile.json").write_text(json.dumps(self.profile, indent=2))
+            (self.data_dir / "profile.json").write_text(json.dumps(self.profile, indent=2), encoding="utf-8")
             self.analyzer.discontinuity("calibration_changed")
             return self.profile
 

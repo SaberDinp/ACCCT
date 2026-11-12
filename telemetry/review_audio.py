@@ -106,7 +106,7 @@ class ReviewAudio:
         if not target.is_file() or target.is_symlink() or not metadata.is_file() or metadata.is_symlink():
             return None
         try:
-            value = json.loads(metadata.read_text())
+            value = json.loads(metadata.read_text(encoding="utf-8"))
             start, duration = float(value["source_start"]), float(value["duration"])
             if (value["signature"] != signature or not math.isfinite(start) or not math.isfinite(duration)
                     or not 0 < duration <= MAX_DURATION + 1 or not 0 < target.stat().st_size <= MAX_BYTES):
@@ -257,7 +257,7 @@ class ReviewAudio:
                     raise AudioCancelled()
                 output.replace(directory / "audio.m4a")
                 metadata = temporary / "audio.json"
-                metadata.write_text(json.dumps({"signature": job["signature"], **timing}))
+                metadata.write_text(json.dumps({"signature": job["signature"], **timing}), encoding="utf-8")
                 metadata.replace(directory / "audio.json")
                 job["result"] = self._result(session_id, "ready", url=f"/api/sessions/{session_id}/audio/media", **timing)
         except AudioCancelled:

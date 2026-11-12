@@ -64,7 +64,7 @@ def main():
     metadata = {"platform": "darwin", "architecture": architecture,
                 "python": platform.python_version(), "entry": EXECUTABLE,
                 "minimum_macos": minimum_macos(output / EXECUTABLE)}
-    (output / EXECUTABLE / "build-info.json").write_text(json.dumps(metadata, indent=2) + "\n")
+    (output / EXECUTABLE / "build-info.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
     python_license = Path(sysconfig.get_path("stdlib")) / "LICENSE.txt"
     if python_license.is_file():
         shutil.copy2(python_license, output / EXECUTABLE / "LICENSE-Python.txt")

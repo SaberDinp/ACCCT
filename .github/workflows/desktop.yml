@@ -3,6 +3,12 @@ name: ACCC Telemetry desktop packages
 on:
   workflow_call:
   workflow_dispatch:
+    inputs:
+      target:
+        description: Native platform to check
+        type: choice
+        default: all
+        options: [all, mac-arm64, mac-x64, win-x64, linux-x64, linux-arm64]
   pull_request:
     paths:
       - 'desktop/**'
@@ -16,6 +22,7 @@ on:
       - 'tests/test_windows_bundle.py'
       - 'tests/test_linux_bundle.py'
       - 'tests/test_tracks.py'
+      - 'tests/test_utf8_io.py'
       - '.gitattributes'
       - '.github/workflows/desktop.yml'
       - '.github/workflows/release.yml'
@@ -25,7 +32,38 @@ permissions:
   contents: read
 
 jobs:
+  targets:
+    runs-on: ubuntu-24.04
+    outputs:
+      matrix: ${{ steps.targets.outputs.matrix }}
+    steps:
+      - id: targets
+        env:
+          REQUESTED_TARGET: ${{ inputs.target || 'all' }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          targets = [
+              dict(target='mac-arm64', runner='macos-15', architecture='arm64', platform='mac',
+                   python='.venv-ci/bin/python', app_directory='mac-arm64'),
+              dict(target='mac-x64', runner='macos-15-intel', architecture='x64', platform='mac',
+                   python='.venv-ci/bin/python', app_directory='mac'),
+              dict(target='win-x64', runner='windows-latest', architecture='x64', platform='win',
+                   python='.venv-ci/Scripts/python.exe', app_directory='win-unpacked'),
+              dict(target='linux-x64', runner='ubuntu-24.04', architecture='x64', platform='linux',
+                   python='.venv-ci/bin/python', app_directory='linux-unpacked'),
+              dict(target='linux-arm64', runner='ubuntu-24.04-arm', architecture='arm64', platform='linux',
+                   python='.venv-ci/bin/python', app_directory='linux-arm64-unpacked'),
+          ]
+          requested = os.environ['REQUESTED_TARGET']
+          selected = [target for target in targets if requested in ('all', target['target'])]
+          if not selected:
+              raise SystemExit(f'Unknown desktop target: {requested}')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('matrix=' + json.dumps({'include': selected}) + '\n')
+          PY
   package:
+    needs: targets
     name: ${{ matrix.target }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 50
@@ -34,38 +72,7 @@ jobs:
         shell: bash
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - target: mac-arm64
-            runner: macos-15
-            architecture: arm64
-            platform: mac
-            python: .venv-ci/bin/python
-            app_directory: mac-arm64
-          - target: mac-x64
-            runner: macos-15-intel
-            architecture: x64
-            platform: mac
-            python: .venv-ci/bin/python
-            app_directory: mac
-          - target: win-x64
-            runner: windows-latest
-            architecture: x64
-            platform: win
-            python: .venv-ci/Scripts/python.exe
-            app_directory: win-unpacked
-          - target: linux-x64
-            runner: ubuntu-24.04
-            architecture: x64
-            platform: linux
-            python: .venv-ci/bin/python
-            app_directory: linux-unpacked
-          - target: linux-arm64
-            runner: ubuntu-24.04-arm
-            architecture: arm64
-            platform: linux
-            python: .venv-ci/bin/python
-            app_directory: linux-arm64-unpacked
+      matrix: ${{ fromJSON(needs.targets.outputs.matrix) }}
     env:
       CSC_IDENTITY_AUTO_DISCOVERY: 'false'
       PYTHONUNBUFFERED: '1'
@@ -106,7 +113,7 @@ jobs:
           sudo gem install fpm --version 1.18.0 --no-document
       - run: npm ci --prefix desktop
       - name: Test lifecycle, migration, track data, and packaging contracts
-        run: ${{ matrix.python }} -m pytest -q tests/test_desktop_runtime.py tests/test_windows_bundle.py tests/test_linux_bundle.py tests/test_tracks.py
+        run: ${{ matrix.python }} -m pytest -q tests/test_desktop_runtime.py tests/test_windows_bundle.py tests/test_linux_bundle.py tests/test_tracks.py tests/test_utf8_io.py
       - run: npm test --prefix desktop
       - name: Create redistributable video fixture for packaged UI checks
         run: ${{ matrix.python }} desktop/create_smoke_video.py artifacts/desktop-package/sample.mp4

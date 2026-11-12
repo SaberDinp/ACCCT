@@ -1,7 +1,7 @@
 {
   "name": "accc-telemetry",
   "productName": "ACCC Telemetry",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Recorded-lap analysis and comparison for console racers, by Rice Racing",
   "author": "Rice Racing",
   "private": true,
@@ -38,6 +38,8 @@
       "loading.html",
       "package.json",
       "settings.cjs",
+      "preferences.cjs",
+      "preload.cjs",
       "icons/icon.png"
     ],
     "asar": true,

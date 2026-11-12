@@ -1,4 +1,4 @@
-# 1.2.2
+# 1.2.3
 
 ACCC Telemetry brings recorded-lap analysis to console racers, with desktop apps
 for Apple Silicon and Intel Macs, Windows x64, and Linux x64/ARM64.
@@ -12,6 +12,8 @@ for Apple Silicon and Intel Macs, Windows x64, and Linux x64/ARM64.
 - Windows setup installs for the current user in one click. Mac DMGs and Linux
   DEB/RPM packages provide the standard installation flow for each platform.
 - Existing libraries are retained separately from the application.
+- Selected laps and circuit settings survive restarts even when another app
+  occupies the previous local port.
 
 Choose an installer for your OS and CPU from the assets below. You do not need
 Python or Node.js. GitHub's source-code archives are for developers.

@@ -80,7 +80,7 @@ async function main() {
             await page.locator('#recordingImportRole').selectOption(role);
             await page.locator('#referenceName').fill(`Desktop test ${role}`);
             await page.locator('#referenceUploadInput').setInputFiles(video);
-            await page.waitForFunction(() => document.getElementById('referenceLocalFile').value.startsWith('data/uploads/'));
+            await page.waitForFunction(() => document.getElementById('referenceLocalFile').value.replaceAll('\\', '/').startsWith('data/uploads/'));
             await page.locator('#startReferenceImport').click();
             await page.locator('#referenceImportDialog').waitFor({ state: 'hidden' });
             const deadline = Date.now() + 120000;

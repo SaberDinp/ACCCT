@@ -1,0 +1,123 @@
+{
+  "video_id": "t0Rgya0suMw",
+  "url": "https://www.youtube.com/watch?v=t0Rgya0suMw",
+  "relative_path": "data/references/a94b8414cc484547b314dd3805142b74/media.mp4",
+  "frame_size": [
+    1920,
+    1080
+  ],
+  "placement": [
+    1660,
+    735,
+    260,
+    290
+  ],
+  "training_timestamps_excluded": [
+    89.9899
+  ],
+  "label_method": "Manual visual transcription of source speed/gear and colored pedal-bar extents. Native decoded HUD pixels retained as PNG; setup/menu negatives retain the full frame as JPEG. No OCR templates use these regression frames.",
+  "frames": [
+    {
+      "time": 50,
+      "decoded_time": 50.01663333333334,
+      "crop": "t0Rgya0suMw-50.png",
+      "speed": 172,
+      "gear": "3",
+      "brake_range": [
+        0,
+        2
+      ],
+      "throttle_range": [
+        98,
+        100
+      ]
+    },
+    {
+      "time": 55,
+      "decoded_time": 54.98826666666667,
+      "crop": "t0Rgya0suMw-55.png",
+      "speed": 131,
+      "gear": "3",
+      "brake_range": [
+        92,
+        100
+      ],
+      "throttle_range": [
+        0,
+        2
+      ]
+    },
+    {
+      "time": 70,
+      "decoded_time": 70.00326666666668,
+      "crop": "t0Rgya0suMw-70.png",
+      "speed": 229,
+      "gear": "5",
+      "brake_range": [
+        0,
+        2
+      ],
+      "throttle_range": [
+        98,
+        100
+      ]
+    },
+    {
+      "time": 120,
+      "decoded_time": 119.98653333333334,
+      "crop": "t0Rgya0suMw-120.png",
+      "speed": 112,
+      "gear": "2",
+      "brake_range": [
+        0,
+        2
+      ],
+      "throttle_range": [
+        98,
+        100
+      ]
+    },
+    {
+      "time": 200,
+      "decoded_time": 199.99980000000002,
+      "crop": "t0Rgya0suMw-200.png",
+      "speed": 182,
+      "gear": "3",
+      "brake_range": [
+        0,
+        2
+      ],
+      "throttle_range": [
+        98,
+        100
+      ]
+    },
+    {
+      "time": 290,
+      "decoded_time": 289.9897,
+      "crop": "t0Rgya0suMw-290.png",
+      "speed": 218,
+      "gear": "4",
+      "brake_range": [
+        98,
+        100
+      ],
+      "throttle_range": [
+        75,
+        85
+      ]
+    }
+  ],
+  "no_hud_frames": [
+    {
+      "time": 5,
+      "decoded_time": 5.005,
+      "image": "t0Rgya0suMw-menu-5.jpg"
+    },
+    {
+      "time": 30,
+      "decoded_time": 29.996633333333335,
+      "image": "t0Rgya0suMw-menu-30.jpg"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/iracing/bathurst.json": {
+    "local_file": "lovely-name-sources/bathurst.json",
+    "sha256": "702e71a80b2679161eb4ca9f47a0cc59b74ccce4d3edf1d90a9c0f57a90f4db7",
+    "commit": "eb4af9572aeb247e6406bc154d73a3bd16d8c28a",
+    "license": "CC-BY-NC-SA-4.0",
+    "license_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "attribution": "Lovely Sim Racing; Racing Circuits credited for names by upstream",
+    "transformation": "Names only; ACC map positions retained or separately marked approximate"
+  },
+  "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/iracing/oulton-international.json": {
+    "local_file": "lovely-name-sources/oulton-international.json",
+    "sha256": "aea3dcbfef9b3b18f629481381652ed35962f4d557e3e19c802434fc13f69571",
+    "commit": "eb4af9572aeb247e6406bc154d73a3bd16d8c28a",
+    "license": "CC-BY-NC-SA-4.0",
+    "license_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "attribution": "Lovely Sim Racing; Racing Circuits credited for names by upstream",
+    "transformation": "Names only; ACC map positions retained or separately marked approximate"
+  },
+  "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/iracing/snetterton-300.json": {
+    "local_file": "lovely-name-sources/snetterton-300.json",
+    "sha256": "4a891a3c3fc4ac1fc3a93fb7fb0fc5eb4d162d711c1e5b0087687d6eef081a99",
+    "commit": "eb4af9572aeb247e6406bc154d73a3bd16d8c28a",
+    "license": "CC-BY-NC-SA-4.0",
+    "license_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "attribution": "Lovely Sim Racing; Racing Circuits credited for names by upstream",
+    "transformation": "Names only; ACC map positions retained or separately marked approximate"
+  },
+  "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/iracing/zandvoort-2023-gp.json": {
+    "local_file": "lovely-name-sources/zandvoort-2023-gp.json",
+    "sha256": "f1c90ce2627d0844760c2fb1045a8135228b000083e9323d3c2c4300828d9188",
+    "commit": "eb4af9572aeb247e6406bc154d73a3bd16d8c28a",
+    "license": "CC-BY-NC-SA-4.0",
+    "license_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "attribution": "Lovely Sim Racing; Racing Circuits credited for names by upstream",
+    "transformation": "Names only; ACC map positions retained or separately marked approximate"
+  },
+  "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/iracing/zolder-gp.json": {
+    "local_file": "lovely-name-sources/zolder-gp.json",
+    "sha256": "fe53752f877e70be6cfced7ebd2412b1093770d3cf9fdd5ad3cdca93b374edbf",
+    "commit": "eb4af9572aeb247e6406bc154d73a3bd16d8c28a",
+    "license": "CC-BY-NC-SA-4.0",
+    "license_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "attribution": "Lovely Sim Racing; Racing Circuits credited for names by upstream",
+    "transformation": "Names only; ACC map positions retained or separately marked approximate"
+  }
+}

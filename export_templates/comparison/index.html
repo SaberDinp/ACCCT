@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#111313">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20256%20256%22%20role%3D%22img%22%20aria-labelledby%3D%22title%22%3E%0A%20%20%3Ctitle%20id%3D%22title%22%3EACCC%20Telemetry%3A%20A%20inside%20three%20nested%20Cs%3C/title%3E%0A%20%20%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%22248%22%20height%3D%22248%22%20rx%3D%2252%22%20fill%3D%22%23101212%22/%3E%0A%20%20%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d8ee88%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%0A%20%20%3Cpath%20d%3D%22M%20204.604%20192.279%20A%20100%20100%200%201%201%20204.604%2063.721%22%20stroke-width%3D%2214%22/%3E%0A%20%20%3Cpath%20d%3D%22M%20185.453%20176.209%20A%2075%2075%200%201%201%20185.453%2079.791%22%20stroke-width%3D%2212%22/%3E%0A%20%20%3Cpath%20d%3D%22M%20167.068%20160.782%20A%2051%2051%200%201%201%20167.068%2095.218%22%20stroke-width%3D%2210%22/%3E%0A%20%20%3Cpath%20d%3D%22M%20109%20147%20L%20128%20107%20L%20147%20147%20M%20116%20133%20H%20140%22%20stroke-width%3D%228%22/%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E%0A">
+  <title>Shared comparison · ACCC Telemetry</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="comparison.css">
+  <link rel="stylesheet" href="track-review.css">
+  <link rel="stylesheet" href="offline.css">
+  <script src="data.js" defer></script>
+  <script src="vendor/lucide.min.js" defer></script>
+  <script src="track-pace.js" defer></script>
+  <script src="track-review.js" defer></script>
+  <script src="comparison.js" defer></script>
+  <script src="offline.js" defer></script>
+</head>
+<body class="shared-comparison">
+  <header class="app-header">
+    <a class="brand" href="index.html" aria-label="ACCC Telemetry shared comparison"><svg class="brand-mark" aria-hidden="true" viewBox="0 0 256 256" style="background:transparent;flex:none;width:44px;height:44px">  <rect x="4" y="4" width="248" height="248" rx="52" fill="#101212"/>
+  <g fill="none" stroke="#d8ee88" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M 204.604 192.279 A 100 100 0 1 1 204.604 63.721" stroke-width="14"/>
+  <path d="M 185.453 176.209 A 75 75 0 1 1 185.453 79.791" stroke-width="12"/>
+  <path d="M 167.068 160.782 A 51 51 0 1 1 167.068 95.218" stroke-width="10"/>
+  <path d="M 109 147 L 128 107 L 147 147 M 116 133 H 140" stroke-width="8"/>
+  </g>
+</svg><span>ACCC<span class="brand-sub">TELEMETRY</span></span></a>
+    <nav class="main-tabs" aria-label="Workspace"><button class="tab active" data-view="analysis"><i data-lucide="chart-no-axes-combined"></i>Analysis</button></nav>
+    <span class="shared-mode">SHARED COMPARISON · OFFLINE</span>
+  </header>
+  <div class="notice hidden" id="notice" role="status"><i data-lucide="info"></i><span id="noticeText"></span><button class="icon-button" id="noticeDismiss" title="Dismiss" aria-label="Dismiss"><i data-lucide="x"></i></button></div>
+  <main>
+    <section class="view active" id="view-analysis">
+      <div class="page-heading"><div><span class="eyebrow">DRIVER WORKSPACE</span><h1 id="sharedTitle">Shared comparison</h1></div><a class="button subtle compact" href="README.txt" target="_blank">How to use</a></div>
+      <p class="shared-lap-summary" id="sharedLapSummary"></p>
+      <p class="shared-intro">Explore the saved laps with synchronized video, telemetry and the circuit map. Select Time or Distance, move the review slider, or drag across a chart to zoom.</p>
+      <div id="sharedFailure" role="alert" hidden></div>
+      <section id="referenceWorkspace" class="reference-workspace"></section>
+    </section>
+    <footer class="shared-footer"><span>The included lap selections and recording labels are fixed in this shared copy.</span><details><summary>Sources and credits</summary><div id="sharedCredits"></div></details></footer>
+  </main>
+</body>
+</html>

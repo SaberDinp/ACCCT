@@ -1,0 +1,82 @@
+name: Publish desktop release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  version:
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Require a version tag matching the app
+        id: version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_REF_TYPE: ${{ github.ref_type }}
+        run: |
+          python - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          version = json.loads(Path('desktop/package.json').read_text())['version']
+          if os.environ['RELEASE_REF_TYPE'] != 'tag' or os.environ['RELEASE_TAG'] != f'v{version}':
+              raise SystemExit('Run this workflow from a v<app-version> tag, not a branch.')
+          if not re.fullmatch(r'\d+\.\d+\.\d+', version):
+              raise SystemExit('Stable releases require an x.y.z app version.')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={version}\n')
+          PY
+
+  build:
+    needs: version
+    uses: ./.github/workflows/desktop.yml
+
+  publish:
+    needs: [version, build]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      RELEASE_TAG: ${{ github.ref_name }}
+      APP_VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14.10'
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: ACCC-Telemetry-installers-*
+          path: release-assets
+          merge-multiple: true
+      - name: Require all platforms and generate checksums and install guide
+        run: python .github/scripts/prepare_release.py release-assets
+      - name: Verify checksum file with an independent implementation
+        working-directory: release-assets
+        run: sha256sum --check SHA256SUMS.txt
+      - name: Stage a complete release without replacing a published version
+        run: |
+          if gh release view "$RELEASE_TAG" --json isDraft > release-state.json 2>/dev/null; then
+            python - <<'PY'
+          import json
+          if not json.load(open('release-state.json'))['isDraft']:
+              raise SystemExit('This version is already published. Create a new version instead of overwriting it.')
+          PY
+          else
+            gh release create "$RELEASE_TAG" --verify-tag --draft --title "ACCC Telemetry $APP_VERSION" --notes-file release-notes.md
+          fi
+          gh release upload "$RELEASE_TAG" release-assets/* --clobber
+          gh release edit "$RELEASE_TAG" --notes-file release-notes.md --draft=false --latest

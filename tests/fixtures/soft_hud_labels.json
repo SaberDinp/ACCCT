@@ -1,0 +1,135 @@
+{
+  "label_method": "Manual visual reading of enlarged source HUDs before extraction; source video decoded at or immediately after requested timestamp. Cropped source pixels retained at native resolution; no new OCR templates are trained from these frames.",
+  "placement": [
+    1630,
+    735,
+    290,
+    345
+  ],
+  "frame_size": [
+    1920,
+    1080
+  ],
+  "videos": [
+    {
+      "video_id": "NayHDaxbGpY",
+      "url": "https://www.youtube.com/watch?v=NayHDaxbGpY",
+      "car_id": "ford_mustang_gt3",
+      "track_id": "indianapolis",
+      "frames": [
+        {
+          "time": 15,
+          "speed": 145,
+          "gear": "1",
+          "hud_speed_unit": "km/h",
+          "crop": "NayHDaxbGpY-15.png",
+          "decoded_time": 15.015
+        },
+        {
+          "time": 25,
+          "speed": 174,
+          "gear": "3",
+          "hud_speed_unit": "km/h",
+          "crop": "NayHDaxbGpY-25.png",
+          "decoded_time": 25.008316666666666
+        },
+        {
+          "time": 35,
+          "speed": 199,
+          "gear": "3",
+          "hud_speed_unit": "km/h",
+          "crop": "NayHDaxbGpY-35.png",
+          "decoded_time": 35.00163333333333
+        },
+        {
+          "time": 55,
+          "speed": 234,
+          "gear": "4",
+          "hud_speed_unit": "km/h",
+          "crop": "NayHDaxbGpY-55.png",
+          "decoded_time": 55.00495
+        }
+      ]
+    },
+    {
+      "video_id": "kKfMg2umqmY",
+      "url": "https://www.youtube.com/watch?v=kKfMg2umqmY",
+      "car_id": "ford_mustang_gt3",
+      "track_id": "donington",
+      "frames": [
+        {
+          "time": 15,
+          "speed": 109,
+          "gear": "2",
+          "hud_speed_unit": "km/h",
+          "crop": "kKfMg2umqmY-15.png",
+          "decoded_time": 15.015
+        },
+        {
+          "time": 25,
+          "speed": 234,
+          "gear": "4",
+          "hud_speed_unit": "km/h",
+          "crop": "kKfMg2umqmY-25.png",
+          "decoded_time": 25.008316666666666
+        },
+        {
+          "time": 35,
+          "speed": 211,
+          "gear": "4",
+          "hud_speed_unit": "km/h",
+          "crop": "kKfMg2umqmY-35.png",
+          "decoded_time": 35.00163333333333
+        },
+        {
+          "time": 55,
+          "speed": 201,
+          "gear": "4",
+          "hud_speed_unit": "km/h",
+          "crop": "kKfMg2umqmY-55.png",
+          "decoded_time": 55.00495
+        }
+      ]
+    },
+    {
+      "video_id": "kzCq5WXU2mY",
+      "url": "https://www.youtube.com/watch?v=kzCq5WXU2mY",
+      "car_id": "ferrari_296_gt3",
+      "track_id": "valencia",
+      "frames": [
+        {
+          "time": 15,
+          "speed": 177,
+          "gear": "4",
+          "hud_speed_unit": "km/h",
+          "crop": "kzCq5WXU2mY-15.png",
+          "decoded_time": 15.015
+        },
+        {
+          "time": 25,
+          "speed": 124,
+          "gear": "2",
+          "hud_speed_unit": "km/h",
+          "crop": "kzCq5WXU2mY-25.png",
+          "decoded_time": 25.008316666666666
+        },
+        {
+          "time": 35,
+          "speed": 127,
+          "gear": "2",
+          "hud_speed_unit": "km/h",
+          "crop": "kzCq5WXU2mY-35.png",
+          "decoded_time": 35.00163333333333
+        },
+        {
+          "time": 55,
+          "speed": 110,
+          "gear": "1",
+          "hud_speed_unit": "km/h",
+          "crop": "kzCq5WXU2mY-55.png",
+          "decoded_time": 55.00495
+        }
+      ]
+    }
+  ]
+}

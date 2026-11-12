@@ -1,0 +1,1965 @@
+{
+  "barcelona": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/barcelona.json"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": 1
+      },
+      {
+        "number": 2,
+        "name": "Turn 2"
+      },
+      {
+        "number": 3
+      },
+      {
+        "number": 4
+      },
+      {
+        "number": 5
+      },
+      {
+        "number": 6,
+        "name": "Turn 6"
+      },
+      {
+        "number": 7
+      },
+      {
+        "number": 8,
+        "progress": 0.574,
+        "position_kind": "between_sourced_corner_intervals_estimate",
+        "name": "Turn 8"
+      },
+      {
+        "number": 9
+      },
+      {
+        "number": 10
+      },
+      {
+        "number": 11,
+        "name": "Turn 11"
+      },
+      {
+        "number": 12
+      },
+      {
+        "number": 13
+      },
+      {
+        "number": 14,
+        "name": "Turn 14"
+      },
+      {
+        "number": 15
+      },
+      {
+        "number": 16
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/barcelona.json"
+        ]
+      }
+    ]
+  },
+  "bathurst": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/mount-panorama.json",
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/iracing/bathurst.json"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": 1,
+        "name": "Hell Corner"
+      },
+      {
+        "number": 2,
+        "name": "Quarry Bend"
+      },
+      {
+        "number": 3,
+        "name": "The Cutting"
+      },
+      {
+        "number": 4,
+        "name": "The Cutting"
+      },
+      {
+        "number": 5,
+        "name": "Griffin's Mount"
+      },
+      {
+        "number": 6,
+        "name": "Reid Park"
+      },
+      {
+        "number": 7,
+        "name": "Sulman Park"
+      },
+      {
+        "number": 8,
+        "name": "Sulman Park"
+      },
+      {
+        "number": 9,
+        "name": "Sulman Park"
+      },
+      {
+        "number": 10,
+        "name": "McPhillamy Park"
+      },
+      {
+        "number": 11,
+        "name": "Skyline"
+      },
+      {
+        "number": 12,
+        "name": "Skyline"
+      },
+      {
+        "number": 13,
+        "name": "The Esses"
+      },
+      {
+        "number": 14,
+        "name": "The Esses"
+      },
+      {
+        "number": 15,
+        "name": "The Esses"
+      },
+      {
+        "number": 16,
+        "name": "The Esses"
+      },
+      {
+        "number": 17,
+        "name": "The Dipper"
+      },
+      {
+        "number": 18,
+        "name": "Forest's Elbow"
+      },
+      {
+        "number": 19,
+        "name": "Forest's Elbow"
+      },
+      {
+        "number": 20,
+        "name": "The Chase"
+      },
+      {
+        "number": 21,
+        "name": "The Chase"
+      },
+      {
+        "number": 22,
+        "name": "The Chase"
+      },
+      {
+        "number": 23,
+        "name": "Murray's Corner"
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/mount-panorama.json"
+        ]
+      },
+      {
+        "name": "Pit Straight",
+        "progress": 0.022,
+        "position_kind": "equivalent_layout_name_at_approximate_position",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/iracing/bathurst.json"
+        ]
+      },
+      {
+        "name": "Mountain Straight",
+        "progress": 0.14,
+        "position_kind": "equivalent_layout_name_at_approximate_position",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/iracing/bathurst.json"
+        ]
+      },
+      {
+        "name": "Conrod Straight",
+        "progress": 0.75,
+        "position_kind": "equivalent_layout_name_at_approximate_position",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/iracing/bathurst.json"
+        ]
+      }
+    ]
+  },
+  "brands_hatch": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/brands-hatch.json"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": 1
+      },
+      {
+        "number": 2
+      },
+      {
+        "number": 3
+      },
+      {
+        "number": 4
+      },
+      {
+        "number": 5,
+        "name": "Hawthorn Bend"
+      },
+      {
+        "number": 6
+      },
+      {
+        "number": 7
+      },
+      {
+        "number": 8
+      },
+      {
+        "number": 9
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/brands-hatch.json"
+        ]
+      }
+    ]
+  },
+  "cota": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/cota.json"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": 1,
+        "name": "Turn 1"
+      },
+      {
+        "number": 2,
+        "name": "Turn 2"
+      },
+      {
+        "number": 3,
+        "name": "Turn 3"
+      },
+      {
+        "number": 4,
+        "name": "Turn 4"
+      },
+      {
+        "number": 5,
+        "name": "Turn 5"
+      },
+      {
+        "number": 6,
+        "name": "Turn 6"
+      },
+      {
+        "number": 7,
+        "name": "Turn 7"
+      },
+      {
+        "number": 8,
+        "name": "Turn 8"
+      },
+      {
+        "number": 9,
+        "name": "Turn 9"
+      },
+      {
+        "number": 10,
+        "name": "Turn 10"
+      },
+      {
+        "number": 11,
+        "name": "Turn 11"
+      },
+      {
+        "number": 12,
+        "name": "Turn 12"
+      },
+      {
+        "number": 13,
+        "name": "Turn 13"
+      },
+      {
+        "number": 14,
+        "name": "Turn 14"
+      },
+      {
+        "number": 15,
+        "name": "Turn 15"
+      },
+      {
+        "number": 16,
+        "name": "Turn 16"
+      },
+      {
+        "number": 17,
+        "name": "Turn 17"
+      },
+      {
+        "number": 18,
+        "name": "Turn 18"
+      },
+      {
+        "number": 19,
+        "name": "Turn 19"
+      },
+      {
+        "number": 20,
+        "name": "Turn 20"
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/cota.json"
+        ]
+      }
+    ]
+  },
+  "donington": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/donington.json",
+      "https://www.donington-park.co.uk/about/circuit-map"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": 1
+      },
+      {
+        "number": 2
+      },
+      {
+        "number": 3
+      },
+      {
+        "number": 4
+      },
+      {
+        "number": 6
+      },
+      {
+        "number": 7
+      },
+      {
+        "number": 8
+      },
+      {
+        "number": "9–10"
+      },
+      {
+        "number": 11
+      },
+      {
+        "number": 12
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/donington.json"
+        ]
+      }
+    ],
+    "extra_corners": [
+      {
+        "number": 5,
+        "name": "Starkey’s Bridge",
+        "progress": 0.34,
+        "position_kind": "source_named_interval_midpoint_estimate",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/donington.json",
+          "https://www.donington-park.co.uk/about/circuit-map"
+        ]
+      }
+    ]
+  },
+  "hungaroring": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/hungaroring.json"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": 1,
+        "name": "Turn 1"
+      },
+      {
+        "number": 2,
+        "name": "Turn 2"
+      },
+      {
+        "number": 3,
+        "name": "Turn 3"
+      },
+      {
+        "number": 4,
+        "name": "Turn 4"
+      },
+      {
+        "number": 5,
+        "name": "Turn 5"
+      },
+      {
+        "number": 6,
+        "name": "Turn 6"
+      },
+      {
+        "number": 7,
+        "name": "Turn 7"
+      },
+      {
+        "number": 8,
+        "name": "Turn 8"
+      },
+      {
+        "number": 9,
+        "name": "Turn 9"
+      },
+      {
+        "number": 10,
+        "name": "Turn 10"
+      },
+      {
+        "number": 11,
+        "name": "Turn 11"
+      },
+      {
+        "number": 12,
+        "name": "Turn 12"
+      },
+      {
+        "number": 13,
+        "name": "Turn 13"
+      },
+      {
+        "number": 14,
+        "name": "Turn 14"
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/hungaroring.json"
+        ]
+      }
+    ]
+  },
+  "imola": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/imola.json"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": 1,
+        "name": "Turn 1"
+      },
+      {
+        "number": 2
+      },
+      {
+        "number": 3
+      },
+      {
+        "number": 4,
+        "name": "Turn 4"
+      },
+      {
+        "number": 5
+      },
+      {
+        "number": 6
+      },
+      {
+        "number": 7
+      },
+      {
+        "number": 8,
+        "name": "Turn 8"
+      },
+      {
+        "number": 9
+      },
+      {
+        "number": 10,
+        "name": "Turn 10"
+      },
+      {
+        "number": 11
+      },
+      {
+        "number": 12
+      },
+      {
+        "number": 13,
+        "name": "Turn 13"
+      },
+      {
+        "number": 14
+      },
+      {
+        "number": 15
+      },
+      {
+        "number": 16,
+        "name": "Turn 16"
+      },
+      {
+        "number": 17,
+        "name": "Turn 17"
+      },
+      {
+        "number": 18
+      },
+      {
+        "number": 19,
+        "name": "Turn 19"
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/imola.json"
+        ]
+      }
+    ]
+  },
+  "indianapolis": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/indianapolis.json"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": 1,
+        "name": "Turn 1"
+      },
+      {
+        "number": 2,
+        "name": "Turn 2"
+      },
+      {
+        "number": 3,
+        "name": "Turn 3"
+      },
+      {
+        "number": 4,
+        "name": "Turn 4"
+      },
+      {
+        "number": 5,
+        "name": "Turn 5"
+      },
+      {
+        "number": 6,
+        "name": "Turn 6"
+      },
+      {
+        "number": 7,
+        "name": "Turn 7"
+      },
+      {
+        "number": 8,
+        "name": "Turn 8"
+      },
+      {
+        "number": 9,
+        "name": "Turn 9"
+      },
+      {
+        "number": 10,
+        "name": "Turn 10"
+      },
+      {
+        "number": 11,
+        "name": "Turn 11"
+      },
+      {
+        "number": 12,
+        "name": "Turn 12"
+      },
+      {
+        "number": 13,
+        "name": "Turn 13"
+      },
+      {
+        "number": 14,
+        "name": "Turn 14"
+      },
+      {
+        "number": 15,
+        "name": "Turn 15"
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/indianapolis.json"
+        ]
+      }
+    ]
+  },
+  "kyalami": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/kyalami.json",
+      "https://www.kyalamigrandprixcircuit.com/wp-content/uploads/2025/08/Kyalami-web-elements-800-x-800-px-4.webp"
+    ],
+    "numbering_note": "Numbers follow the circuit operator’s 16-turn map. Group labels identify complexes; their single map marker is not every individual apex.",
+    "turns": [
+      {
+        "number": 1
+      },
+      {
+        "number": 2,
+        "name": "Crowthorne"
+      },
+      {
+        "number": "3–4"
+      },
+      {
+        "number": 5
+      },
+      {
+        "number": 6
+      },
+      {
+        "number": 7
+      },
+      {
+        "number": "8–9"
+      },
+      {
+        "number": "10–11"
+      },
+      {
+        "number": 12
+      },
+      {
+        "number": "13–14"
+      },
+      {
+        "number": 15
+      },
+      {
+        "number": 16
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/kyalami.json"
+        ]
+      }
+    ]
+  },
+  "laguna_seca": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/laguna-seca.json"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": 1,
+        "name": "Turn 1"
+      },
+      {
+        "number": 2
+      },
+      {
+        "number": 3,
+        "name": "Turn 3"
+      },
+      {
+        "number": 4,
+        "name": "Turn 4"
+      },
+      {
+        "number": 5,
+        "name": "Turn 5"
+      },
+      {
+        "number": 6,
+        "name": "Turn 6"
+      },
+      {
+        "number": 7,
+        "name": "Turn 7"
+      },
+      {
+        "number": 8
+      },
+      {
+        "number": 9,
+        "name": "Turn 9"
+      },
+      {
+        "number": 10,
+        "name": "Turn 10"
+      },
+      {
+        "number": 11,
+        "name": "Turn 11"
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/laguna-seca.json"
+        ]
+      }
+    ]
+  },
+  "misano": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/misano.json",
+      "https://api.gt-world-challenge-europe.com/documents/notice/9622/14-687931e58eb43e474a47625f-17-07-2025-17-24.pdf"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": "1–3"
+      },
+      {
+        "number": "4–5"
+      },
+      {
+        "number": 6,
+        "name": "Turn 6"
+      },
+      {
+        "number": 7,
+        "name": "Turn 7"
+      },
+      {
+        "number": 8
+      },
+      {
+        "number": 9,
+        "name": "Turn 9"
+      },
+      {
+        "number": 10
+      },
+      {
+        "number": 11
+      },
+      {
+        "number": 12,
+        "name": "Turn 12"
+      },
+      {
+        "number": 13,
+        "name": "Turn 13"
+      },
+      {
+        "number": 14
+      },
+      {
+        "number": 15,
+        "name": "Turn 15"
+      },
+      {
+        "number": 16
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/misano.json"
+        ]
+      }
+    ]
+  },
+  "monza": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/monza.json"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": 1
+      },
+      {
+        "number": 2
+      },
+      {
+        "number": 3
+      },
+      {
+        "number": 4
+      },
+      {
+        "number": 5
+      },
+      {
+        "number": 6
+      },
+      {
+        "number": 7
+      },
+      {
+        "number": 8
+      },
+      {
+        "number": 9
+      },
+      {
+        "number": 10
+      },
+      {
+        "number": 11
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/monza.json"
+        ]
+      }
+    ]
+  },
+  "nurburgring": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/nurburgring.json"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": 1,
+        "name": "Turn 1"
+      },
+      {
+        "number": 2,
+        "name": "Turn 2"
+      },
+      {
+        "number": 3,
+        "name": "Turn 3"
+      },
+      {
+        "number": 4,
+        "name": "Turn 4"
+      },
+      {
+        "number": 5,
+        "name": "Turn 5"
+      },
+      {
+        "number": 6,
+        "name": "Turn 6"
+      },
+      {
+        "number": 7,
+        "name": "Turn 7"
+      },
+      {
+        "number": 8,
+        "name": "Turn 8"
+      },
+      {
+        "number": 9,
+        "name": "Turn 9"
+      },
+      {
+        "number": 10,
+        "name": "Turn 10"
+      },
+      {
+        "number": 11,
+        "name": "Turn 11"
+      },
+      {
+        "number": 12,
+        "name": "Turn 12"
+      },
+      {
+        "number": 13,
+        "name": "Turn 13"
+      },
+      {
+        "number": 14,
+        "name": "Turn 14"
+      },
+      {
+        "number": 15,
+        "name": "Turn 15"
+      },
+      {
+        "number": 16,
+        "name": "Turn 16"
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/nurburgring.json"
+        ]
+      }
+    ]
+  },
+  "nurburgring_24h": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/nurburgring-24h.json"
+    ],
+    "numbering_note": "GP section numbers and named Nordschleife sections. Upstream named complexes are not individual numbered Nordschleife apexes.",
+    "turns": [
+      {
+        "number": 1
+      },
+      {
+        "number": 2,
+        "name": "Turn 2"
+      },
+      {
+        "number": 3
+      },
+      {
+        "number": 4
+      },
+      {
+        "number": 5
+      },
+      {
+        "number": 6
+      },
+      {
+        "number": 7
+      },
+      {
+        "number": 8
+      },
+      {
+        "number": 9
+      },
+      {
+        "number": 10
+      },
+      {
+        "number": 11
+      },
+      {
+        "number": 12
+      },
+      {
+        "number": 13,
+        "name": "Turn 13"
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null,
+        "name": "Unnamed kink"
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null,
+        "name": "Quiddelbacher Höhe"
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null,
+        "name": "Kottenborn"
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null,
+        "name": "Karussell"
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null,
+        "name": "Hedwigshöhe"
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null,
+        "name": "Brünnchen"
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null,
+        "name": "Kleines Karussell"
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      },
+      {
+        "number": null
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/nurburgring-24h.json"
+        ]
+      },
+      {
+        "name": "Döttinger Höhe",
+        "progress": 0.906,
+        "position_kind": "between_sourced_corner_intervals_estimate",
+        "source_urls": [
+          "https://mobile.nuerburgring.de/info/nuerburgring/race-tracks/nordschleife?locale=en",
+          "https://nuerburgring.de/news/gruenes-licht-fuer-den-saisonstart-bauarbeiten-auf-dem-nuerburgring-erfolgreich-abgeschlossen?locale=de"
+        ]
+      }
+    ]
+  },
+  "oulton_park": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/oulton-park.json",
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/iracing/oulton-international.json"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": 1,
+        "name": "Old Hall Corner"
+      },
+      {
+        "number": 2,
+        "name": "Denton's"
+      },
+      {
+        "number": 3,
+        "name": "Cascades"
+      },
+      {
+        "number": 4,
+        "name": "Island Bend"
+      },
+      {
+        "number": 5,
+        "name": "Shell Oils Corner"
+      },
+      {
+        "number": 6,
+        "name": "Turn 6"
+      },
+      {
+        "number": 7,
+        "name": "Britten's"
+      },
+      {
+        "number": 8,
+        "name": "Britten's"
+      },
+      {
+        "number": 9,
+        "name": "Britten's"
+      },
+      {
+        "number": 10,
+        "name": "Hislop's"
+      },
+      {
+        "number": 11,
+        "name": "Hislop's"
+      },
+      {
+        "number": 12,
+        "name": "Knickerbrook"
+      },
+      {
+        "number": 13,
+        "name": "Clay Hill"
+      },
+      {
+        "number": 14,
+        "name": "Water Tower"
+      },
+      {
+        "number": 15,
+        "name": "Druids Corner"
+      },
+      {
+        "number": 16,
+        "name": "Lodge Corner"
+      },
+      {
+        "number": 17,
+        "name": "Deer Leap"
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/oulton-park.json"
+        ]
+      },
+      {
+        "name": "The Avenue",
+        "progress": 0.113,
+        "position_kind": "equivalent_layout_name_at_approximate_position",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/iracing/oulton-international.json"
+        ]
+      },
+      {
+        "name": "Lakeside",
+        "progress": 0.258,
+        "position_kind": "equivalent_layout_name_at_approximate_position",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/iracing/oulton-international.json"
+        ]
+      },
+      {
+        "name": "Hilltop",
+        "progress": 0.5415,
+        "position_kind": "equivalent_layout_name_at_approximate_position",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/iracing/oulton-international.json"
+        ]
+      }
+    ]
+  },
+  "paul_ricard": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/paul-ricard.json"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": 1
+      },
+      {
+        "number": 2
+      },
+      {
+        "number": 3
+      },
+      {
+        "number": 4,
+        "name": "Turn 4"
+      },
+      {
+        "number": 5
+      },
+      {
+        "number": 6,
+        "name": "Turn 6"
+      },
+      {
+        "number": 7
+      },
+      {
+        "number": 8
+      },
+      {
+        "number": 9
+      },
+      {
+        "number": 10
+      },
+      {
+        "number": 11
+      },
+      {
+        "number": 12
+      },
+      {
+        "number": 13
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/paul-ricard.json"
+        ]
+      }
+    ]
+  },
+  "red_bull_ring": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/red-bull-ring.json"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": 1
+      },
+      {
+        "number": 2,
+        "name": "Turn 2"
+      },
+      {
+        "number": 3
+      },
+      {
+        "number": 4,
+        "name": "Turn 4"
+      },
+      {
+        "number": 5,
+        "name": "Turn 5"
+      },
+      {
+        "number": 6
+      },
+      {
+        "number": 7
+      },
+      {
+        "number": 8,
+        "name": "Turn 8"
+      },
+      {
+        "number": 9
+      },
+      {
+        "number": 10
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/red-bull-ring.json"
+        ]
+      }
+    ]
+  },
+  "silverstone": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/silverstone.json"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": 1
+      },
+      {
+        "number": 2
+      },
+      {
+        "number": 3
+      },
+      {
+        "number": 4
+      },
+      {
+        "number": 5
+      },
+      {
+        "number": 6
+      },
+      {
+        "number": 7
+      },
+      {
+        "number": 8
+      },
+      {
+        "number": 9
+      },
+      {
+        "number": 10,
+        "name": "Turn 10"
+      },
+      {
+        "number": 11
+      },
+      {
+        "number": 12
+      },
+      {
+        "number": 13
+      },
+      {
+        "number": 14
+      },
+      {
+        "number": 15
+      },
+      {
+        "number": 16
+      },
+      {
+        "number": 17
+      },
+      {
+        "number": 18
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/silverstone.json"
+        ]
+      }
+    ]
+  },
+  "snetterton": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/snetterton.json",
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/iracing/snetterton-300.json",
+      "https://www.snetterton.co.uk/news/btcc-snetterton-race-2-report"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": 1,
+        "name": "Riches"
+      },
+      {
+        "number": 2,
+        "name": "Wilson"
+      },
+      {
+        "number": 3,
+        "name": "Palmer"
+      },
+      {
+        "number": 4,
+        "name": "Agostini"
+      },
+      {
+        "number": 5,
+        "name": "Hamilton"
+      },
+      {
+        "number": 6,
+        "name": "Oggies"
+      },
+      {
+        "number": 7,
+        "name": "Williams"
+      },
+      {
+        "number": 8,
+        "name": "Brundle"
+      },
+      {
+        "number": 9,
+        "name": "Nelson"
+      },
+      {
+        "number": 10,
+        "name": "Bomb Hole"
+      },
+      {
+        "number": 11,
+        "name": "Coram"
+      },
+      {
+        "number": 12,
+        "name": "Murrays"
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/snetterton.json"
+        ]
+      },
+      {
+        "name": "Senna Straight",
+        "progress": 0.022,
+        "position_kind": "equivalent_layout_name_at_approximate_position",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/iracing/snetterton-300.json"
+        ]
+      },
+      {
+        "name": "Bentley Straight",
+        "progress": 0.6,
+        "position_kind": "equivalent_layout_name_at_approximate_position",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/iracing/snetterton-300.json"
+        ]
+      }
+    ]
+  },
+  "spa": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/spa.json",
+      "https://www.spa-francorchamps.be/assets/1dc2f8bb-48fc-4ab8-b013-404fc31a0ba3/spagp-map-2024.pdf"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": 1
+      },
+      {
+        "number": 2
+      },
+      {
+        "number": "3–4"
+      },
+      null,
+      {
+        "number": "5–6"
+      },
+      {
+        "number": 7
+      },
+      {
+        "number": 8
+      },
+      {
+        "number": "10–11",
+        "name": "Pouhon / Double Gauche"
+      },
+      {
+        "number": "12–13"
+      },
+      {
+        "number": 14
+      },
+      {
+        "number": 15,
+        "name": "Paul Frère / Stavelot"
+      },
+      {
+        "number": 16,
+        "name": "Blanchimont (approach)"
+      },
+      {
+        "number": 17
+      },
+      {
+        "number": "18–19"
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/spa.json"
+        ]
+      }
+    ],
+    "extra_corners": [
+      {
+        "number": 9,
+        "name": "Turn 9 / Speaker’s Corner",
+        "progress": 0.48,
+        "position_kind": "between_sourced_corner_intervals_estimate",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/spa.json",
+          "https://www.spa-francorchamps.be/assets/1dc2f8bb-48fc-4ab8-b013-404fc31a0ba3/spagp-map-2024.pdf"
+        ]
+      }
+    ]
+  },
+  "suzuka": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/suzuka.json"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": 1
+      },
+      {
+        "number": 2
+      },
+      {
+        "number": 3
+      },
+      {
+        "number": 4
+      },
+      {
+        "number": 5
+      },
+      {
+        "number": 6
+      },
+      {
+        "number": 7
+      },
+      {
+        "number": 8
+      },
+      {
+        "number": 9
+      },
+      {
+        "number": 10,
+        "name": "Turn 10"
+      },
+      {
+        "number": 11
+      },
+      {
+        "number": 12
+      },
+      {
+        "number": 13
+      },
+      {
+        "number": 14
+      },
+      {
+        "number": 15
+      },
+      {
+        "number": 16
+      },
+      {
+        "number": 17
+      },
+      {
+        "number": 18
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/suzuka.json"
+        ]
+      }
+    ]
+  },
+  "valencia": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/valencia.json"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": 1
+      },
+      {
+        "number": 2
+      },
+      {
+        "number": 3,
+        "name": "Turn 3"
+      },
+      {
+        "number": 4,
+        "name": "Turn 4"
+      },
+      {
+        "number": 5,
+        "name": "Turn 5"
+      },
+      {
+        "number": 6
+      },
+      {
+        "number": 7
+      },
+      {
+        "number": 8,
+        "name": "Turn 8"
+      },
+      {
+        "number": 9,
+        "name": "Turn 9"
+      },
+      {
+        "number": 10,
+        "name": "Turn 10"
+      },
+      {
+        "number": 11,
+        "name": "Turn 11"
+      },
+      {
+        "number": 12
+      },
+      {
+        "number": 13,
+        "name": "Turn 13"
+      },
+      {
+        "number": 14
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/valencia.json"
+        ]
+      }
+    ]
+  },
+  "watkins_glen": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/watkins-glen.json",
+      "https://www.theglen.com/facility-maps/"
+    ],
+    "numbering_note": "Uses the circuit’s 11 numbered turns; IL identifies the additional Inner Loop chicane without renumbering the Boot.",
+    "turns": [
+      {
+        "number": 1
+      },
+      {
+        "number": 2
+      },
+      {
+        "number": 3
+      },
+      {
+        "number": 4
+      },
+      {
+        "number": "IL"
+      },
+      {
+        "number": 5
+      },
+      {
+        "number": 6
+      },
+      {
+        "number": 7
+      },
+      {
+        "number": 8
+      },
+      {
+        "number": 9,
+        "name": "Turn 9"
+      },
+      {
+        "number": 10,
+        "name": "Turn 10"
+      },
+      {
+        "number": 11,
+        "name": "Turn 11"
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/watkins-glen.json"
+        ]
+      },
+      {
+        "name": "Back Straight",
+        "progress": 0.29,
+        "position_kind": "between_sourced_corner_intervals_estimate",
+        "source_urls": [
+          "https://www.theglen.com/wp-content/uploads/sites/1022/2026/01/30/Track-Rental-Guide-2026.pdf"
+        ]
+      }
+    ]
+  },
+  "zandvoort": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/zandvoort.json",
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/iracing/zandvoort-2023-gp.json"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": 1,
+        "name": "Tarzanbocht"
+      },
+      {
+        "number": 2,
+        "name": "Gerlachbocht"
+      },
+      {
+        "number": 3,
+        "name": "Hugenholzbocht"
+      },
+      {
+        "number": 4,
+        "name": "Turn 4"
+      },
+      {
+        "number": 5,
+        "name": "Rob Slotemakerbocht"
+      },
+      {
+        "number": 6,
+        "name": "Rob Slotemakerbocht"
+      },
+      {
+        "number": 7,
+        "name": "Scheivlak"
+      },
+      {
+        "number": 8,
+        "name": "Mastersbocht"
+      },
+      {
+        "number": 9,
+        "name": "Bocht 9"
+      },
+      {
+        "number": 10,
+        "name": "Bocht 10"
+      },
+      {
+        "number": 11,
+        "name": "Hans Ernst Bocht"
+      },
+      {
+        "number": 12,
+        "name": "Hans Ernst Bocht"
+      },
+      {
+        "number": 13,
+        "name": "Kumho"
+      },
+      {
+        "number": 14,
+        "name": "Arie Luyendijk Bocht"
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/zandvoort.json"
+        ]
+      }
+    ]
+  },
+  "zolder": {
+    "source_urls": [
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/zolder.json",
+      "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/iracing/zolder-gp.json"
+    ],
+    "numbering_note": "ACC source lap order; grouped names retain a range where a complex contains multiple turns.",
+    "turns": [
+      {
+        "number": 1,
+        "name": "Eerste"
+      },
+      {
+        "number": 2,
+        "name": "Sterrenwachtbocht"
+      },
+      {
+        "number": 3,
+        "name": "Kanaalbocht"
+      },
+      {
+        "number": 4,
+        "name": "Lucien Bianchi"
+      },
+      {
+        "number": 5,
+        "name": "Kleine Chicane"
+      },
+      {
+        "number": 6,
+        "name": "Butte"
+      },
+      {
+        "number": 7,
+        "name": "Villeneuve Chicane"
+      },
+      {
+        "number": 8,
+        "name": "Terlamenbocht"
+      },
+      {
+        "number": 9,
+        "name": "Bolderbergbocht"
+      },
+      {
+        "number": 10,
+        "name": "Jochen Rindtbocht"
+      },
+      {
+        "number": 11,
+        "name": "Jacky Ickxbocht"
+      }
+    ],
+    "straights": [
+      {
+        "name": "Start / finish straight",
+        "progress": 0.995,
+        "position_kind": "finish_line_straight_label",
+        "source_urls": [
+          "https://github.com/Lovely-Sim-Racing/lovely-track-data/blob/eb4af9572aeb247e6406bc154d73a3bd16d8c28a/data/assettocorsacompetizione/zolder.json"
+        ]
+      }
+    ]
+  }
+}

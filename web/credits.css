@@ -1,0 +1,116 @@
+/* Scoped to Credits so the recorded-lap analysis workspace keeps its design. */
+.rr-credits {
+  max-width: 1440px;
+  margin: 0 auto;
+  color: var(--text, #e8eeeb);
+  --rr-accent: #d8ee88;
+  --rr-muted: #a5b1aa;
+}
+.rr-credits *, .rr-credits *::before, .rr-credits *::after {box-sizing: border-box}
+.rr-credits a {text-underline-offset: 4px}
+.rr-credits p {font-size: 15px; line-height: 1.75; color: var(--rr-muted)}
+.rr-credits figure {margin: 0}
+.rr-credits h1, .rr-credits h2, .rr-credits h3, .rr-credits h4 {color: #f1f5f0}
+.rr-kicker {font: 600 10px/1.5 var(--mono, monospace); letter-spacing: .15em; color: var(--rr-accent); display: flex; align-items: center; gap: 9px}
+.rr-kicker-dot {width: 7px; height: 7px; background: var(--rr-accent); border-radius: 50%}
+.rr-hero {display: grid; grid-template-columns: .8fr 1.2fr; gap: 46px; align-items: center; padding: 22px 0 42px}
+.rr-intro h1 {font-size: clamp(40px, 4.5vw, 66px); line-height: 1.05; letter-spacing: -.055em; margin: 22px 0}
+.rr-intro h1 span {color: var(--rr-accent)}
+.rr-intro .rr-lead {font-size: 17px; color: #e8eeeb; margin-bottom: 8px; font-weight: 500}
+.rr-intro > p:not(.rr-lead) {max-width: 430px; margin-top: 0}
+.rr-intro-links {display: flex; flex-wrap: wrap; gap: 15px 25px; margin-top: 25px}
+.rr-link {font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; color: #e8eeeb}
+.rr-link:hover {color: var(--rr-accent)}
+.rr-link span {font-size: 19px; color: var(--rr-accent)}
+.rr-team-photo {border: 1px solid #303a31; border-radius: 14px; overflow: hidden; background: #161c18}
+.rr-team-photo > img {display: block; width: 100%; height: clamp(290px, 29vw, 410px); object-fit: cover; object-position: center 70%}
+.rr-team-photo figcaption {display: flex; flex-wrap: wrap; gap: 6px 12px; justify-content: space-between; padding: 16px 18px; font-size: 10px; color: var(--rr-muted)}
+.rr-team-photo figcaption > span:first-child {color: var(--rr-accent); font-family: var(--mono, monospace); letter-spacing: .06em}
+.rr-mission {display: grid; grid-template-columns: 88px 1fr; align-items: center; gap: 28px; border-top: 1px solid #2b3030; padding: 36px 0 40px}
+.rr-mission-mark img {display: block; width: 88px; height: 88px}
+.rr-mission h2 {font-size: 25px; line-height: 1.25; letter-spacing: -.03em; margin: 10px 0}
+.rr-mission p {margin: 0; max-width: 1000px}
+.rr-giving {scroll-margin-top: 28px; display: grid; grid-template-columns: .95fr 1.05fr; gap: 55px; padding: 46px; background: #192019; border: 1px solid #405035; border-radius: 16px; margin-bottom: 40px; position: relative; overflow: hidden}
+.rr-giving:focus {outline: none}
+.rr-giving:focus-visible {outline: 2px solid var(--rr-accent); outline-offset: 4px}
+.rr-giving::before {content: ''; position: absolute; left: 0; top: 34px; bottom: 34px; width: 3px; background: var(--rr-accent)}
+.rr-giving-story h2 {font-size: clamp(30px, 3.3vw, 46px); line-height: 1.12; letter-spacing: -.045em; margin: 23px 0}
+.rr-giving-story > p {max-width: 420px; margin: 16px 0}
+.rr-impact {display: flex; gap: 8px; flex-wrap: wrap; margin: 26px 0}
+.rr-impact span {font: 500 10px/1 var(--mono, monospace); letter-spacing: .1em; color: var(--rr-accent); border: 1px solid #41503a; border-radius: 4px; padding: 9px 12px}
+.rr-giving-story .rr-optional {font-size: 12px; line-height: 1.6; color: #a5b1aa; margin-top: 30px}
+.rr-giving-card {padding: 28px; background: #101612; border: 1px solid #344332; border-radius: 12px; box-shadow: 0 12px 32px #0002}
+.rr-giving-card-heading {display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 26px}
+.rr-giving-card-heading h3 {font-size: 23px; line-height: 1.2; letter-spacing: -.03em; margin: 0}
+.rr-giving-card-heading > span {font: 500 9px/1.4 var(--mono, monospace); letter-spacing: .1em; color: var(--rr-muted)}
+.rr-steps {padding: 0; margin: 0; list-style: none; display: grid; gap: 24px}
+.rr-steps > li {display: grid; grid-template-columns: 32px 1fr; gap: 13px}
+.rr-step-number {width: 32px; height: 32px; border: 1px solid #3a4931; border-radius: 50%; display: grid; place-content: center; color: var(--rr-accent); font: 500 10px/1 var(--mono, monospace)}
+.rr-steps h4 {font-size: 14px; line-height: 1.5; margin: 4px 0 6px; font-weight: 600}
+.rr-steps p {font-size: 13px; line-height: 1.7; margin: 0}
+.rr-steps p strong {font-weight: 600; color: #e6ede5}
+.rr-steps a {color: var(--rr-accent); text-decoration: underline}
+.rr-club-name {background: #1b261b; border: 1px solid #46583a; padding: 14px; margin-top: 18px; border-radius: 8px}
+.rr-club-label {font: 500 9px/1.5 var(--mono, monospace); letter-spacing: .1em; color: var(--rr-muted); display: block; margin-bottom: 9px}
+.rr-club-name > div {display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px}
+.rr-club-name strong {color: #e5f5c4; font-size: 15px; font-weight: 600; user-select: text}
+.rr-club-name button {border: 1px solid #536640; background: transparent; color: #e5f5c4; border-radius: 4px; padding: 6px 9px; cursor: pointer; font: 500 11px/1.3 var(--font, sans-serif)}
+.rr-club-name button:hover {background: #2e3e25; border-color: var(--rr-accent)}
+.rr-giving-card .rr-copy-status {font-size: 11px; line-height: 1.5; color: var(--rr-accent); margin: 8px 0 14px; min-height: 17px}
+.rr-donate {display: flex; align-items: center; justify-content: space-between; gap: 15px; background: var(--rr-accent); color: #16200f !important; border: 1px solid transparent; border-radius: 7px; padding: 15px 19px; font-size: 15px; font-weight: 700; text-decoration: none}
+.rr-donate span {font-size: 23px; line-height: 1}
+.rr-donate:hover {background: #e5f6b1}
+.rr-giving-card .rr-giving-note {font-size: 11px; line-height: 1.65; margin: 12px 0 0; color: #a5b1aa}
+.rr-giving-note strong {font-weight: 500; color: #c6d1c8}
+.rr-gallery {display: grid; grid-template-columns: 1fr 1fr; gap: 24px}
+.rr-gallery figure {overflow: hidden; border: 1px solid #2b3630; border-radius: 12px; background: #141a17}
+.rr-gallery img {width: 100%; height: clamp(220px, 24vw, 320px); object-fit: cover; display: block}
+.rr-gallery figure:last-child img {object-position: center 70%}
+.rr-gallery figcaption {padding: 18px 20px; display: flex; flex-direction: column; gap: 5px}
+.rr-gallery figcaption strong {font-size: 15px; font-weight: 500; color: #e8eeeb}
+.rr-gallery figcaption span {font-size: 12px; color: var(--rr-muted)}
+.rr-footer {display: flex; justify-content: space-between; flex-wrap: wrap; gap: 24px; border-top: 1px solid #2b3030; padding: 27px 0 8px; margin-top: 36px}
+.rr-footer > div {display: flex; flex-direction: column; gap: 5px}
+.rr-footer strong {font-size: 13px; font-weight: 600}
+.rr-footer span, .rr-footer a {color: var(--rr-muted); font-size: 11px}
+.rr-footer a:hover {color: var(--rr-accent); text-decoration: underline}
+.rr-footer-links {align-items: flex-end}
+@media (max-width: 1050px) {
+  .rr-hero {gap: 28px; grid-template-columns: 1fr 1.2fr}
+  .rr-giving {gap: 28px; padding: 30px}
+  .rr-giving-card {padding: 22px}
+}
+@media (max-width: 780px) {
+  .rr-hero {grid-template-columns: 1fr; padding-top: 12px; gap: 26px; padding-bottom: 30px}
+  .rr-intro h1 {font-size: 46px}
+  .rr-intro > p:not(.rr-lead) {max-width: 650px}
+  .rr-team-photo > img {height: clamp(240px, 49vw, 380px)}
+  .rr-mission {grid-template-columns: 56px 1fr; gap: 18px; align-items: start; padding: 30px 0}
+  .rr-mission-mark img {width: 56px; height: 56px}
+  .rr-mission h2 {font-size: 22px}
+  .rr-mission p {font-size: 14px}
+  .rr-giving {grid-template-columns: 1fr; padding: 27px 22px; gap: 25px}
+  .rr-giving-story h2 {font-size: 36px}
+  .rr-giving-story > p {max-width: none}
+  .rr-giving-story .rr-optional {margin: 18px 0 0}
+  .rr-gallery {gap: 15px}
+  .rr-gallery img {height: 230px}
+}
+@media (max-width: 520px) {
+  .rr-intro h1 {font-size: 42px}
+  .rr-kicker {font-size: 9px; letter-spacing: .1em}
+  .rr-team-photo figcaption {padding: 14px}
+  .rr-mission {grid-template-columns: 1fr}
+  .rr-mission-mark {display: none}
+  .rr-giving {padding: 25px 16px; margin-bottom: 25px}
+  .rr-giving-card {padding: 21px 16px}
+  .rr-giving-story h2 {font-size: 33px}
+  .rr-giving-card-heading > span {font-size: 8px}
+  .rr-steps > li {grid-template-columns: 26px 1fr; gap: 10px}
+  .rr-step-number {width: 26px; height: 26px; font-size: 9px; margin-top: 2px}
+  .rr-steps h4 {font-size: 13px}
+  .rr-club-name strong {font-size: 14px}
+  .rr-gallery {grid-template-columns: 1fr}
+  .rr-gallery img {height: 245px}
+  .rr-footer-links {align-items: flex-start}
+}

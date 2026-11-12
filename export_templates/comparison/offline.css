@@ -1,0 +1,33 @@
+/* Only the fixed-export shell and native frame elements differ from the app. */
+.shared-mode { margin-left: auto; color: var(--muted); font-size: 10px; letter-spacing: .1em; }
+.shared-lap-summary { font-family: var(--mono); margin: -8px 0 20px; color: var(--text); }
+.shared-intro { color: var(--muted); margin: -9px 0 26px; max-width: 880px; }
+.shared-footer { display: flex; gap: 24px; justify-content: space-between; padding: 28px 0; color: var(--muted); font-size: 11px; border-top: 1px solid var(--line); }
+.shared-footer details { max-width: 650px; }
+.shared-footer summary { cursor: pointer; }
+.shared-footer a { text-decoration: underline; }
+#sharedCredits p { margin: 8px 0; }
+#sharedFailure { border: 1px solid var(--brake); padding: 18px; margin: 20px 0; }
+.shared-comparison .run-thumbnail video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.shared-comparison .alignment-image video { display: block; width: 100%; max-height: 70vh; object-fit: contain; background: #050606; }
+.shared-comparison .run-range-row input:read-only { color: var(--muted); }
+.shared-comparison .run-range-row select:disabled { opacity: .8; }
+.shared-comparison #openReferenceImport,
+.shared-comparison #refreshComparisons,
+.shared-comparison .run-delete,
+.shared-comparison [id$="EditContext"],
+.shared-comparison [id$="BoundaryTools"],
+.shared-comparison [id$="SaveLapRange"],
+.shared-comparison #alignmentSetStart,
+.shared-comparison #alignmentSetEnd,
+.shared-comparison #alignmentSetLandmark,
+.shared-comparison #addComparisonLandmark,
+.shared-comparison .remove-landmark,
+.shared-comparison .find-landmark-match,
+.shared-comparison .landmark-matches { display: none !important; }
+.shared-comparison .registration-confirmations input:disabled { opacity: 1; }
+@media (max-width: 760px) {
+  .shared-mode { display: none; }
+  .shared-footer { flex-direction: column; gap: 12px; }
+  .shared-intro { margin-top: 0; }
+}

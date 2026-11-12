@@ -1,0 +1,27 @@
+{
+  "video_id": "RMMk8BH0e3E",
+  "url": "https://www.youtube.com/watch?v=RMMk8BH0e3E",
+  "relative_path": "data/references/0e48fbe98bba4573b75b3e7b65f79513/media.mp4",
+  "car": "McLaren 720S GT3 (not Evo)",
+  "track": "Silverstone",
+  "training_timestamps_excluded": [90],
+  "label_method": "Manual visual inspection of native decoded HUD and full-frame contact sheets; not extractor-generated labels. Pedal intervals describe visible bar extent, not raw game telemetry. Legacy overlay has no steering axis.",
+  "evidence": ["artifacts/legacy-hud-sheet.png", "artifacts/legacy-fullframe-overview.png", "artifacts/rmm-frame-166.png"],
+  "hud_layout": "legacy",
+  "hud_speed_unit": "mph",
+  "frames": [
+    {"time": 84, "speed_display": 143, "gear": "5", "throttle_range": [97, 100], "brake_range": [0, 2]},
+    {"time": 100, "speed_display": 130, "gear": "5", "throttle_range": [97, 100], "brake_range": [0, 2]},
+    {"time": 110, "speed_display": 118, "gear": "4", "throttle_range": [97, 100], "brake_range": [0, 2]},
+    {"time": 120, "speed_display": 159, "gear": "5", "throttle_range": [85, 95], "brake_range": [15, 27]},
+    {"time": 130, "speed_display": 132, "gear": "4", "throttle_range": [97, 100], "brake_range": [0, 2]},
+    {"time": 140, "speed_display": 99, "gear": "3", "throttle_range": [68, 80], "brake_range": [0, 2]},
+    {"time": 150, "speed_display": 130, "gear": "5", "throttle_range": [15, 25], "brake_range": [0, 2]},
+    {"time": 160, "speed_display": 52, "gear": "1", "throttle_range": [97, 100], "brake_range": [0, 2]},
+    {"time": 166, "speed_display": 62, "gear": "1", "throttle_range": [97, 100], "brake_range": [0, 2], "lap_time": "01:23.253"},
+    {"time": 170, "speed_display": 105, "gear": "3", "throttle_range": [97, 100], "brake_range": [0, 2]},
+    {"time": 180, "speed_display": 144, "gear": "5", "throttle_range": [0, 2], "brake_range": [80, 90]},
+    {"time": 190, "speed_display": 61, "gear": "2", "throttle_range": [75, 87], "brake_range": [0, 2]}
+  ],
+  "no_hud_frames": [10, 50, 220, 400, 500, 740]
+}

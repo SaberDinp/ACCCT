@@ -1,0 +1,78 @@
+ACCC Telemetry {version}
+ACC Console Telemetry by Rice Racing
+
+DOWNLOAD AN APP, NOT THE SOURCE CODE ZIP
+https://github.com/SaberDinp/ACCCT/releases/latest
+Python, Node.js, video decoding, and the analyzer are included.
+
+MAC
+Apple Silicon (M-series), macOS 14+:
+  ACCC-Telemetry-{version}-mac-arm64.dmg
+Intel, macOS 13+:
+  ACCC-Telemetry-{version}-mac-x64.dmg
+Open the DMG, drag ACCC Telemetry to Applications, then open the app.
+Apple menu > About This Mac tells you which chip you have.
+Mac ZIP alternatives contain the same app.
+
+WINDOWS
+Windows 10/11, 64-bit Intel or AMD:
+  ACCC-Telemetry-{version}-win-x64.exe
+Double-click to install for your user. The app opens when setup finishes.
+Next time, use the Start menu or Desktop shortcut.
+The portable ZIP must be extracted completely before opening ACCC Telemetry.exe.
+
+LINUX
+Ubuntu / Debian / Linux Mint, Intel or AMD 64-bit:
+  ACCC-Telemetry-{version}-linux-amd64.deb
+Fedora / openSUSE, Intel or AMD 64-bit:
+  ACCC-Telemetry-{version}-linux-x86_64.rpm
+Other compatible Linux desktops, Intel or AMD 64-bit:
+  ACCC-Telemetry-{version}-linux-x86_64.AppImage
+ARM64 / AArch64:
+  ACCC-Telemetry-{version}-linux-arm64.deb
+  ACCC-Telemetry-{version}-linux-aarch64.rpm
+  ACCC-Telemetry-{version}-linux-arm64.AppImage
+Open a DEB/RPM in your software installer and choose Install, then open
+ACCC Telemetry in the applications menu. The package manager installs dependencies.
+For AppImage, allow executing the file in Properties, then open it.
+DEB/RPM is recommended if AppImage cannot start on your distribution.
+TAR.GZ alternatives are available for both CPU architectures.
+
+FIRST LAUNCH
+These builds are unsigned; Mac builds are not Apple-notarized.
+On macOS, after trying to launch, System Settings > Privacy & Security may
+offer Open Anyway. On Windows, More info > Run anyway may be offered.
+Only approve a download you trust from this project's repository.
+
+FIRST COMPARISON
+Choose Import recording > Your run and browse to an ACC gameplay recording.
+Add a Reference lap from a local video or a supported public recorded-video link.
+Select each lap/range in Analysis and inspect your inputs alongside the reference.
+This app analyzes recordings. It does not provide live telemetry or monitoring.
+Recordings and Calibration are utility buttons inside Analysis.
+The Credits tab introduces Rice Racing and explains optional donations.
+
+YOUR DATA
+Your library is stored separately from the installed app. Updating the app does
+not delete recordings. File > Show Library Folder reveals its location.
+Back up the whole library while the app is closed. File > Open Existing Library
+can select an older library. Close older app versions before sharing one library.
+
+COMPATIBILITY
+Linux needs a graphical desktop, GTK 3, glibc 2.28+, and GLIBCXX 3.4.22+.
+32-bit computers, PowerPC Macs, older macOS versions, native Windows ARM,
+and Alpine/musl Linux are not supported. See release notes for the tested systems.
+Video extraction needs a visible, readable supported ACC HUD.
+
+RICE RACING
+We are Rice University's student Formula SAE team, designing and building a
+formula race car to compete in FSAE. https://www.riceracing.org/
+To support the team, go to https://giving.rice.edu/ and click Make a Gift.
+Under "Please select an area of Rice to support", choose Other and enter:
+Rice Formula SAE Club
+Donations are optional and are completed through Rice University's giving site.
+
+HELP
+https://github.com/SaberDinp/ACCCT/blob/main/desktop/README.md
+https://github.com/SaberDinp/ACCCT/issues
+SHA256SUMS.txt contains checksums for all 14 app installers and archives.

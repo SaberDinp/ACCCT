@@ -1,0 +1,86 @@
+.track-review-section { margin: 18px 0 28px; min-width: 0; }
+.track-video-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.track-video-pair.single-recording { grid-template-columns: minmax(0, 1fr); max-width: 1080px; margin-inline: auto; }
+.track-video { margin: 0; min-width: 0; border: 1px solid var(--line, #29382e); background: #101914; border-radius: 8px; overflow: hidden; }
+.track-video figcaption { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 14px; font-size: 10px; color: #6dccdf; }
+.track-video.reference figcaption { color: #e0bf79; }
+.track-source-label { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 9px; letter-spacing: .06em; }
+.track-source-label strong { color: #dce6df; font-size: 12px; font-weight: 500; letter-spacing: 0; }
+.track-video figcaption > span:last-child { font-family: var(--mono, monospace); flex: none; }
+.track-video-button { display: grid; place-items: center; position: relative; width: 100%; padding: 0; aspect-ratio: 16 / 9; overflow: hidden; border: 0; background: #050906; border-radius: 0; color: #809186; cursor: zoom-in; }
+.track-video-button img, .track-video-button video { width: 100%; height: 100%; object-fit: contain; grid-area: 1 / 1; }
+.track-video-button video { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.track-video-button > span { grid-area: 1 / 1; font-size: 12px; }
+.track-frame-values { font: 10px var(--mono, monospace); line-height: 1.6; padding: 10px 14px; color: #b8c9be; overflow-wrap: anywhere; }
+.track-distance-control { display: flex; align-items: center; gap: 14px; padding: 15px 0 20px; font-size: 10px; color: #91a798; }
+.track-distance-control input { flex: 1; min-width: 60px; accent-color: #d5e991; }
+#trackCursorDistance { min-width: 75px; font: 12px var(--mono, monospace); color: #d9e8de; }
+.track-review-body { display: grid; grid-template-columns: minmax(290px, .38fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+.track-map-column { min-width: 0; padding: 18px; background: #101813; border: 1px solid var(--line, #29382e); border-radius: 8px; }
+.track-review-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+.track-review-heading .eyebrow { font-size: 8px; letter-spacing: .12em; color: #819689; }
+.track-review-heading h2 { font-size: 14px; margin: 5px 0 0; }
+.track-limit { font-size: 9px; color: #afbb96; text-align: right; }
+#trackSelect { width: 100%; min-width: 0; min-height: 34px; font-size: 11px; }
+.track-map-stage { position: relative; margin: 12px -9px 0; isolation: isolate; }
+.track-pace-legend { display: flex; flex-wrap: wrap; gap: 7px 14px; margin-top: 14px; font-size: 10px; line-height: 1.5; color: #b7c4bd; }
+.track-pace-legend span::before { content: ''; display: inline-block; width: 13px; height: 4px; margin-right: 6px; vertical-align: 2px; background: currentColor; }
+.track-pace-current { color: #6dccdf; }
+.track-pace-reference { color: #e0bf79; }
+.track-pace-unavailable { color: #85958b; }
+.track-pace-unavailable::before { background: #4d5e54 !important; }
+.track-pace-status { color: #97ada0; font-size: 9px; line-height: 1.5; margin: 7px 0 0; }
+.track-pace-tip { position: absolute; z-index: 6; pointer-events: none; width: max-content; max-width: min(280px, calc(100% - 10px)); padding: 9px 11px; border: 1px solid #4d5e54; border-radius: 5px; background: #06120af5; color: #ecf4ee; font: 11px/1.6 var(--font, sans-serif); white-space: pre-line; box-shadow: 0 4px 16px #0007; }
+#trackMap { width: 100%; height: 370px; display: block; cursor: crosshair; touch-action: manipulation; }
+.track-annotations { position: absolute; inset: 0; pointer-events: none; }
+.track-annotation, .track-car-marker { position: absolute; transform: translate(-50%, -50%); pointer-events: auto; padding: 0; display: grid; place-items: center; background: #15271d; color: #e7efe9; border: 1px solid #506957; font: 10px var(--mono, monospace); z-index: 2; cursor: pointer; }
+.track-annotation { min-width: 21px; height: 21px; border-radius: 50%; }
+.track-annotation:hover, .track-annotation:focus-visible, .track-car-marker:hover, .track-car-marker:focus-visible { z-index: 5; outline: 2px solid #d5e991; outline-offset: 2px; }
+.track-straight { border: 0; border-radius: 0; background: #101813df; width: max-content; max-width: 108px; height: auto; min-height: 20px; padding: 3px 5px; font: 9px var(--font, sans-serif); color: #96b9a3; line-height: 1.25; text-align: center; }
+.track-timing { border: 0; border-radius: 3px; width: 30px; background: #222435; color: #d4bef3; font-size: 9px; }
+.track-timing[data-kind=start_finish] { color: #f2f5ec; background: #263229; }
+.track-annotation-tip { position: absolute; bottom: calc(100% + 9px); left: 50%; transform: translateX(-50%); width: max-content; max-width: 225px; padding: 8px 10px; border: 1px solid #4c6555; border-radius: 5px; background: #06120af5; color: #ecf4ee; font: 11px/1.5 var(--font, sans-serif); text-align: left; white-space: pre-line; pointer-events: none; opacity: 0; visibility: hidden; box-shadow: 0 4px 16px #0007; }
+.track-annotation:hover .track-annotation-tip, .track-annotation:focus-visible .track-annotation-tip, .track-car-marker:hover .track-annotation-tip, .track-car-marker:focus-visible .track-annotation-tip { opacity: 1; visibility: visible; }
+.track-car-marker { width: 32px; height: 24px; border: 0; border-radius: 5px; background: transparent; color: #6dccdf; z-index: 4; }
+.track-car-marker.reference { color: #e0bf79; }
+.track-car-shape { width: 32px; height: 20px; overflow: visible; filter: drop-shadow(0 1px 2px #000); }
+.track-car-body { fill: currentColor; stroke: #edf5ef; stroke-width: 1; }
+.track-car-tyres { fill: #040905; stroke: #aebcb3; stroke-width: .5; }
+.track-car-window { fill: #10241d; }
+.track-car-tail { fill: none; stroke: #e5f0e8; stroke-width: 2; }
+.track-progress-mode { display: grid; gap: 7px; margin: 12px 0; font-size: 10px; color: #aabcaf; }
+.track-progress-mode select { width: 100%; min-width: 0; font-size: 11px; }
+#trackReviewPlay { flex: none; width: 32px; height: 32px; color: #d5e991; }
+.track-map-caption { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px; font-size: 9px; padding-top: 5px; color: #99b09f; }
+.track-map-legend { display: flex; flex-wrap: wrap; gap: 9px 14px; margin: 14px 0; color: #9cb09f; font-size: 8px; }
+.track-map-legend span::before { content: ''; display: inline-block; width: 9px; height: 9px; margin-right: 5px; vertical-align: -1px; }
+.track-legend-finish::before { background: conic-gradient(#eef1e7 25%, #233228 0 50%, #eef1e7 0 75%, #233228 0); }
+.track-legend-sector::before { border-left: 3px solid #c5abed; }
+.track-legend-origin::before { background: #d5e991; transform: scale(.7); }
+.track-review-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; border-top: 1px solid #2a392e; padding-top: 13px; }
+.track-review-toolbar label { display: flex; align-items: center; gap: 7px; font-size: 10px; line-height: 1.5; color: #aabcaf; }
+.track-map-modes { display: flex; gap: 5px; }
+.track-map-modes .active { color: #d5e991; background: #283826; }
+.track-review-status { font-size: 10px; color: #9ab2a1; padding: 13px 0 0; line-height: 1.6; }
+.track-measurement-note { font-size: 9px; line-height: 1.6; color: #a59f83; margin: 10px 0; }
+.track-map-details { color: #7e9485; font-size: 9px; line-height: 1.6; margin-top: 12px; }
+.track-map-details summary { cursor: pointer; }
+.track-credit { margin-top: 8px; }
+.track-credit a { color: #9cbbad; text-decoration: underline; }
+.track-telemetry-column { min-width: 0; }
+@media (min-width: 1700px) { #trackMap { height: 430px; } .track-review-body { grid-template-columns: minmax(350px, .35fr) minmax(0, 1fr); } }
+@media (max-width: 1100px) { .track-review-body { grid-template-columns: minmax(245px, .43fr) minmax(0, 1fr); gap: 16px; } .track-map-column { padding: 13px; } #trackMap { height: 315px; } .track-video-pair { gap: 12px; } }
+@media (max-width: 850px) { .track-review-body { grid-template-columns: 1fr; } .track-map-column { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 22px; } .track-map-stage { grid-column: 1; grid-row: 2 / 10; } .track-review-heading { grid-column: 1 / -1; } #trackSelect, .track-map-caption, .track-map-legend, .track-progress-mode, .track-review-toolbar, .track-review-status, .track-measurement-note, .track-map-details { grid-column: 2; } #trackMap { height: 300px; } }
+@media (max-width: 600px) { .track-video-pair { grid-template-columns: 1fr; } .track-map-column { display: block; } #trackMap { height: 330px; } .track-distance-control { gap: 8px; font-size: 9px; } #trackCursorDistance { min-width: 60px; } .track-source-label { gap: 6px; } .track-frame-values { font-size: 9px; } .track-annotation-tip { max-width: 175px; } }
+.track-complex { width: max-content; max-width: 86px; height: auto; min-height: 21px; padding: 3px 6px; border-radius: 4px; font: 8px/1.25 var(--font, sans-serif); text-align: center; }
+#trackExpand { flex: none; width: 28px; height: 28px; }
+.track-map-stage:fullscreen { width: 100vw; height: 100vh; margin: 0; background: #101813; }
+.track-map-stage:fullscreen #trackMap { width: 100%; height: 100%; }
+.track-map-stage:fullscreen .track-straight { max-width: 180px; font-size: 12px; }
+.track-map-stage:fullscreen .track-complex { max-width: 120px; font-size: 11px; }
+.track-map-stage:fullscreen .track-pace-legend { position: absolute; left: 20px; top: 10px; max-width: calc(100% - 160px); padding: 10px 14px; border-radius: 5px; background: #101813eb; font-size: 12px; }
+.track-map-exit { display: none; }
+.track-map-stage:fullscreen .track-map-exit { display: block; position: absolute; right: 20px; top: 20px; z-index: 7; background: #233329; }
+.track-map-stage:not(:fullscreen) .track-complex { width: 14px; min-width: 14px; height: 14px; min-height: 14px; border-radius: 50%; padding: 0; font-size: 0; background: #547462; }
+.track-map-stage:not(:fullscreen) .track-complex .track-annotation-tip { font-size: 11px; }
+@media (min-width: 601px) and (max-width: 850px) { .track-pace-legend, .track-pace-status { grid-column: 2; } }

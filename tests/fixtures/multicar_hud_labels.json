@@ -1,0 +1,53 @@
+{
+  "label_method": "Manual visual reading before extractor evaluation. Full source frames plus enlarged HUD sheets were inspected. Pedal and steering intervals allow source-pixel uncertainty; they are not physical steering angles or raw input telemetry. No frames from these sources built templates.",
+  "videos": [
+    {
+      "video_id": "4mEk684yQO0", "car_id": "porsche-992-gt3-r", "track_id": "spa",
+      "path": "data/validation/heldout/4mEk684yQO0/media.mp4",
+      "url": "https://www.youtube.com/watch?v=4mEk684yQO0",
+      "evidence_prefix": "artifacts/porsche-spa", "hud_layout": "current", "hud_speed_unit": "km/h",
+      "frames": [
+        {"time": 10, "speed": 111, "gear": "1", "throttle_range": [0, 2], "brake_range": [79, 88], "steering_range": [5, 15]},
+        {"time": 30, "speed": 247, "gear": "6", "throttle_range": [97, 100], "brake_range": [0, 2], "steering_range": [-5, 4]},
+        {"time": 60, "speed": 97, "gear": "2", "throttle_range": [0, 2], "brake_range": [13, 23], "steering_range": [12, 21]},
+        {"time": 90, "speed": 124, "gear": "2", "throttle_range": [29, 39], "brake_range": [0, 2], "steering_range": [10, 20]}
+      ]
+    },
+    {
+      "video_id": "fy0nzZFb4ig", "car_id": "ferrari-296-gt3", "track_id": "monza",
+      "path": "data/validation/heldout/fy0nzZFb4ig/media.mp4",
+      "url": "https://www.youtube.com/watch?v=fy0nzZFb4ig",
+      "evidence_prefix": "artifacts/ferrari-monza", "hud_layout": "current", "hud_speed_unit": "km/h",
+      "frames": [
+        {"time": 10, "speed": 274, "gear": "6", "throttle_range": [97, 100], "brake_range": [0, 2], "steering_range": [-3, 3]},
+        {"time": 30, "speed": 224, "gear": "5", "throttle_range": [97, 100], "brake_range": [0, 2], "steering_range": [1, 10]},
+        {"time": 60, "speed": 156, "gear": "3", "throttle_range": [97, 100], "brake_range": [0, 2], "steering_range": [-3, 4]},
+        {"time": 80, "speed": 174, "gear": "3", "throttle_range": [97, 100], "brake_range": [0, 2], "steering_range": [-12, -4]}
+      ]
+    },
+    {
+      "video_id": "qcvuFtEmom8", "car_id": "bmw-m4-gt3", "track_id": "mount_panorama",
+      "path": "data/validation/heldout/qcvuFtEmom8/media.mp4",
+      "url": "https://www.youtube.com/watch?v=qcvuFtEmom8",
+      "evidence_prefix": "artifacts/bmw-bathurst", "hud_layout": "current", "hud_speed_unit": "km/h",
+      "frames": [
+        {"time": 10, "speed": 109, "gear": "2", "throttle_range": [77, 87], "brake_range": [0, 2], "steering_range": [-34, -23]},
+        {"time": 30, "speed": 143, "gear": "3", "throttle_range": [0, 2], "brake_range": [0, 2], "steering_range": [22, 33]},
+        {"time": 60, "speed": 226, "gear": "5", "throttle_range": [62, 72], "brake_range": [0, 2], "steering_range": [-28, -18]},
+        {"time": 80, "speed": 91, "gear": "2", "throttle_range": [0, 2], "brake_range": [0, 2], "steering_range": [-53, -43]}
+      ]
+    },
+    {
+      "video_id": "wkg1dUiqme4", "car_id": "mercedes-amg-gt3-evo", "track_id": "brands_hatch",
+      "path": "data/validation/heldout/wkg1dUiqme4/media.mp4",
+      "url": "https://www.youtube.com/watch?v=wkg1dUiqme4",
+      "evidence_prefix": "artifacts/amg-brands", "hud_layout": "current", "hud_speed_unit": "km/h",
+      "frames": [
+        {"time": 10, "speed": 192, "gear": "4", "throttle_range": [97, 100], "brake_range": [0, 2], "steering_range": [-3, 4]},
+        {"time": 30, "speed": 120, "gear": "2", "throttle_range": [0, 2], "brake_range": [18, 28], "steering_range": [-25, -15]},
+        {"time": 60, "speed": 165, "gear": "3", "throttle_range": [0, 2], "brake_range": [4, 13], "steering_range": [6, 16]},
+        {"time": 80, "speed": 189, "gear": "4", "throttle_range": [97, 100], "brake_range": [0, 2], "steering_range": [2, 12]}
+      ]
+    }
+  ]
+}

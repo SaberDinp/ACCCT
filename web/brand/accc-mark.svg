@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title id="title">ACCC Telemetry: A inside three nested Cs</title>
+  <rect x="4" y="4" width="248" height="248" rx="52" fill="#101212"/>
+  <g fill="none" stroke="#d8ee88" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M 204.604 192.279 A 100 100 0 1 1 204.604 63.721" stroke-width="14"/>
+  <path d="M 185.453 176.209 A 75 75 0 1 1 185.453 79.791" stroke-width="12"/>
+  <path d="M 167.068 160.782 A 51 51 0 1 1 167.068 95.218" stroke-width="10"/>
+  <path d="M 109 147 L 128 107 L 147 147 M 116 133 H 140" stroke-width="8"/>
+  </g>
+</svg>

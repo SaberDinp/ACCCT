@@ -1,0 +1,188 @@
+name: ACCC Telemetry desktop packages
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'desktop/**'
+      - 'telemetry/**'
+      - 'web/**'
+      - 'assets/**'
+      - 'export_templates/**'
+      - 'main.py'
+      - 'requirements*.txt'
+      - 'tests/test_desktop_runtime.py'
+      - 'tests/test_windows_bundle.py'
+      - 'tests/test_linux_bundle.py'
+      - '.github/workflows/desktop.yml'
+      - '.github/workflows/release.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 50
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: mac-arm64
+            runner: macos-15
+            architecture: arm64
+            platform: mac
+            python: .venv-ci/bin/python
+            app_directory: mac-arm64
+          - target: mac-x64
+            runner: macos-15-intel
+            architecture: x64
+            platform: mac
+            python: .venv-ci/bin/python
+            app_directory: mac
+          - target: win-x64
+            runner: windows-latest
+            architecture: x64
+            platform: win
+            python: .venv-ci/Scripts/python.exe
+            app_directory: win-unpacked
+          - target: linux-x64
+            runner: ubuntu-24.04
+            architecture: x64
+            platform: linux
+            python: .venv-ci/bin/python
+            app_directory: linux-unpacked
+          - target: linux-arm64
+            runner: ubuntu-24.04-arm
+            architecture: arm64
+            platform: linux
+            python: .venv-ci/bin/python
+            app_directory: linux-arm64-unpacked
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      PYTHONUNBUFFERED: '1'
+      ACCC_SMOKE_OUTPUT: artifacts/desktop-package
+      ACCC_SMOKE_VIDEO: artifacts/desktop-package/sample.mp4
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14.10'
+          architecture: ${{ matrix.architecture }}
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-desktop.txt
+            requirements-dev.txt
+            desktop/requirements-windows.lock.json
+            desktop/requirements-linux-*.lock.json
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24.15.0'
+          architecture: ${{ matrix.architecture }}
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - name: Create isolated build environment
+        run: python -m venv .venv-ci
+      - name: Install Mac dependencies for the release OS floor
+        if: matrix.platform == 'mac'
+        run: ${{ matrix.python }} desktop/prepare_mac_dependencies.py
+      - name: Install Windows or Linux build dependencies
+        if: matrix.platform != 'mac'
+        run: ${{ matrix.python }} -m pip install -r requirements-desktop.txt -r requirements-dev.txt
+      - name: Install Linux packaging and desktop test dependencies
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ruby ruby-dev build-essential rpm xvfb xauth dbus-x11 libgtk-3-0t64 libnss3 libasound2t64 libcups2t64 libgbm1 libdrm2 libxss1 libxtst6 libnotify4 libatspi2.0-0t64 libx11-xcb1 libxkbcommon0 libsecret-1-0
+          sudo gem install fpm --version 1.18.0 --no-document
+      - run: npm ci --prefix desktop
+      - name: Test lifecycle, migration, and packaging contracts
+        run: ${{ matrix.python }} -m pytest -q tests/test_desktop_runtime.py tests/test_windows_bundle.py tests/test_linux_bundle.py
+      - run: npm test --prefix desktop
+      - name: Create redistributable video fixture for packaged UI checks
+        run: ${{ matrix.python }} desktop/create_smoke_video.py artifacts/desktop-package/sample.mp4
+
+      - name: Build Mac backend
+        if: matrix.platform == 'mac'
+        run: ${{ matrix.python }} desktop/build_mac_backend.py
+      - name: Check Mac backend
+        if: matrix.platform == 'mac'
+        run: ${{ matrix.python }} desktop/check_packaged_backend.py desktop/build/backend-macos-${{ matrix.architecture }}/accc-backend/accc-backend
+      - name: Build Windows backend
+        if: matrix.platform == 'win'
+        run: ${{ matrix.python }} desktop/build_windows_backend.py
+      - name: Check Windows backend
+        if: matrix.platform == 'win'
+        run: ${{ matrix.python }} desktop/check_packaged_backend.py desktop/build/backend-windows/python.exe desktop/build/backend-windows/app/desktop/backend.py
+      - name: Build Linux backend
+        if: matrix.platform == 'linux'
+        run: ${{ matrix.python }} desktop/build_linux_backend.py --arch ${{ matrix.architecture }}
+      - name: Check Linux backend natively
+        if: matrix.platform == 'linux'
+        run: ${{ matrix.python }} desktop/check_packaged_backend.py desktop/build/backend-linux-${{ matrix.architecture }}/python/bin/python3 desktop/build/backend-linux-${{ matrix.architecture }}/app/desktop/backend.py
+
+      - name: Package Mac application
+        if: matrix.platform == 'mac'
+        run: npm run pack:mac:${{ matrix.architecture }} --prefix desktop
+      - name: Package Windows application
+        if: matrix.platform == 'win'
+        run: npm run pack:win --prefix desktop
+      - name: Package Linux application
+        if: matrix.platform == 'linux'
+        env:
+          USE_SYSTEM_FPM: 'true'
+        run: npm run pack:linux:${{ matrix.architecture }} --prefix desktop
+      - name: Check backend inside Mac application
+        if: matrix.platform == 'mac'
+        run: ${{ matrix.python }} desktop/check_packaged_backend.py "dist/${{ matrix.app_directory }}/ACCC Telemetry.app/Contents/Resources/backend/accc-backend"
+      - name: Check backend inside Windows application
+        if: matrix.platform == 'win'
+        run: ${{ matrix.python }} desktop/check_packaged_backend.py "dist/win-unpacked/resources/backend/python.exe" "dist/win-unpacked/resources/backend/app/desktop/backend.py"
+      - name: Check backend inside Linux application
+        if: matrix.platform == 'linux'
+        run: ${{ matrix.python }} desktop/check_packaged_backend.py "dist/${{ matrix.app_directory }}/resources/backend/python/bin/python3" "dist/${{ matrix.app_directory }}/resources/backend/app/desktop/backend.py"
+      - name: Check packaged Mac UI
+        if: matrix.platform == 'mac'
+        run: node desktop/check_desktop.cjs "dist/${{ matrix.app_directory }}/ACCC Telemetry.app/Contents/MacOS/ACCC Telemetry"
+      - name: Check packaged Windows UI
+        if: matrix.platform == 'win'
+        run: node desktop/check_desktop.cjs "dist/win-unpacked/ACCC Telemetry.exe"
+      - name: Enable the packaged Chromium sandbox on this disposable Linux runner
+        if: matrix.platform == 'linux'
+        run: |
+          sudo chown root:root "dist/${{ matrix.app_directory }}/chrome-sandbox"
+          sudo chmod 4755 "dist/${{ matrix.app_directory }}/chrome-sandbox"
+      - name: Check packaged Linux UI with sandbox enabled
+        if: matrix.platform == 'linux'
+        run: dbus-run-session -- xvfb-run --auto-servernum node desktop/check_desktop.cjs "dist/${{ matrix.app_directory }}/accc-telemetry"
+      - name: Upload installers
+        uses: actions/upload-artifact@v7
+        with:
+          name: ACCC-Telemetry-installers-${{ matrix.target }}
+          path: |
+            dist/*.dmg
+            dist/*.exe
+            dist/*.zip
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.rpm
+            dist/*.tar.gz
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+          overwrite: true
+      - name: Upload desktop check reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ACCC-Telemetry-checks-${{ matrix.target }}
+          path: artifacts/desktop-package/
+          if-no-files-found: ignore
+          retention-days: 14
+          overwrite: true

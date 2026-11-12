@@ -41,7 +41,7 @@ async function main() {
         });
         assert.equal(desktop.packaged, true);
         assert.equal(await page.title(), 'ACCC Telemetry');
-        assert.equal(desktop.userData, env.ACCC_DESKTOP_USER_DATA);
+        assert.equal(fs.realpathSync(desktop.userData), fs.realpathSync(env.ACCC_DESKTOP_USER_DATA));
         assert.equal(desktop.nodeIntegration, false);
         assert.equal(desktop.contextIsolation, true);
         assert.equal(desktop.sandbox, true);

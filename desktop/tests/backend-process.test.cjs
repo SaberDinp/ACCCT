@@ -112,7 +112,7 @@ test('readiness belongs to the spawned process and shutdown is graceful and idem
   const ready = await readiness;
   assert.equal(ready.url, 'http://127.0.0.1:12345');
   assert.equal(ready.pid, backend.child.pid);
-  assert.equal(ready.cwd, await fs.realpath(directory));
+  assert.equal(await fs.realpath(ready.cwd), await fs.realpath(directory));
   assert.equal(ready.argv[ready.argv.indexOf('--data-root') + 1], directory);
   assert.equal(ready.argv[ready.argv.indexOf('--port') + 1], '27182');
   assert.equal(ready.argv[ready.argv.indexOf('--host') + 1], '127.0.0.1');

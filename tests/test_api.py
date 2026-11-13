@@ -30,6 +30,19 @@ def frame_bytes():
     return cv2.imencode(".jpg", np.zeros((180, 320, 3), dtype=np.uint8))[1].tobytes()
 
 
+@pytest.mark.parametrize("resource", [
+    "/", "/static/app.js", "/static/styles.css", "/static/credits.js", "/static/brand/accc-mark.svg",
+])
+def test_app_interface_cannot_remain_cached_across_updates(client, resource):
+    response = client.get(resource)
+    assert response.status_code == 200
+    assert response.headers["cache-control"] == "no-store"
+    if resource.startswith("/static/"):
+        unchanged = client.get(resource, headers={"If-None-Match": response.headers["etag"]})
+        assert unchanged.status_code == 304
+        assert unchanged.headers["cache-control"] == "no-store"
+
+
 def test_seeded_recording_csv_and_json_preserve_measured_fields(client):
     # Seed measured samples directly; live ingestion is not a public endpoint.
     source = client.app.state.engine.start({"kind": "browser"})

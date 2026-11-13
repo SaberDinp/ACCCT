@@ -60,8 +60,13 @@ function createMenu() {
   ]));
 }
 
-function configureSession() {
+async function configureSession() {
   const ses = session.defaultSession;
+  // Existing profiles keep the same localhost origin across upgrades. An old
+  // HTML/JS/CSS response can still be fresh in Chromium's HTTP cache, so remove
+  // only that cache before opening the installed UI. Preserve localStorage,
+  // saved preferences, cookies, and the separate recording library.
+  await ses.clearCache();
   // Recorded-video analysis needs no camera, microphone, or screen capture.
   ses.setPermissionCheckHandler((contents, permission, requestingOrigin) =>
     contents === window?.webContents && trusted(requestingOrigin) && ['fullscreen', 'clipboard-sanitized-write'].includes(permission));
@@ -108,7 +113,8 @@ async function start() {
   window.webContents.on('will-attach-webview', event => event.preventDefault());
   await window.loadFile(path.join(__dirname, 'loading.html'));
   if (quitting || !window) return;
-  configureSession();
+  await configureSession();
+  if (quitting || !window) return;
   createMenu();
   fs.mkdirSync(dataRoot(), { recursive: true });
   const command = backendCommand({ packaged: app.isPackaged, platform: process.platform,

@@ -213,7 +213,9 @@ def create_app(root=ROOT, database=None, port=8000):
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "same-origin"
-        if request.url.path.startswith("/api/"):
+        # The local UI is shipped with the app, and URLs remain stable across
+        # upgrades. Do not let a browser reuse a previous release's interface.
+        if request.url.path == "/" or request.url.path.startswith(("/api/", "/static/")):
             response.headers["Cache-Control"] = "no-store"
         return response
 

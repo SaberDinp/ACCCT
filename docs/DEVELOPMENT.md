@@ -118,7 +118,7 @@ download is not proof of accurate telemetry for that car/HUD combination.
 
 Update `desktop/package.json`, its lockfile, the README download filenames, and
 the release notes together. Run source checks and inspect the UI before creating
-a version tag such as `v1.2.3` matching the desktop package version.
+a version tag such as `v1.2.4` matching the desktop package version.
 
 The release workflow builds and exercises all five targets on native runners:
 Apple Silicon Mac, Intel Mac, Windows x64, Linux x64, and Linux ARM64. It only

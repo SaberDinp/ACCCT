@@ -1,19 +1,20 @@
-# 1.2.3
+# 1.2.4
 
-ACCC Telemetry brings recorded-lap analysis to console racers, with desktop apps
-for Apple Silicon and Intel Macs, Windows x64, and Linux x64/ARM64.
+This update fixes an upgrade issue where an older, cached Monitor interface could
+still appear after installing a newer ACCC Telemetry app.
 
-- One A inside three nested Cs now identifies the app everywhere.
-- Analysis opens first. Import your run and a reference recording, inspect their
-  inputs, and compare laps; live monitoring, capture, and phone streaming have
-  been removed from the app.
-- The new Credits page introduces Rice Racing with real team photos and clear
-  instructions for supporting Rice Formula SAE Club through Rice University.
-- Windows setup installs for the current user in one click. Mac DMGs and Linux
-  DEB/RPM packages provide the standard installation flow for each platform.
-- Existing libraries are retained separately from the application.
-- Selected laps and circuit settings survive restarts even when another app
-  occupies the previous local port.
+- Each launch now clears the HTTP cache before loading the app's bundled UI.
+  The current **Analysis** and **Credits** layout appears consistently after an
+  update on macOS, Windows, and Linux.
+- Only cached web responses are cleared. Recordings, saved sessions, calibration,
+  and app preferences stay intact.
+- Analysis opens first, with **Recordings** and **Calibration** available inside
+  it. The app remains focused on recorded-lap analysis and comparison.
+
+Install the matching 1.2.4 package, close any older running copy, and reopen
+**ACCC Telemetry**. On older versions, **View > Force Reload** can refresh a stale
+interface: **Command+Shift+R** on macOS or **Ctrl+Shift+R** on Windows/Linux.
+Version 1.2.4 handles this automatically on launch.
 
 Choose an installer for your OS and CPU from the assets below. You do not need
 Python or Node.js. GitHub's source-code archives are for developers.
@@ -21,14 +22,15 @@ Python or Node.js. GitHub's source-code archives are for developers.
 
 Mac requirements: macOS 14+ on Apple Silicon; macOS 13+ on Intel. Windows requires
 64-bit Windows 10/11. Linux requires a glibc desktop with GTK 3; use DEB for
-Ubuntu/Debian/Mint or RPM for Fedora/openSUSE. Native runner checks exercise Mac
-app bundles, silent per-user Windows installation with Desktop/Start menu
-shortcuts, and DEB installation on Ubuntu 24.04 x64 and ARM64. Backend and UI
-checks run against the installed Windows and Ubuntu apps. They do not cover
-RPM/AppImage installation, every installer interaction, supported OS version,
-Linux distribution, or GPU. Mac builds use ad-hoc signing for bundle integrity,
-without Apple Developer ID signing or notarization. Windows builds are unsigned.
-First launch may still be blocked or show an OS publisher warning.
+Ubuntu/Debian/Mint or RPM for Fedora/openSUSE. Mac builds use ad-hoc signing for
+bundle integrity, without Apple Developer ID signing or notarization. Windows
+builds are unsigned. First launch may still be blocked or show an OS publisher
+warning.
+
+**ACCC Telemetry is completely free for everyone to use.** Every feature is
+available without a purchase, subscription, or donation. Report a bug or suggest
+a feature in the [Issues tab](https://github.com/SaberDinp/ACCCT/issues); donating
+is never required to report an issue or receive fixes.
 
 We are [Rice Racing](https://www.riceracing.org/), Rice University's Formula SAE
 team. Want to support the students behind the app? Visit

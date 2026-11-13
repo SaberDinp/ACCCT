@@ -78,6 +78,7 @@ jobs:
       PYTHONUNBUFFERED: '1'
       ACCC_SMOKE_OUTPUT: artifacts/desktop-package
       ACCC_SMOKE_VIDEO: artifacts/desktop-package/sample.mp4
+      ACCC_UPGRADE_OUTPUT: artifacts/desktop-package/upgrade-cache
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -178,6 +179,16 @@ jobs:
       - name: Check installed Linux UI with sandbox enabled
         if: matrix.platform == 'linux'
         run: dbus-run-session -- xvfb-run --auto-servernum node desktop/check_desktop.cjs "$ACCC_INSTALLED_EXECUTABLE"
+      - name: Check Mac upgrade with an existing cached Monitor interface
+        if: matrix.platform == 'mac'
+        run: node desktop/check_upgrade_cache.cjs "dist/${{ matrix.app_directory }}/ACCC Telemetry.app/Contents/MacOS/ACCC Telemetry"
+      - name: Check Windows upgrade with an existing cached Monitor interface
+        if: matrix.platform == 'win'
+        shell: pwsh
+        run: node desktop/check_upgrade_cache.cjs "$env:ACCC_INSTALLED_EXECUTABLE"
+      - name: Check Linux upgrade with an existing cached Monitor interface
+        if: matrix.platform == 'linux'
+        run: dbus-run-session -- xvfb-run --auto-servernum node desktop/check_upgrade_cache.cjs "$ACCC_INSTALLED_EXECUTABLE"
       - name: Upload installers
         uses: actions/upload-artifact@v7
         with:

@@ -142,19 +142,19 @@ async def main():
             await settled(page)
             result=fixture.results[-1]
             assert result['alignment']['mode']=='raw' and not result['alignment']['applied']
-            assert result['alignment']['requested_mode']=='lap_endpoints' and result['alignment']['fallback_reason']
+            assert result['alignment'].get('requested_mode','raw')=='raw'
+            assert not result['align_start'] and not result['align_end']
             assert result['delta_available'] and result['delta_mode']=='approximate'
+            assert any(point['delta_time_s'] is None for point in result['points'])
+            assert result['current']['has_gaps'] and result['reference']['has_gaps']
             assert await canvas_delta(page)>100
-            await expect(page.locator('#comparisonAlignmentMode')).to_have_value('lap_endpoints')
-            await expect(page.locator('#confirmAlignment')).to_be_checked()
-            await expect(page.locator('#confirmFinishAlignment')).to_be_checked()
-            await expect(page.locator('#registrationStatus')).to_have_text('Raw distance / registration unavailable')
+            await expect(page.locator('#comparisonAlignmentMode, #confirmAlignment, #confirmFinishAlignment, #registrationStatus, #landmarkRows')).to_have_count(0)
             await expect(page.locator('#compareAxisNote')).not_to_contain_text('Registered')
-            checks['saved_endpoint_registration_with_gaps_falls_back_to_visible_raw_delta']={'pixels':await canvas_delta(page),'status':await page.locator('#registrationStatus').inner_text()}
-            await page.screenshot(path=str(output/'endpoint-gap-fallback.png'),full_page=True)
-            await page.locator('#confirmAlignment').uncheck()
-            await expect(page.locator('#comparisonStatus')).to_contain_text('confirmation',timeout=20000)
-            checks['missing_required_registration_confirmation_still_rejected']=True
+            saved=json.loads(await page.evaluate('localStorage.getItem("accc.comparison.v1")'))
+            assert saved['alignment_mode']=='raw' and saved['landmarks']==[]
+            assert not saved['align_start'] and not saved['align_end']
+            checks['legacy_registration_preferences_migrate_to_raw_with_gaps_and_delta']={'pixels':await canvas_delta(page),'delta_mode':result['delta_mode']}
+            await page.screenshot(path=str(output/'legacy-registration-raw-delta.png'),full_page=True)
             await context.close()
 
             fixture=DeltaFixtures(gaps=True,unknown=True)

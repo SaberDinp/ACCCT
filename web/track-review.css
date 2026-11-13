@@ -5,7 +5,6 @@
 .track-video figcaption { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 14px; font-size: 10px; color: #6dccdf; }
 .track-video.reference figcaption { color: #e0bf79; }
 .track-source-label { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 9px; letter-spacing: .06em; }
-.track-source-label strong { color: #dce6df; font-size: 12px; font-weight: 500; letter-spacing: 0; }
 .track-video figcaption > span:last-child { font-family: var(--mono, monospace); flex: none; }
 .track-video-button { display: grid; place-items: center; position: relative; width: 100%; padding: 0; aspect-ratio: 16 / 9; overflow: hidden; border: 0; background: #050906; border-radius: 0; color: #809186; cursor: zoom-in; }
 .track-video-button img, .track-video-button video { width: 100%; height: 100%; object-fit: contain; grid-area: 1 / 1; }
@@ -21,6 +20,7 @@
 .track-review-heading .eyebrow { font-size: 8px; letter-spacing: .12em; color: #819689; }
 .track-review-heading h2 { font-size: 14px; margin: 5px 0 0; }
 .track-limit { font-size: 9px; color: #afbb96; text-align: right; }
+.track-detection-status { margin: 9px 0 0; color: #9ab2a1; font-size: 10px; line-height: 1.5; }
 #trackSelect { width: 100%; min-width: 0; min-height: 34px; font-size: 11px; }
 .track-map-stage { position: relative; margin: 12px -9px 0; isolation: isolate; }
 .track-pace-legend { display: flex; flex-wrap: wrap; gap: 7px 14px; margin-top: 14px; font-size: 10px; line-height: 1.5; color: #b7c4bd; }
@@ -48,19 +48,12 @@
 .track-car-tyres { fill: #040905; stroke: #aebcb3; stroke-width: .5; }
 .track-car-window { fill: #10241d; }
 .track-car-tail { fill: none; stroke: #e5f0e8; stroke-width: 2; }
-.track-progress-mode { display: grid; gap: 7px; margin: 12px 0; font-size: 10px; color: #aabcaf; }
-.track-progress-mode select { width: 100%; min-width: 0; font-size: 11px; }
 #trackReviewPlay { flex: none; width: 32px; height: 32px; color: #d5e991; }
 .track-map-caption { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px; font-size: 9px; padding-top: 5px; color: #99b09f; }
 .track-map-legend { display: flex; flex-wrap: wrap; gap: 9px 14px; margin: 14px 0; color: #9cb09f; font-size: 8px; }
 .track-map-legend span::before { content: ''; display: inline-block; width: 9px; height: 9px; margin-right: 5px; vertical-align: -1px; }
 .track-legend-finish::before { background: conic-gradient(#eef1e7 25%, #233228 0 50%, #eef1e7 0 75%, #233228 0); }
 .track-legend-sector::before { border-left: 3px solid #c5abed; }
-.track-legend-origin::before { background: #d5e991; transform: scale(.7); }
-.track-review-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; border-top: 1px solid #2a392e; padding-top: 13px; }
-.track-review-toolbar label { display: flex; align-items: center; gap: 7px; font-size: 10px; line-height: 1.5; color: #aabcaf; }
-.track-map-modes { display: flex; gap: 5px; }
-.track-map-modes .active { color: #d5e991; background: #283826; }
 .track-review-status { font-size: 10px; color: #9ab2a1; padding: 13px 0 0; line-height: 1.6; }
 .track-measurement-note { font-size: 9px; line-height: 1.6; color: #a59f83; margin: 10px 0; }
 .track-map-details { color: #7e9485; font-size: 9px; line-height: 1.6; margin-top: 12px; }
@@ -70,7 +63,7 @@
 .track-telemetry-column { min-width: 0; }
 @media (min-width: 1700px) { #trackMap { height: 430px; } .track-review-body { grid-template-columns: minmax(350px, .35fr) minmax(0, 1fr); } }
 @media (max-width: 1100px) { .track-review-body { grid-template-columns: minmax(245px, .43fr) minmax(0, 1fr); gap: 16px; } .track-map-column { padding: 13px; } #trackMap { height: 315px; } .track-video-pair { gap: 12px; } }
-@media (max-width: 850px) { .track-review-body { grid-template-columns: 1fr; } .track-map-column { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 22px; } .track-map-stage { grid-column: 1; grid-row: 2 / 10; } .track-review-heading { grid-column: 1 / -1; } #trackSelect, .track-map-caption, .track-map-legend, .track-progress-mode, .track-review-toolbar, .track-review-status, .track-measurement-note, .track-map-details { grid-column: 2; } #trackMap { height: 300px; } }
+@media (max-width: 850px) { .track-review-body { grid-template-columns: 1fr; } .track-map-column { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 22px; } .track-map-stage { grid-column: 1; grid-row: 2 / 10; } .track-review-heading { grid-column: 1 / -1; } #trackSelect, .track-map-caption, .track-map-legend, .track-detection-status, .track-review-status, .track-measurement-note, .track-map-details { grid-column: 2; } #trackMap { height: 300px; } }
 @media (max-width: 600px) { .track-video-pair { grid-template-columns: 1fr; } .track-map-column { display: block; } #trackMap { height: 330px; } .track-distance-control { gap: 8px; font-size: 9px; } #trackCursorDistance { min-width: 60px; } .track-source-label { gap: 6px; } .track-frame-values { font-size: 9px; } .track-annotation-tip { max-width: 175px; } }
 .track-complex { width: max-content; max-width: 86px; height: auto; min-height: 21px; padding: 3px 6px; border-radius: 4px; font: 8px/1.25 var(--font, sans-serif); text-align: center; }
 #trackExpand { flex: none; width: 28px; height: 28px; }

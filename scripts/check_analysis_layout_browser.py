@@ -74,23 +74,54 @@ async def main():
             await expect(page.locator('#trackSelect')).to_have_value('silverstone')
             await page.wait_for_function("document.querySelectorAll('.track-corner').length===3")
             await expect(page.locator('#trackOriginStatus')).to_have_text('Lap start / finish')
-            await expect(page.locator('#trackRangesAligned')).not_to_be_checked()
-            await expect(page.locator('#trackReverse')).not_to_be_checked()
+            await expect(page.locator('#trackProgressMode, #trackManualControls, #trackRangesAligned')).to_have_count(0)
+            await expect(page.locator('#trackReverse')).to_have_count(0)
             await expect(page.locator('#trackCarMarker')).to_be_hidden()
             await page.wait_for_function("['current','reference'].every(s=>document.querySelector('#track'+s+'Native').videoWidth===1920)")
             await page.locator('#trackReviewDistance').fill('100')
             await page.locator('#trackReviewDistance').dispatch_event('input')
             await page.wait_for_function("['current','reference'].every(s=>!document.querySelector('#track'+s+'Native').hidden)")
             results['native_videos'] = await page.locator('.track-video-button video').evaluate_all('vs => vs.map(v=>({width:v.videoWidth,height:v.videoHeight,time:v.currentTime,paused:v.paused}))')
-            await expect(page.locator('#trackcurrentCar')).to_have_text('McLaren 720S GT3 Evo')
-            await expect(page.locator('#trackreferenceCar')).to_have_text('BMW M4 GT3')
+            await expect(page.locator('#trackcurrentCar, #trackreferenceCar')).to_have_count(0)
             await page.locator('#trackcurrentInspect').click()
-            await expect(page.locator('#alignmentSetStart')).to_be_enabled()
+            await expect(page.locator('#alignmentLock')).to_be_enabled()
             assert inspector_requests, 'Expanded frame must request 1920-pixel detail'
             await page.locator('#closeAlignment').click()
-            await page.locator('#trackProgressMode').select_option('one_lap')
+            # Lock must capture the currently presented native frame while playing.
+            await page.locator('#currentStartBoundary').click()
+            await page.locator('#alignmentTime').fill('1.2')
+            await page.locator('#alignmentTime').dispatch_event('input')
+            await expect(page.locator('#alignmentLock')).to_be_enabled()
+            await page.locator('#alignmentVideo').evaluate('video => video.play()')
+            await page.wait_for_function('document.querySelector("#alignmentVideo").currentTime >= 1.4')
+            await page.evaluate('''() => {
+              document.querySelector('#alignmentLock').addEventListener('click', () => {
+                window.boundaryLockFrameTime = document.querySelector('#alignmentVideo').currentTime;
+              }, {capture: true, once: true});
+            }''')
+            await page.locator('#alignmentLock').click()
+            await expect(page.locator('#runComparison')).to_have_attribute('aria-busy', 'false', timeout=20000)
+            results['native_playing_boundary_lock'] = await page.evaluate('''() => ({
+              presented: window.boundaryLockFrameTime,
+              selected: Number(document.querySelector('#currentStart').value),
+              saved: Number(JSON.parse(localStorage.getItem('accc.comparison.v1')).current.start)
+            })''')
+            locked = results['native_playing_boundary_lock']
+            assert locked['presented'] >= 1.4, locked
+            assert abs(locked['selected'] - locked['presented']) < .001, locked
+            assert abs(locked['saved'] - locked['presented']) < .001, locked
+            for side in ('current', 'reference'):
+                for edge, time in [('Start', 0), ('End', 7.8)]:
+                    await page.locator(f'#{side}{edge}Boundary').click()
+                    await page.locator('#alignmentTime').fill(str(time))
+                    await page.locator('#alignmentTime').dispatch_event('input')
+                    await expect(page.locator('#alignmentLock')).to_be_enabled()
+                    await page.locator('#alignmentLock').click()
+                    await expect(page.locator('#runComparison')).to_have_attribute('aria-busy', 'false', timeout=20000)
             await expect(page.locator('#trackCarMarker')).to_be_visible()
             await expect(page.locator('#trackReferenceCarMarker')).to_be_visible()
+            await page.locator('#trackReviewDistance').fill('100')
+            await page.locator('#trackReviewDistance').dispatch_event('input')
             await page.locator('#trackReviewPlay').click()
             await expect(page.locator('#trackReviewPlay')).to_have_attribute('aria-label','Pause comparison')
             results['native_playback'] = await page.locator('.track-video-button video').evaluate_all('''videos => Promise.all(videos.map(video => new Promise(resolve => {
@@ -120,16 +151,14 @@ async def main():
             assert await page.locator('.track-timing').count() == 3
             assert await page.locator('.track-complex').get_attribute('aria-label') == 'Named complex'
             assert await page.locator('.track-corner[aria-label="Turn 8a · Group example"]').count() == 1
-            await page.locator('#trackProgressMode').select_option('manual')
             await page.locator('.track-timing[data-kind="start_finish"]').click()
-            await page.locator('#trackRangesAligned').check()
             await expect(page.locator('#trackCarMarker')).to_be_visible()
             await page.locator('#trackCarMarker').hover()
             await expect(page.locator('#trackCarTip')).to_be_visible()
-            await expect(page.locator('#trackCarTip')).to_contain_text('McLaren 720S GT3 Evo')
+            await expect(page.locator('#trackCarTip')).to_contain_text('Your run')
             await page.locator('#trackReferenceCarMarker').hover()
             await expect(page.locator('#trackReferenceCarTip')).to_be_visible()
-            await expect(page.locator('#trackReferenceCarTip')).to_contain_text('BMW M4 GT3')
+            await expect(page.locator('#trackReferenceCarTip')).to_contain_text('Reference')
             for width,height in [(1920,1200),(1440,1000),(1280,900),(768,1024),(390,844)]:
                 await page.set_viewport_size({'width':width,'height':height})
                 await page.locator('#referenceWorkspace').scroll_into_view_if_needed()
@@ -165,9 +194,9 @@ async def main():
 
             assert not errors, errors
             assert not fixture.unexpected, fixture.unexpected
-            results.update({'page_errors':errors,'checks':['1080p native paired videos','cursor synchronization','car labels',
-                'corner hover and keyboard focus','straight names','finish and sector overlays','separate manual origin',
-                'car-marker hover','five responsive sizes','expanded map','1920px frame inspection','continuous native comparison playback','cleared-source native cleanup','legacy geometry origin ignored','nonzero source PTS','native decode failure frame fallback'],
+            results.update({'page_errors':errors,'checks':['1080p native paired videos','cursor synchronization','video captions without car labels',
+                'corner hover and keyboard focus','straight names','finish and sector overlays','automatic lap progress from explicit boundaries',
+                'car-marker hover','five responsive sizes','expanded map','1920px frame inspection','native boundary Lock during playback','continuous native comparison playback','cleared-source native cleanup','legacy geometry origin ignored','nonzero source PTS','native decode failure frame fallback'],
                 'annotation_scope':'Synthetic frontend contract locations; real circuit annotations tested separately.'})
             await browser.close()
     finally:

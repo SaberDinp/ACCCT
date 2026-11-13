@@ -141,12 +141,15 @@ async def assert_progress(page, fixture, progress, side='current', tolerance=.00
     return result
 
 
-async def new_page(browser, url, selected, errors, fixture=None):
+async def new_page(browser, url, selected, errors, fixture=None, map_preferences=None):
     fixture = fixture or ProgressFixtures()
     context = await browser.new_context(viewport={'width': 1600, 'height': 1100})
     await context.route('**/api/**', fixture.route)
     await context.add_init_script(SOCKET_FIXTURE)
     await context.add_init_script('localStorage.setItem("accc.comparison.v1", ' + json.dumps(json.dumps(selected)) + ');')
+    if map_preferences is not None:
+        key = f"accc.track-review.v2.{selected['current']['id']}:{selected['reference']['id']}"
+        await context.add_init_script('localStorage.setItem('+json.dumps(key)+', '+json.dumps(json.dumps(map_preferences))+');')
     page = await context.new_page()
     page.on('pageerror', lambda error: errors.append(str(error)))
     await page.goto(url)
@@ -162,7 +165,7 @@ async def axis(page, value):
 
 async def select_custom(page, start, end):
     for edge, value in [('Start', start), ('End', end)]:
-        await page.locator('#current' + edge).fill(str(value))
+        await page.locator('#current' + edge).evaluate('(input, value) => {input.value = value;}', str(value))
         await page.locator('#current' + edge).dispatch_event('change')
     await ready(page)
 
@@ -170,8 +173,8 @@ async def select_custom(page, start, end):
 async def check_complete(browser, url, errors, checks, output):
     context, page, fixture = await new_page(browser, url, preferences(), errors)
     try:
-        await expect(page.locator('#trackProgressMode')).to_have_value('auto')
-        await expect(page.locator('#trackRangesAligned')).not_to_be_checked()
+        await expect(page.locator('#trackProgressMode, #trackManualControls, #trackRangesAligned')).to_have_count(0)
+        await expect(page.locator('#trackcurrentCar, #trackreferenceCar')).to_have_count(0)
         start = await assert_progress(page, fixture, 0)
         await seek(page, 3000)
         middle = await assert_progress(page, fixture, .5)
@@ -233,10 +236,10 @@ async def check_pair(browser, url, errors, checks, output):
         await seek(page, 3000)
         current = await assert_progress(page, fixture, .5)
         reference = await assert_progress(page, fixture, .48, 'reference')
-        assert 'McLaren' in current['label'] and 'BMW' not in current['label'], current
-        assert 'BMW' in reference['label'] and 'McLaren' not in reference['label'], reference
+        assert current['label'].startswith('Your run\n') and 'McLaren' not in current['label'], current
+        assert reference['label'].startswith('Reference\n') and 'BMW' not in reference['label'], reference
         assert math.hypot(current['x'] - reference['x'], current['y'] - reference['y']) > .003
-        checks['independent_car_distance_totals_and_labels'] = {'current': current, 'reference': reference}
+        checks['independent_run_distance_totals_and_labels'] = {'current': current, 'reference': reference}
         await seek(page, 6000)
         await assert_progress(page, fixture, 1)
         await assert_progress(page, fixture, .96, 'reference')
@@ -278,7 +281,7 @@ async def check_pair(browser, url, errors, checks, output):
                 await page.locator('#swapComparisonRuns').click()
                 await ready(page)
             else:
-                await page.locator('#currentRange').select_option('full')
+                await page.locator('#currentRange').evaluate("el => {el.value = 'full'; el.dispatchEvent(new Event('change'));}")
                 await ready(page)
             await expect(page.locator('#trackReviewPlay')).to_have_attribute('aria-pressed', 'false')
             before = await page.locator('#trackReviewDistance').input_value()
@@ -291,7 +294,7 @@ async def check_pair(browser, url, errors, checks, output):
         await page.locator('#swapComparisonRuns').click()
         await ready(page)
         await axis(page, 'elapsed')
-        await page.locator('#referenceRange').select_option('reviewed-1')
+        await page.locator('#referenceRange').evaluate("el => {el.value = 'reviewed-1'; el.dispatchEvent(new Event('change'));}")
         await ready(page)
 
         await page.locator('#currentSession').select_option('')
@@ -340,7 +343,7 @@ async def check_partial(browser, url, errors, checks):
         await seek(page, 30)
         await assert_progress(page, fixture, .5)
         checks['known_lap_partial_slice_preserves_original_progress'] = True
-        await page.locator('#currentRange').select_option('full')
+        await page.locator('#currentRange').evaluate("el => {el.value = 'full'; el.dispatchEvent(new Event('change'));}")
         await ready(page)
         await expect(page.locator('#trackCarMarker')).to_be_hidden()
         for time, progress in [(10, 0), (70, .5), (130, 0), (190, .5), (250, 1)]:
@@ -361,34 +364,30 @@ async def check_partial(browser, url, errors, checks):
         await context.close()
 
     context, page, fixture = await new_page(browser, url,
-        preferences(axis='elapsed', current=PROTECTED, current_range='custom', start=5, end=35), errors)
+        preferences(axis='elapsed', current=PROTECTED, current_range='custom', start=5, end=35), errors,
+        map_preferences={'track':'silverstone','progressMode':'manual','origin':.42,'reverse':True,'aligned':True})
     try:
         await expect(page.locator('#trackCarMarker')).to_be_hidden()
         await seek(page, 15)
         await expect(page.locator('#trackCarMarker')).to_be_hidden()
         await expect(page.locator('#trackReviewStatus')).to_contain_text('lap')
-        await page.locator('#trackProgressMode').select_option('one_lap')
+        await expect(page.locator('#trackProgressMode, #trackManualControls, #trackSetOrigin, #trackReverse')).to_have_count(0)
+        checks['legacy_manual_mode_ignored_and_unknown_partial_not_fabricated'] = True
+        # Explicit lap-boundary locks replace the former force-one-lap dropdown.
+        for edge, time in [('Start', 5), ('End', 35)]:
+            await page.locator('#current' + edge + 'Boundary').click()
+            await page.locator('#alignmentTime').fill(str(time))
+            await page.locator('#alignmentTime').dispatch_event('input')
+            await expect(page.locator('#alignmentLock')).to_be_enabled()
+            await page.locator('#alignmentLock').click()
+            await ready(page)
+        await seek(page, 15)
         await assert_progress(page, fixture, .5)
         await seek(page, 0)
         await assert_progress(page, fixture, 0)
         await seek(page, 30)
         await assert_progress(page, fixture, 1)
-        checks['unknown_partial_needs_explicit_one_lap_assertion'] = True
-        await page.locator('#trackProgressMode').select_option('manual')
-        await expect(page.locator('#trackSetOrigin')).to_be_visible()
-        await page.locator('#trackSetOrigin').click()
-        await page.locator('.track-timing[data-kind="start_finish"]').click()
-        await page.locator('#trackRangesAligned').check()
-        await seek(page, 0)
-        initial = await marker(page)
-        await seek(page, 15)
-        middle = await marker(page)
-        assert not initial['hidden'] and not middle['hidden'], (initial, middle)
-        assert math.hypot(middle['x'] - initial['x'], middle['y'] - initial['y']) > .005, (initial, middle)
-        await page.locator('#trackReverse').check()
-        reverse = await marker(page)
-        assert not reverse['hidden'] and math.hypot(reverse['x'] - middle['x'], reverse['y'] - middle['y']) > .005
-        checks['manual_origin_and_direction_remain_available_for_partials'] = True
+        checks['explicit_lap_boundary_locks_enable_automatic_progress'] = True
         assert not fixture.unexpected, fixture.unexpected
     finally:
         await context.close()

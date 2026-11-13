@@ -29,6 +29,7 @@ from telemetry.engine import TelemetryEngine
 from telemetry.imports import ReferenceImports
 from telemetry.comparison import compare_session_ranges, trace_session_range
 from telemetry.tracks import get_track, list_tracks
+from telemetry.track_inference import infer_track
 from telemetry.lap_detection import LapDetectionJobs, timer_candidates
 from telemetry.review_audio import AudioBusy, AudioUnavailable, ReviewAudio
 from telemetry.catalog import catalog
@@ -81,6 +82,12 @@ class TraceRequest(BaseModel):
     range: dict | None = None
     axis: Literal["distance", "elapsed"] = "distance"
     max_points: int = Field(default=1200, ge=10, le=5000)
+
+
+class TrackInferenceRequest(BaseModel):
+    session_id: str
+    range: dict | None = None
+    range_is_lap: bool = Field(default=False, strict=True)
 
 
 class ReviewedLandmark(BaseModel):
@@ -599,6 +606,12 @@ def create_app(root=ROOT, database=None, port=8000):
                                      axis=body.axis, max_points=body.max_points)
         result["sessions"] = {"reference": None, "current": current}
         return result
+
+    @app.post("/api/track-inference")
+    def track_inference(body: TrackInferenceRequest):
+        current = find_session(body.session_id)
+        return infer_track(engine.store.get_samples(body.session_id), current, body.range,
+                           range_is_lap=body.range_is_lap)
 
     @app.patch("/api/sessions/{session_id}/reviewed-laps")
     def save_reviewed_lap(session_id: str, body: ReviewedLapRequest):

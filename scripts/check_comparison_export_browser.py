@@ -15,7 +15,7 @@ from urllib.parse import urlparse
 from playwright.async_api import async_playwright, expect
 
 from check_delete_swap_browser import CURRENT, REFERENCE, Fixtures
-from browser_fixtures import ROOT, SOCKET_FIXTURE, StaticHandler
+from browser_fixtures import ROOT, SOCKET_FIXTURE, StaticHandler, lock_lap_boundary
 from telemetry.comparison import compare_session_ranges
 
 
@@ -134,35 +134,34 @@ async def main():
             assert snapshot['reference']['selection']['start_time'] == 12
             checks['whole_selected_comparison_downloads_without_network'] = True
 
-            # A typed edit is stale before blur, including while an earlier
-            # comparison response is still in flight.
+            # An old response cannot re-enable export after a later locked edit.
             gate = fixture.gate('compare')
-            await page.locator('#currentEnd').fill('110.125')
-            await expect(button).to_be_disabled()
-            assert await page.locator('#currentEnd').evaluate('el => el === document.activeElement')
-            await page.locator('#currentEnd').press('Tab')
+            await lock_lap_boundary(page, 'current', 'End', '110.125')
             await asyncio.wait_for(gate.arrived.wait(), 20)
             await expect(button).to_be_disabled()
-            await page.locator('#currentStart').fill('10.125')
+            later = fixture.gate('compare')
+            await lock_lap_boundary(page, 'current', 'Start', '10.125')
+            await asyncio.wait_for(later.arrived.wait(), 20)
             gate.release.set()
             await asyncio.wait_for(gate.finished.wait(), 20)
-            await expect(page.locator('#comparisonStatus')).to_have_text('', timeout=15000)
             await expect(button).to_be_disabled()
-            await page.locator('#currentStart').press('Tab')
+            later.release.set()
+            await asyncio.wait_for(later.finished.wait(), 20)
             await expect(button).to_be_enabled(timeout=15000)
             downloads.append(await download(page, fixture, 'edited'))
             snapshot = await page.evaluate('window.exportInputs.at(-1)')
             assert snapshot['current']['selection']['start_time'] == 10.125
             assert snapshot['current']['selection']['end_time'] == 110.125
-            checks['uncommitted_edits_and_stale_inflight_response_blocked'] = True
+            checks['locked_edits_and_stale_inflight_response_blocked'] = True
 
-            await page.locator('#currentStart').fill('150')
-            await page.locator('#currentStart').press('Tab')
-            await expect(page.locator('#comparisonStatus')).to_contain_text('end time must follow')
-            await expect(button).to_be_disabled()
-            await page.locator('#currentStart').fill('10.125')
-            await page.locator('#currentStart').press('Tab')
-            await expect(button).to_be_enabled(timeout=15000)
+            await page.locator('#currentStartBoundary').click()
+            await page.locator('#alignmentTime').fill('150')
+            await expect(page.locator('#alignmentLock')).to_be_enabled()
+            await page.locator('#alignmentLock').click()
+            await expect(page.locator('#alignmentError')).to_contain_text('Choose a start before the end of the lap')
+            await expect(page.locator('#currentStart')).to_have_value('10.125')
+            await page.locator('#closeAlignment').click()
+            await expect(button).to_be_enabled()
             fixture.fail_compare = True
             await page.locator('#axisElapsed').click()
             await expect(page.locator('#comparisonStatus')).to_have_text('Fixture comparison failed.')

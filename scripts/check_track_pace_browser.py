@@ -283,34 +283,24 @@ async def check_neutral_colors(browser, url, errors, checks, output):
             await context.close()
 
 
-async def check_manual_alignment(browser, url, errors, checks, output):
+async def check_automatic_alignment(browser, url, errors, checks, output):
     fixture = PaceFixtures()
-    context, page, fixture = await new_page(browser, url, preferences(axis='elapsed', reference=REFERENCE), errors, fixture)
+    context, page, fixture = await new_page(browser, url, preferences(axis='elapsed', reference=REFERENCE), errors, fixture,
+        map_preferences={'track':'silverstone','progressMode':'manual','origin':.31,'reverse':True,'aligned':True})
     try:
         await wait_overlay(page)
-        await page.locator('#trackProgressMode').select_option('manual')
-        await page.locator('#trackSetOrigin').click()
-        await page.locator('.track-timing[data-kind="start_finish"]').click()
-        await page.locator('#trackRangesAligned').check()
-        await wait_overlay(page)
+        await expect(page.locator('#trackProgressMode, #trackSetOrigin, #trackRangesAligned, #trackReverse')).to_have_count(0)
         await page.locator('#trackMap').scroll_into_view_if_needed()
         forward = await assert_quarters(page, fixture)
         before = await pace_counts(page)
-        await page.locator('#trackReverse').check()
-        await wait_overlay(page)
-        reverse = [await pixel_probe(page, fixture, progress, color, reverse=True)
-                   for progress, color in zip(PROBES, [CYAN, GOLD, CYAN, GOLD])]
-        after = await pace_counts(page)
-        assert {key: before[key] for key in ['current', 'reference', 'equal', 'unavailable']} == {
-            key: after[key] for key in ['current', 'reference', 'equal', 'unavailable']}
-        point = reverse[1]
+        point = forward[1]
         await page.mouse.move(point['clientX'], point['clientY'])
         await expect(page.locator('#trackPaceTip')).to_be_visible()
         await expect(page.locator('#trackPaceTip')).to_have_attribute('data-winner', 'reference')
-        checks['manual_origin_and_reverse_place_colors_on_correct_vertices'] = {
-            'forward_probes': forward, 'reverse_probes': reverse, 'before': before, 'after': after,
-            'reverse_tooltip': await page.locator('#trackPaceTip').inner_text()}
-        await page.screenshot(path=str(output / 'manual-reverse-pace.png'), full_page=True)
+        checks['legacy_manual_origin_and_reverse_cannot_change_automatic_lap_colors'] = {
+            'forward_probes': forward, 'counts': before,
+            'tooltip': await page.locator('#trackPaceTip').inner_text()}
+        await page.screenshot(path=str(output / 'automatic-lap-pace.png'), full_page=True)
 
         await page.locator('#trackSelect').select_option('monza')
         await expect(page.locator('#trackAnnotations')).to_have_attribute('data-track-id', 'monza')
@@ -341,7 +331,7 @@ async def main():
             try:
                 await check_overlay(browser, f'http://127.0.0.1:{server.server_port}', errors, checks, args.output)
                 await check_neutral_colors(browser, f'http://127.0.0.1:{server.server_port}', errors, checks, args.output)
-                await check_manual_alignment(browser, f'http://127.0.0.1:{server.server_port}', errors, checks, args.output)
+                await check_automatic_alignment(browser, f'http://127.0.0.1:{server.server_port}', errors, checks, args.output)
                 assert not errors, errors
                 passed = True
             finally:

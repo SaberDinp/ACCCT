@@ -57,8 +57,9 @@ async def assert_single(page, side="current"):
     await expect(page.locator(f"#comparison{other.capitalize()}Summary")).to_be_hidden()
     await expect(page.locator(f"#{other}Frame")).to_be_hidden()
     await expect(page.locator(f"#{other}FrameTime")).to_be_hidden()
-    for suffix in ("Range", "Start", "End", "Segment"):
+    for suffix in ("Range", "Start", "End", "StartBoundary", "EndBoundary"):
         await expect(page.locator(f"#{other}{suffix}")).to_be_disabled()
+    await expect(page.locator("#currentSegment, #referenceSegment")).to_have_count(0)
     assert not await page.locator(f"#track{other}Image").evaluate("element => !!element.closest('figure').getClientRects().length")
     assert await page.locator(f"#track{side}Image").evaluate("element => !!element.closest('figure').getClientRects().length")
     headers = await page.locator(".cursor-table thead th:visible").all_text_contents()

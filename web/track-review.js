@@ -8,8 +8,7 @@ window.ACCCTrackReview = (() => {
   const sides = ['current', 'reference'];
   const markerId = side => side === 'current' ? 'trackCarMarker' : 'trackReferenceCarMarker';
   const paceColors = {current: '#6dccdf', reference: '#e0bf79', equal: '#b7c4bd', unavailable: '#4d5e54'};
-  const state = {track: null, result: null, point: null, sourceCursor: null, origin: null, reverse: false,
-    aligned: false, mode: 'review', progressMode: 'auto', progressSources: {}, playback: {playing: false, available: false}, ids: {}, frames: {}, media: {}, pairKey: '', selectionKey: ''};
+  const state = {track: null, result: null, point: null, sourceCursor: null, trackSource: 'none', trackChoice: '', tracksReady: false, detectionMessage: '', progressSources: {}, playback: {playing: false, available: false}, ids: {}, frames: {}, media: {}, pairKey: '', selectionKey: ''};
   let helpers, resize;
   const timeLabel = value => finite(value) ? `${Math.floor(value / 60)}:${(value % 60).toFixed(2).padStart(5, '0')}` : '--:--';
 
@@ -18,14 +17,15 @@ window.ACCCTrackReview = (() => {
     const section = document.createElement('section');
     section.id = 'trackReview';
     section.className = 'track-review-section';
-    section.innerHTML = `<div class="track-video-column"><div class="track-video-pair">${['current', 'reference'].map(side => `<figure class="track-video ${side}"><figcaption><span class="track-source-label">${side === 'current' ? 'YOUR RUN' : 'REFERENCE'}<strong id="track${side}Car">Car not labelled</strong></span><span id="track${side}Time">--:--</span></figcaption><button class="track-video-button" id="track${side}Inspect" aria-label="Enlarge ${side === 'current' ? 'your' : 'reference'} corner frame" title="Inspect full source frame"><video id="track${side}Native" muted playsinline preload="auto" hidden></video><img id="track${side}Image" alt="${side === 'current' ? 'Your' : 'Reference'} car and track at the review cursor" hidden><span id="track${side}Empty">No observed frame</span></button><div class="track-frame-values" id="track${side}Values">No telemetry at cursor</div></figure>`).join('')}</div><div class="track-distance-control"><button id="trackReviewPlay" class="icon-button" aria-label="Play comparison" title="Play comparison" disabled><i data-lucide="play"></i></button><span id="trackCursorDistance">-- m</span><input id="trackReviewDistance" type="range" min="0" max="1" step="1" value="0" disabled aria-label="Corner review distance"><span id="trackReviewAxisLabel">Review distance</span></div></div>
-      <div class="track-review-body"><div class="track-map-column"><div class="track-review-heading"><div><span class="eyebrow">CIRCUIT GUIDE</span><h2>Track &amp; corner review</h2></div><span class="track-limit">Estimated position</span></div><select id="trackSelect" aria-label="Track layout"><option value="">Select track layout</option></select><div class="track-map-stage"><canvas id="trackMap" tabindex="0" aria-label="Circuit centerline diagram. Colored sections show which run gains time; hover for section times. Hover or focus corner numbers for names. Lap progress is estimated."></canvas><div id="trackAnnotations" class="track-annotations"></div>${["current", "reference"].map(side => `<button id="${markerId(side)}" class="track-car-marker ${side}" data-side="${side}" hidden><svg class="track-car-shape" viewBox="0 0 32 20" aria-hidden="true"><path class="track-car-tyres" d="M7 1h5v4H7zM21 1h5v4h-5zM7 15h5v4H7zM21 15h5v4h-5z"/><path class="track-car-body" d="M4 5Q3 5 3 10t1 5h21q4-1 4-5t-4-5Z"/><path class="track-car-window" d="m17 6 5 1v6l-5 1z"/><path class="track-car-tail" d="M5 4v12"/></svg><span class="track-annotation-tip" id="${side === "current" ? "trackCarTip" : "trackReferenceCarTip"}"></span></button>`).join('')}</div><div class="track-map-caption"><span id="trackLength">-- m</span><span id="trackOriginStatus">Recording origin not set</span></div><div class="track-map-legend"><span class="track-legend-finish">Start / finish</span><span class="track-legend-sector">Sector split</span><span class="track-legend-origin">Recording origin</span></div><label class="track-progress-mode">Car position<select id="trackProgressMode" aria-label="Car position mode"><option value="auto">Automatic lap progress</option><option value="one_lap">Selected range is one lap</option><option value="manual">Manual start position</option></select></label><div class="track-review-toolbar" id="trackManualControls" hidden><div class="track-map-modes" role="group" aria-label="Map mode"><button id="trackSetOrigin" class="button subtle compact active" title="Set lap origin on map" aria-label="Set lap origin on map" aria-pressed="true"><i data-lucide="map-pin"></i>Set recording origin</button><button id="trackReviewPosition" class="icon-button" title="Review map position" aria-label="Review map position" aria-pressed="false"><i data-lucide="crosshair"></i></button></div><label><input id="trackReverse" type="checkbox">Reverse direction</label><label><input id="trackRangesAligned" type="checkbox"><span id="trackRangesAlignedLabel">Selected range starts at this origin</span></label></div><div class="track-review-status" id="trackReviewStatus" role="status">Select a circuit to see its layout.</div><p class="track-measurement-note">Cars follow estimated progress along the circuit. Select a lap to start and finish at the checkered line.</p><details class="track-map-details"><summary>Map sources and accuracy</summary><div class="track-credit" id="trackCredit"></div><p id="trackAnnotationNote"></p></details></div><div class="track-telemetry-column" id="trackTelemetry"></div></div>`;
+    section.innerHTML = `<div class="track-video-column"><div class="track-video-pair">${['current', 'reference'].map(side => `<figure class="track-video ${side}"><figcaption><span class="track-source-label">${side === 'current' ? 'YOUR RUN' : 'REFERENCE'}</span><span id="track${side}Time">--:--</span></figcaption><button class="track-video-button" id="track${side}Inspect" aria-label="Enlarge ${side === 'current' ? 'your' : 'reference'} corner frame" title="Inspect full source frame"><video id="track${side}Native" muted playsinline preload="auto" hidden></video><img id="track${side}Image" alt="${side === 'current' ? 'Your' : 'Reference'} car and track at the review cursor" hidden><span id="track${side}Empty">No observed frame</span></button><div class="track-frame-values" id="track${side}Values">No telemetry at cursor</div></figure>`).join('')}</div><div class="track-distance-control"><button id="trackReviewPlay" class="icon-button" aria-label="Play comparison" title="Play comparison" disabled><i data-lucide="play"></i></button><span id="trackCursorDistance">-- m</span><input id="trackReviewDistance" type="range" min="0" max="1" step="1" value="0" disabled aria-label="Corner review distance"><span id="trackReviewAxisLabel">Review distance</span></div></div>
+      <div class="track-review-body"><div class="track-map-column"><div class="track-review-heading"><div><span class="eyebrow">CIRCUIT GUIDE</span><h2>Track &amp; corner review</h2></div><span class="track-limit">Estimated position</span></div><select id="trackSelect" aria-label="Track layout"><option value="">Select track layout</option></select><p id="trackDetectionStatus" class="track-detection-status" role="status" hidden></p><div class="track-map-stage"><canvas id="trackMap" tabindex="0" aria-label="Circuit centerline diagram. Colored sections show which run gains time; hover for section times. Hover or focus corner numbers for names. Lap progress is estimated."></canvas><div id="trackAnnotations" class="track-annotations"></div>${["current", "reference"].map(side => `<button id="${markerId(side)}" class="track-car-marker ${side}" data-side="${side}" hidden><svg class="track-car-shape" viewBox="0 0 32 20" aria-hidden="true"><path class="track-car-tyres" d="M7 1h5v4H7zM21 1h5v4h-5zM7 15h5v4H7zM21 15h5v4h-5z"/><path class="track-car-body" d="M4 5Q3 5 3 10t1 5h21q4-1 4-5t-4-5Z"/><path class="track-car-window" d="m17 6 5 1v6l-5 1z"/><path class="track-car-tail" d="M5 4v12"/></svg><span class="track-annotation-tip" id="${side === "current" ? "trackCarTip" : "trackReferenceCarTip"}"></span></button>`).join('')}</div><div class="track-map-caption"><span id="trackLength">-- m</span><span id="trackOriginStatus">Lap start / finish</span></div><div class="track-map-legend"><span class="track-legend-finish">Start / finish</span><span class="track-legend-sector">Sector split</span></div><div class="track-review-status" id="trackReviewStatus" role="status">Select a circuit to see its layout.</div><p class="track-measurement-note">Cars follow estimated progress along the circuit. Select a lap to start and finish at the checkered line.</p><details class="track-map-details"><summary>Map sources and accuracy</summary><div class="track-credit" id="trackCredit"></div><p id="trackAnnotationNote"></p></details></div><div class="track-telemetry-column" id="trackTelemetry"></div></div>`;
     const workspace = $('referenceWorkspace');
     workspace.querySelector('.compare-toolbar').insertAdjacentElement('beforebegin', section);
     for (const selector of ['.compare-toolbar', '.comparison-legend', '.comparison-empty-status', '.comparison-body', '.compare-summary-line']) {
       $('trackTelemetry').appendChild(workspace.querySelector(selector));
     }
-    section.before(workspace.querySelector('.lap-registration'));
+    const registration = workspace.querySelector('.lap-registration');
+    if (registration) section.before(registration);
     document.querySelector('.track-review-heading').insertAdjacentHTML('beforeend', '<button class="icon-button" id="trackExpand" aria-label="Expand circuit map" title="Expand circuit map"><i data-lucide="maximize-2"></i></button>');
     document.querySelector('.track-map-stage').insertAdjacentHTML('beforeend', '<button class="button subtle compact track-map-exit" id="trackCollapse" aria-label="Close expanded circuit map">Close map</button>');
     document.querySelector('.track-map-stage').insertAdjacentHTML('beforeend', '<div id="trackPaceTip" class="track-pace-tip" role="tooltip" hidden></div>');
@@ -40,11 +40,6 @@ window.ACCCTrackReview = (() => {
     });
     for (const side of sides) $(markerId(side)).onclick = event => event.stopPropagation();
     $('trackReviewPlay').onclick = () => helpers.playback?.toggle();
-    $('trackProgressMode').onchange = () => {
-      state.progressMode = $('trackProgressMode').value;
-      state.mode = state.progressMode === 'manual' && state.origin === null ? 'origin' : 'review';
-      save(); render();
-    };
     for (const side of ['current', 'reference']) {
       const figure = $(`track${side}Inspect`).closest('figure');
       figure.id = `track${side}Video`;
@@ -56,11 +51,11 @@ window.ACCCTrackReview = (() => {
       video.addEventListener('error', () => {video.hidden = true; if (state.media[side]) state.media[side].failed = true;});
     }
     helpers.icons();
-    $('trackSelect').onchange = () => loadTrack($('trackSelect').value, true);
-    $('trackSetOrigin').onclick = () => setMode('origin');
-    $('trackReviewPosition').onclick = () => setMode('review');
-    $('trackReverse').onchange = () => {state.reverse = $('trackReverse').checked; save(); render();};
-    $('trackRangesAligned').onchange = () => {state.aligned = $('trackRangesAligned').checked; save(); render();};
+    $('trackSelect').onchange = () => {
+      state.inferenceRequest = (state.inferenceRequest || 0) + 1;
+      state.trackSource = 'manual'; state.detectionMessage = '';
+      loadTrack($('trackSelect').value);
+    };
     $('trackMap').onclick = choosePosition;
     $('trackMap').onpointermove = hoverPace;
     $('trackMap').onpointerleave = hidePaceTip;
@@ -79,54 +74,100 @@ window.ACCCTrackReview = (() => {
     resize.observe($('trackMap'));
     context.api('/api/tracks').then(tracks => {
       for (const track of tracks) $('trackSelect').add(new Option(track.name, track.id));
-      restore();
+      state.tracksReady = true; restore();
     }).catch(() => {$('trackReviewStatus').textContent = 'Track library unavailable. Source frames remain available.';});
     render();
   }
 
-  // v2 uses ACC layout geometry with a different point order and origin.
-  // Earlier map confirmations cannot be transferred to these diagrams.
+  // Retain circuit choices, but never restore old manual map positions or modes.
   function settingsKey() {return `accc.track-review.v2.${state.pairKey}`;}
   function save() {
-    if (!state.pairKey) return;
-    const value = JSON.stringify({track: state.track?.id || '', origin: state.origin,
-      reverse: state.reverse, aligned: state.aligned, progressMode: state.progressMode, selectionKey: state.selectionKey});
+    if (!state.ids.current && !state.ids.reference) return;
+    const value = JSON.stringify({track: state.trackChoice, selectionSource: state.trackSource});
     try {window.ACCCDesktopPreferences?.setItem(settingsKey(), value);} catch {}
     try {localStorage.setItem(settingsKey(), value);} catch {}
   }
   function restore() {
-    if (!state.pairKey || !$('trackSelect')?.options.length) return;
+    if (!state.tracksReady || (!state.ids.current && !state.ids.reference)) return;
     let saved;
     try {
       const desktop = window.ACCCDesktopPreferences;
       let value;
       try {value = desktop?.getItem(settingsKey());} catch {}
       value ??= localStorage.getItem(settingsKey()) ?? localStorage.getItem(`apex.track-review.v2.${state.pairKey}`);
-      saved = JSON.parse(value ?? '{}');
+      saved = JSON.parse(value ?? '{}') || {};
       try {if (value !== null) desktop?.setItem(settingsKey(), value);} catch {}
     } catch {saved = {};}
-    const matching = [...$('trackSelect').options].some(option => option.value === saved.track && saved.track);
-    if (!matching) {
-      const inferred = helpers.trackId?.();
-      if (inferred && [...$('trackSelect').options].some(option => option.value === inferred)) {
-        $('trackSelect').value = inferred;
-        loadTrack(inferred, true);
-      }
+    const matching = trackAvailable(saved.track);
+    // Older saves did not distinguish automatic and explicit track choices.
+    // Preserve their selected circuit as a user choice, without manual geometry.
+    if ((matching && !saved.selectionSource) || ((matching || saved.track === '') && saved.selectionSource === 'manual')) {
+      state.trackSource = 'manual';
+      loadTrack(saved.track);
+    } else {
+      updateAutomaticTrack();
+    }
+  }
+  function trackAvailable(id) {
+    return Boolean(id) && [...$('trackSelect').options].some(option => option.value === id);
+  }
+  async function updateAutomaticTrack() {
+    if (!state.tracksReady || !state.result || state.trackSource === 'manual') return;
+    const labelled = helpers.trackId?.();
+    if (trackAvailable(labelled)) {
+      state.inferenceRequest = (state.inferenceRequest || 0) + 1;
+      state.trackSource = 'recording_label';
+      state.detectionMessage = 'Circuit from the recording details.';
+      if (state.trackChoice !== labelled || !state.track) loadTrack(labelled);
+      else render();
       return;
     }
-    state.origin = finite(saved.origin) && saved.origin >= 0 && saved.origin < 1 ? saved.origin : null;
-    state.reverse = saved.reverse === true;
-    state.aligned = saved.aligned === true && saved.selectionKey === state.selectionKey;
-    state.progressMode = ['auto', 'one_lap', 'manual'].includes(saved.progressMode) && (saved.progressMode !== 'one_lap' || saved.selectionKey === state.selectionKey) ? saved.progressMode : 'auto';
-    state.mode = state.progressMode === 'manual' && state.origin === null ? 'origin' : 'review';
-    $('trackSelect').value = saved.track;
-    loadTrack(saved.track, false);
+    // A confident complete-lap match still identifies this recording when its
+    // selected range is subsequently shortened. A different pair starts fresh.
+    if (state.trackSource === 'telemetry' && state.trackChoice) return;
+    const key = `${state.pairKey}:${state.selectionKey}`;
+    if (key === state.inferenceKey) return;
+    const requests = sides.flatMap(side => {
+      const id = state.ids[side], info = helpers.rangeInfo?.(side) || {};
+      const selection = state.result[side]?.selection || state.result.source_review?.[side]?.selection;
+      if (!id || !finite(selection?.start_time) || !finite(selection?.end_time) || selection.end_time <= selection.start_time) return [];
+      const range = {start_time: Number(selection.start_time), end_time: Number(selection.end_time)};
+      if (info.segment !== null && info.segment !== undefined) range.segment_id = info.segment;
+      return [{session_id: id, range, range_is_lap: info.lap === true}];
+    });
+    if (!requests.length) return;
+    state.inferenceKey = key;
+    const token = state.inferenceRequest = (state.inferenceRequest || 0) + 1;
+    state.detectionMessage = 'Checking the circuit from lap telemetry…';
+    render();
+    try {
+      const results = await Promise.all(requests.map(body => helpers.api('/api/track-inference', {
+        method: 'POST', body: JSON.stringify(body)
+      })));
+      if (token !== state.inferenceRequest || state.trackSource === 'manual') return;
+      const matches = results.filter(result => result.auto_select === true && result.confidence === 'high' && trackAvailable(result.track_id));
+      const tracks = [...new Set(matches.map(result => result.track_id))];
+      if (tracks.length === 1) {
+        state.trackSource = matches.some(result => result.source === 'recording_label') ? 'recording_label' : 'telemetry';
+        state.detectionMessage = state.trackSource === 'telemetry' ? 'Circuit matched from lap telemetry. You can choose another circuit.' : 'Circuit from the recording details.';
+        loadTrack(tracks[0]);
+      } else {
+        state.detectionMessage = tracks.length > 1 ? 'The recordings suggest different circuits. Choose a circuit to review.' : 'No confident circuit match. Choose a circuit, or select a complete lap.';
+        render();
+      }
+    } catch {
+      if (token !== state.inferenceRequest || state.trackSource === 'manual') return;
+      state.detectionMessage = 'Circuit detection is unavailable. Choose a circuit to continue.';
+      render();
+    }
   }
-  async function loadTrack(id, reset) {
+  async function loadTrack(id) {
     const token = state.trackRequest = (state.trackRequest || 0) + 1;
     state.mapMessage = null;
     state.track = null;
-    if (reset) {state.origin = null; state.reverse = false; state.aligned = false; state.mode = 'review'; state.progressMode = 'auto';}
+    state.trackChoice = id;
+    $('trackSelect').value = id;
+    save();
     render();
     if (!id) {save(); return;}
     try {
@@ -141,22 +182,24 @@ window.ACCCTrackReview = (() => {
     if (!helpers) return;
     state.mapMessage = null;
     const pairKey = `${ids.current || ''}:${ids.reference || ''}`;
-    const selectionKey = result ? JSON.stringify([result.current?.selection, result.reference?.selection]) : '';
+    const selectionKey = result ? JSON.stringify(sides.map(side => [result[side]?.selection || result.source_review?.[side]?.selection, helpers.rangeInfo?.(side)?.lap === true])) : '';
     const changed = pairKey !== state.pairKey;
     if (changed) {
       state.trackRequest = (state.trackRequest || 0) + 1;
-      state.track = null; state.origin = null; state.reverse = false; state.aligned = false; state.mode = 'review'; state.progressMode = 'auto';
+      state.inferenceRequest = (state.inferenceRequest || 0) + 1;
+      state.track = null; state.trackChoice = ''; state.trackSource = 'none'; state.inferenceKey = null; state.detectionMessage = '';
       state.frames = {}; $('trackSelect').value = '';
       for (const side of ['current', 'reference']) clearFrame(side);
     } else if (selectionKey !== state.selectionKey) {
-      state.aligned = false;
-      if (state.progressMode === 'one_lap') state.progressMode = 'auto';
+      state.inferenceRequest = (state.inferenceRequest || 0) + 1;
+      state.inferenceKey = null;
     }
     state.pairKey = pairKey; state.selectionKey = selectionKey; state.ids = {...ids}; state.result = result;
     for (const side of ['current', 'reference']) selectNative(side, ids[side]);
     state.point = null;
     prepareProgress();
     if (changed) restore();
+    else updateAutomaticTrack();
     render();
     setCursor(null);
   }
@@ -175,7 +218,6 @@ window.ACCCTrackReview = (() => {
       else if (!state.playback.playing && (!state.frames[side] || Math.abs(state.frames[side].time - source.time) > .06)) clearFrame(side, 'Loading frame...');
       const value = key => finite(sample?.[key]) ? Math.round(sample[key]) : '--';
       $(`track${side}Values`).textContent = source?.ended ? 'End of selected range' : sample ? `${value('speed')} km/h  /  gear ${sample.gear ?? '--'}  /  brake ${value('brake')}%  /  throttle ${value('throttle')}%` : 'HUD telemetry unavailable at this time';
-      $(`track${side}Car`).textContent = helpers.carName?.(side) || 'Car not labelled';
       const media = state.media[side];
       if (media) {
         clearTimeout(media.timer);
@@ -294,9 +336,8 @@ window.ACCCTrackReview = (() => {
     $('trackReviewDistance').setAttribute('aria-label', distanceAxis ? 'Corner review distance' : 'Corner review time');
     $('trackCursorDistance').textContent = state.result && finite(position) ? distanceAxis ? `${Math.round(position).toLocaleString()} m` : `${Number(position).toFixed(2)} s` : '--';
     $('trackReviewAxisLabel').textContent = distanceAxis ? 'Review distance' : 'Review time';
-    $('trackReviewPosition').disabled = !mapped();
-    if (state.progressMode !== 'manual' && state.result && state.track && !trackMismatch() && !state.mapMessage) {
-      $('trackReviewStatus').textContent = mapped() ? 'Play or scrub to move each car around its lap. Hover a car for its name.' : 'Select a detected or reviewed lap. For a full lap without saved boundaries, choose “Selected range is one lap”.';
+    if (state.result && state.track && !trackMismatch() && !state.mapMessage) {
+      $('trackReviewStatus').textContent = mapped() ? 'Play or scrub to follow each run around its lap.' : 'Select a lap, or set its start and end, to show automatic lap progress.';
     }
   }
   function sampleAt(points, time) {
@@ -355,13 +396,8 @@ window.ACCCTrackReview = (() => {
     }
     if (!sample || sample.active === false || !finite(sample.time)) return null;
     const distance = finite(sample.raw_distance) ? Number(sample.raw_distance) : finite(sample.distance) ? Number(sample.distance) : null;
-    if (state.progressMode === 'manual') {
-      if (state.origin === null || !state.aligned || distance === null) return null;
-      const progress = distance / state.track.length_m;
-      return {progress: wrap(progress), fraction: state.origin + (state.reverse ? -1 : 1) * progress, finished};
-    }
     let progress, timeOnly = false, unverified = false;
-    if (state.progressMode === 'one_lap' || source.info.lap) {
+    if (source.info.lap) {
       const start = Number(source.trace.selection?.start_time), end = Number(source.trace.selection?.end_time);
       if (!(end > start)) return null;
       const total = Number(source.trace.raw_distance ?? source.trace.distance);
@@ -387,17 +423,6 @@ window.ACCCTrackReview = (() => {
     return {progress, fraction: finish + progress, timeOnly, unverified, finished};
   }
   function seekProgress(fraction) {
-    if (state.progressMode === 'manual') {
-      const wanted = wrap((fraction - state.origin) * (state.reverse ? -1 : 1)) * state.track.length_m;
-      const side = state.result.current ? 'current' : 'reference';
-      let best;
-      for (const point of state.result.points || []) {
-        const value = point[side]?.raw_distance ?? point[side]?.distance;
-        if (finite(value) && (!best || Math.abs(value - wanted) < best.error)) best = {error: Math.abs(value - wanted), position: point.position};
-      }
-      if (best) helpers.seek(best.position);
-      return;
-    }
     const finish = Number(state.track.timing_lines?.find(line => line.kind === 'start_finish')?.progress || 0);
     const wanted = wrap(fraction - finish), side = progressFor('current') ? 'current' : 'reference';
     let best;
@@ -423,44 +448,24 @@ window.ACCCTrackReview = (() => {
   }
   function mapped() {
     if (!state.track || trackMismatch() || !state.result) return false;
-    return state.progressMode === 'manual' ? state.origin !== null && state.aligned : sides.some(side => progressFor(side));
+    return sides.some(side => progressFor(side));
   }
-  function setMode(mode) {state.mode = mode; render();}
   function render() {
     if (!helpers) return;
     const mismatch = trackMismatch();
-    if (mismatch && (state.origin !== null || state.aligned)) {
-      state.origin = null;
-      state.aligned = false;
-      state.mode = 'origin';
-      save();
-    }
     const ranges = ['current', 'reference'].filter(side => state.result?.[side] || state.result?.source_review?.[side]);
-    const paired = ranges.length === 2;
     for (const side of ['current', 'reference']) $(`track${side}Video`).hidden = !ranges.includes(side);
     document.querySelector('.track-video-pair').classList.toggle('single-recording', ranges.length === 1);
-    $('trackRangesAlignedLabel').textContent = paired ? 'Both selected ranges start at this origin' : 'Selected range starts at this origin';
-    $('trackReverse').checked = state.reverse;
-    $('trackRangesAligned').checked = state.aligned;
-    $('trackRangesAligned').disabled = mismatch || !ranges.length || state.origin === null || !state.track;
-    $('trackSetOrigin').disabled = mismatch || !state.track;
-    $('trackReviewPosition').disabled = !mapped();
-    for (const [id, mode] of [['trackSetOrigin', 'origin'], ['trackReviewPosition', 'review']]) {
-      $(id).classList.toggle('active', state.mode === mode);
-      $(id).setAttribute('aria-pressed', String(state.mode === mode));
-    }
     $('trackLength').textContent = state.track ? `${Math.round(state.track.length_m).toLocaleString()} m / nominal lap` : '-- m';
-    $('trackProgressMode').value = state.progressMode;
-    $('trackManualControls').hidden = state.progressMode !== 'manual';
-    document.querySelector('.track-legend-origin').hidden = state.progressMode !== 'manual';
-    $('trackOriginStatus').textContent = state.progressMode === 'manual' ? state.origin === null ? 'Recording origin not set' : 'Manual recording origin' : state.progressMode === 'one_lap' ? 'Selected range · one lap' : 'Lap start / finish';
+    $('trackDetectionStatus').textContent = state.detectionMessage;
+    $('trackDetectionStatus').hidden = !state.detectionMessage;
     renderCursor();
-    let status = !state.result ? 'Select a recording and range for review.' : !state.track ? 'Select a circuit to see its layout.' : state.progressMode === 'manual' ? state.origin === null ? 'Set the recording origin where the selected range begins, then confirm the range alignment.' : !state.aligned ? `Origin placed. Confirm ${paired ? 'both ranges begin' : 'the range begins'} here to enable the cars.` : 'Play or scrub to move the cars. Click the circuit to review that position.' : mapped() ? 'Play or scrub to move each car around its lap. Hover a car for its name.' : 'Select a detected or reviewed lap. For a full lap without saved boundaries, choose “Selected range is one lap”.';
-    if (mapped() && ranges.some(side => !state.result[side].distance_complete)) status += ' Speed gaps may shift the estimated location.';
+    let status = !state.result ? 'Select a recording and range for review.' : !state.track ? 'Choose a circuit, or select a complete lap for automatic detection.' : mapped() ? 'Play or scrub to follow each run around its lap.' : 'Select a lap, or set its start and end, to show automatic lap progress.';
+    if (mapped() && ranges.some(side => state.result[side] && !state.result[side].distance_complete)) status += ' Speed gaps may shift the estimated location.';
     if (mapped() && state.result.alignment?.applied) status += ` Distance registered at ${state.result.alignment.anchors.length} paired positions.`;
-    if (mapped() && ranges.some(side => state.result[side].distance_estimated)) status += ' Brief missing speed observations are estimated.';
+    if (mapped() && ranges.some(side => state.result[side]?.distance_estimated)) status += ' Brief missing speed observations are estimated.';
     if (state.mapMessage) status = state.mapMessage;
-    if (mismatch) status = 'Selected map differs from the recording circuit label. Map alignment is disabled; select the matching circuit layout. Source frames remain available.';
+    if (mismatch) status = 'Selected map differs from the recording circuit label. Automatic position is unavailable; select the matching circuit layout. Source frames remain available.';
     $('trackReviewStatus').textContent = status;
     const credit = $('trackCredit');
     credit.replaceChildren();
@@ -478,13 +483,13 @@ window.ACCCTrackReview = (() => {
     }
     const hasTiming = state.track?.timing_lines?.some(line => line.kind === 'start_finish');
     $('trackAnnotationNote').textContent = state.track ? (state.track.annotations?.note || state.track.annotation_note ||
-      `${hasTiming ? 'Circuit timing lines are separate from your manually placed recording origin.' : 'Timing-line positions are not available for this layout.'} ${state.track.annotation_positions_kind?.includes('approximate') ? 'Corner and timing positions are approximate projections of source lap markers.' : 'Corner and straight labels refer to this diagram.'}`) : 'Select a circuit to view its sources.';
+      `${hasTiming ? 'Lap progress begins and ends at the circuit start / finish line.' : 'Timing-line positions are not available for this layout.'} ${state.track.annotation_positions_kind?.includes('approximate') ? 'Corner and timing positions are approximate projections of source lap markers.' : 'Corner and straight labels refer to this diagram.'}`) : 'Select a circuit to view its sources.';
     document.querySelector('.track-legend-finish').hidden = !hasTiming;
     document.querySelector('.track-legend-sector').hidden = !state.track?.timing_lines?.some(line => line.kind === 'sector');
     preparePace(); draw();
   }
   function preparePace() {
-    const key = [state.result, state.track, state.progressMode, state.origin, state.aligned, state.reverse];
+    const key = [state.result, state.track];
     if (state.paceKey?.every((value, index) => value === key[index])) return;
     state.paceKey = key;
     state.pace = null;
@@ -498,11 +503,7 @@ window.ACCCTrackReview = (() => {
       passages[side] = (state.result.points || []).map(point => {
         const sample = point[side], mapped = sample && progressFor(side, point);
         if (!mapped || mapped.timeOnly || mapped.finished || sample.distance_segment_id === null) return null;
-        const distanceProgress = Number(sample.raw_distance ?? sample.distance) / state.track.length_m;
-        // Preserve the finish endpoint, but keep subsequent wrapped passages
-        // so the helper can reject ambiguous sections from multiple laps.
-        let progress = mapped.progress;
-        if (state.progressMode === 'manual') progress = distanceProgress > 0 && Math.abs(distanceProgress - Math.round(distanceProgress)) < 1e-9 ? 1 : wrap(distanceProgress);
+        const progress = mapped.progress;
         return {progress, time: Number(sample.time), segment: sample.distance_segment_id ?? sample.segment_id};
       });
     }
@@ -512,15 +513,14 @@ window.ACCCTrackReview = (() => {
     canvas.dataset.paceBuilds = Number(canvas.dataset.paceBuilds || 0) + 1;
     legend.hidden = false; status.hidden = false;
     for (const side of sides) {
-      const label = side === 'current' ? 'Your run' : 'Reference', car = helpers.carName?.(side);
+      const label = side === 'current' ? 'Your run' : 'Reference';
       const item = $(side === 'current' ? 'trackPaceCurrent' : 'trackPaceReference');
-      item.textContent = `${label} faster${car && car !== 'Car not labelled' ? ' · ' + car : ''}`;
+      item.textContent = `${label} faster`;
     }
     const available = bins.length - counts.unavailable;
-    status.textContent = available ? 'Local time gained · hover the colored track for section times.' : 'Select a lap for each car, or set how the selected ranges map to this circuit.';
-    const origin = state.progressMode === 'manual' ? state.origin : Number(state.track.timing_lines?.find(line => line.kind === 'start_finish')?.progress || 0);
-    if (origin === null || (state.progressMode === 'manual' && !state.aligned)) return;
-    const direction = state.progressMode === 'manual' && state.reverse ? -1 : 1;
+    status.textContent = available ? 'Local time gained · hover the colored track for section times.' : 'Select a lap, or set its start and end, for each run to compare circuit sections.';
+    const origin = Number(state.track.timing_lines?.find(line => line.kind === 'start_finish')?.progress || 0);
+    const direction = 1;
     // Cache paths in circuit coordinates. Playback and resizing only paint them.
     const vertices = [];
     for (const point of state.track.points) for (let lap = -1; lap <= 2; lap++) {
@@ -542,7 +542,7 @@ window.ACCCTrackReview = (() => {
   function hidePaceTip() {if ($('trackPaceTip')) $('trackPaceTip').hidden = true;}
   function hoverPace(event) {
     const nearest = nearestPosition(event), pace = state.pace, tip = $('trackPaceTip');
-    if (!nearest || !pace || state.mode === 'origin') {hidePaceTip(); return;}
+    if (!nearest || !pace) {hidePaceTip(); return;}
     const progress = wrap((nearest.fraction - pace.origin) * pace.direction);
     const bin = pace.bins[Math.min(pace.bins.length - 1, Math.floor(progress * pace.bins.length))];
     const label = bin.winner === 'unavailable' ? 'No comparison in this section' : bin.winner === 'equal' ? 'Even pace · within 0.010 s' : `${bin.winner === 'current' ? 'Your run' : 'Reference'} gains ${Math.abs(bin.gain).toFixed(3)} s here`;
@@ -620,21 +620,12 @@ window.ACCCTrackReview = (() => {
       ctx.beginPath(); ctx.moveTo(leader.point.x, leader.point.y); ctx.lineTo(leader.x, leader.y); ctx.stroke();
     }
     ctx.setLineDash([]);
-    if (state.progressMode === 'manual' && state.origin !== null) {
-      const origin = pixel(pathPoint(state.origin));
-      ctx.fillStyle = '#d5e991'; ctx.fillRect(origin.x - 4, origin.y - 4, 8, 8);
-      const direction = state.reverse ? -1 : 1;
-      const a = pixel(pathPoint(state.origin + direction * .035)), b = pixel(pathPoint(state.origin + direction * .043));
-      const angle = Math.atan2(b.y - a.y, b.x - a.x);
-      ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(angle);
-      ctx.beginPath(); ctx.moveTo(6, 0); ctx.lineTo(-5, -4); ctx.lineTo(-5, 4); ctx.closePath(); ctx.fill(); ctx.restore();
-    }
     if (mapped()) {
       const cars = sides.map(side => ({side, progress: progressFor(side)})).filter(car => car.progress);
       for (const car of cars) {
         const {side, progress} = car, p = pixel(pathPoint(progress.fraction));
         const before = pixel(pathPoint(progress.fraction - .001)), after = pixel(pathPoint(progress.fraction + .001));
-        const angle = Math.atan2(after.y - before.y, after.x - before.x) + (state.progressMode === 'manual' && state.reverse ? Math.PI : 0);
+        const angle = Math.atan2(after.y - before.y, after.x - before.x);
         const marker = $(markerId(side));
         // Keep both cars individually visible when they occupy the same point.
         const overlap = cars.length === 2 && Math.hypot(p.x - pixel(pathPoint(cars[1 - cars.indexOf(car)].progress.fraction)).x, p.y - pixel(pathPoint(cars[1 - cars.indexOf(car)].progress.fraction)).y) < 23;
@@ -643,7 +634,7 @@ window.ACCCTrackReview = (() => {
         marker.querySelector('svg').style.transform = `rotate(${angle}rad)`;
         marker.dataset.progress = progress.progress;
         marker.dataset.x = pathPoint(progress.fraction).x; marker.dataset.y = pathPoint(progress.fraction).y;
-        const caption = `${side === 'current' ? 'Your run' : 'Reference'}: ${helpers.carName?.(side) || 'Car not labelled'}\n${(progress.progress * 100).toFixed(1)}% of lap${progress.timeOnly ? ' · estimated from time' : ''}${progress.unverified ? '\nUnverified lap boundaries' : ''}${progress.finished ? '\nLap finished' : ''}`;
+        const caption = `${side === 'current' ? 'Your run' : 'Reference'}\n${(progress.progress * 100).toFixed(1)}% of lap${progress.timeOnly ? ' · estimated from time' : ''}${progress.unverified ? '\nUnverified lap boundaries' : ''}${progress.finished ? '\nLap finished' : ''}`;
         marker.setAttribute('aria-label', caption);
         const tip = marker.querySelector('.track-annotation-tip'); tip.textContent = caption;
         positionTip(tip, p.x, box.width); marker.hidden = false;
@@ -695,8 +686,7 @@ window.ACCCTrackReview = (() => {
       button.onclick = event => {
         event.stopPropagation();
         if (trackMismatch()) return;
-        if (state.mode === 'origin') placeOrigin(Number(item.progress));
-        else if (mapped()) seekProgress(Number(item.progress));
+        if (mapped()) seekProgress(Number(item.progress));
       };
       layer.append(button);
       entries.push({button, tip, point, x, y, type: item.type, numbered});
@@ -753,12 +743,7 @@ window.ACCCTrackReview = (() => {
     const best = nearestPosition(event);
     if (!best) return;
     state.mapMessage = null;
-    if (state.mode === 'origin') {
-      placeOrigin(best.fraction);
-    } else if (mapped()) seekProgress(best.fraction);
-  }
-  function placeOrigin(fraction) {
-    state.origin = wrap(fraction); state.aligned = false; state.mode = 'review'; save(); render();
+    if (mapped()) seekProgress(best.fraction);
   }
   function seekDistance(distance) {
     const end = state.result?.extent?.[1] || 0;

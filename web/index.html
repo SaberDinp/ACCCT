@@ -27,7 +27,6 @@
       <button class="tab active" data-view="analysis"><i data-lucide="chart-no-axes-combined"></i>Analysis</button>
       <button class="tab" data-view="credits"><i data-lucide="heart-handshake"></i>Credits</button>
     </nav>
-    <div class="header-actions"><button class="button primary" id="importRecording"><i data-lucide="video"></i><span>Import recording</span></button></div>
   </header>
 
   <div class="recording-strip"><span><span class="footer-indicator"></span>RECORDED LAP ANALYSIS</span><p>Review your inputs. Compare a reference lap. Find your next improvement.</p></div>
@@ -35,32 +34,10 @@
 
   <main>
     <section class="view active" id="view-analysis">
-      <div class="page-heading analysis-heading"><div><span class="eyebrow">SESSION REVIEW</span><h1>Driving analysis</h1></div><div class="heading-actions"><button class="button subtle compact" data-view="sessions"><i data-lucide="folder-open"></i>Recordings</button><button class="button subtle compact" data-view="calibration"><i data-lucide="scan-line"></i>Calibration</button><span class="subtle-text" id="analysisSession">Select a recording to begin</span><button class="button primary compact" id="exportComparison" title="Download a compact JSON comparison to share with an AI" disabled><i data-lucide="download"></i>Export for AI</button></div></div>
+      <div class="page-heading analysis-heading"><div><span class="eyebrow">SESSION REVIEW</span><h1>Driving analysis</h1></div><div class="heading-actions"><span class="subtle-text" id="analysisSession">Select a recording to begin</span><button class="button primary compact" id="exportComparison" title="Download a compact JSON comparison to share with an AI" disabled><i data-lucide="download"></i>Export for AI</button></div></div>
       <section id="referenceWorkspace" class="reference-workspace" aria-label="Independent session comparison"></section>
     </section>
 
-    <section class="view" id="view-sessions"><button class="text-button back-analysis" data-view="analysis"><i data-lucide="arrow-left"></i>Back to analysis</button><div class="page-heading"><div><span class="eyebrow">YOUR DRIVING</span><h1>Your recordings</h1></div><button class="icon-button" id="refreshSessions" title="Refresh sessions" aria-label="Refresh sessions"><i data-lucide="refresh-cw"></i></button></div><div class="table-scroll"><table class="session-table"><thead><tr><th>Session</th><th>Recorded</th><th>Duration</th><th>Samples</th><th>Source</th><th></th></tr></thead><tbody id="sessionsTable"><tr><td colspan="6" class="empty-cell">No saved sessions yet.</td></tr></tbody></table></div></section>
-
-    <section class="view" id="view-calibration">
-      <button class="text-button back-analysis" data-view="analysis"><i data-lucide="arrow-left"></i>Back to analysis</button>
-      <div class="page-heading"><div><span class="eyebrow">HUD CONFIGURATION</span><h1>Calibration</h1></div><div class="heading-actions"><button class="button subtle" id="reloadProfile"><i data-lucide="rotate-ccw"></i>Reload</button><button class="button primary" id="saveProfile"><i data-lucide="save"></i>Save profile</button></div></div>
-      <div class="calibration-grid">
-        <div><div class="section-bar"><h2>HUD regions</h2><span id="calibrationStatus" class="subtle-text">Select a channel</span></div><div class="calibration-preview"><canvas id="calibrationCanvas" width="1920" height="1080" aria-label="HUD calibration region editor"></canvas></div><div class="calibration-recording"><label class="field-label">Saved recording<select id="calibrationRecording"><option value="">Import a recording first</option></select></label><label class="field-label">Frame time / seconds<input id="calibrationTime" type="number" min="0" step="0.1" value="0"></label></div><div class="calibration-toolbar"><label>Preview magnification <select id="calibrationZoom"><option value="1">1x</option><option value="2">2x</option><option value="4">4x</option></select></label><button class="button subtle compact" id="refreshCalibration"><i data-lucide="camera"></i>Load frame</button></div></div>
-        <aside class="calibration-controls">
-          <label class="field-label">Profile name<input id="profileName" type="text" value="ACC PS5"></label>
-          <label class="field-label">Active region<select id="roiChannel"><option value="brake">Brake</option><option value="throttle">Throttle</option><option value="speed">Speed</option><option value="gear">Gear</option><option value="rpm">RPM</option><option value="steering">Steering indicator</option><option value="lap_time">Lap timer</option><option value="labels">HUD visibility anchor</option></select></label>
-          <div class="roi-grid"><label>X<input id="roiX" type="number" min="0" max="1" step="0.001"></label><label>Y<input id="roiY" type="number" min="0" max="1" step="0.001"></label><label>Width<input id="roiW" type="number" min="0.001" max="1" step="0.001"></label><label>Height<input id="roiH" type="number" min="0.001" max="1" step="0.001"></label></div>
-          <label class="field-label" id="directionField">Fill direction<select id="roiDirection"><option value="bt">Bottom to top</option><option value="tb">Top to bottom</option><option value="lr">Left to right</option><option value="rl">Right to left</option></select></label>
-          <div class="calibration-divider"></div><div class="section-bar"><h2>Detection</h2></div>
-          <label class="toggle-row"><span>Automatic HUD alignment</span><input id="autoCalibration" type="checkbox" checked></label>
-          <label class="field-label">HUD layout<select id="hudLayout"><option value="auto">Automatic</option><option value="current">Current ACC</option><option value="legacy">Legacy ACC</option></select></label>
-          <label class="field-label">HUD speed unit<select id="speedUnit"><option value="auto">Automatic</option><option value="km/h">km/h</option><option value="mph">mph</option></select></label>
-          <label class="field-label">Minimum anchor score<input id="minConfidence" type="range" min="0.3" max="1" step="0.05" value="0.55"><output id="minConfidenceLabel">55%</output></label>
-          <button class="button subtle" id="downloadProfile"><i data-lucide="download"></i>Export profile</button>
-          <div class="subtle-text calibration-message" id="profileMessage" role="status"></div>
-        </aside>
-      </div>
-    </section>
     <section class="view" id="view-credits" aria-label="Rice Racing credits and support"></section>
   </main>
 

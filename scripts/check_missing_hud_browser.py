@@ -18,7 +18,7 @@ from playwright.async_api import async_playwright, expect
 
 from check_delete_swap_browser import CURRENT, REFERENCE, PROTECTED
 from browser_video_fixtures import VideoFixtures
-from browser_fixtures import ROOT, SOCKET_FIXTURE, StaticHandler
+from browser_fixtures import ROOT, SOCKET_FIXTURE, StaticHandler, lock_lap_boundary
 
 OUT = ROOT / 'artifacts/missing-hud-browser'
 
@@ -113,10 +113,9 @@ async def boundary_checks(browser, clip, url, checks, errors):
             await expect(page.locator('#comparisonStatus')).to_have_text('', timeout=15000)
             await expect(page.locator('#axisDistance')).to_have_attribute('aria-pressed', 'true')
             edge, value = ('Start', '1.15') if mode.startswith('leading_') else ('End', '6.85')
-            await page.locator(f'#{side}{edge}').fill(value)
-            await page.locator(f'#{side}{edge}').press('Tab')
+            await lock_lap_boundary(page, side, edge, value)
             await expect(page.locator(f'#{side}Range')).to_have_value('custom')
-            await expect(page.locator(f'#{side}Segment')).to_have_value('1')
+            assert await page.locator(f'#{side}Segment').count() == 0
             await expect(page.locator('#axisElapsed')).to_have_attribute('aria-pressed', 'true', timeout=15000)
             await expect(page.locator('#comparisonWarnings')).to_contain_text('preserve the selected IN and OUT')
             start, end = (1.15, 6.4) if mode.startswith('leading_') else (1.6, 6.85)
@@ -140,9 +139,9 @@ async def boundary_checks(browser, clip, url, checks, errors):
                 await expect(page.locator(f'#track{side}Values')).to_contain_text('End of selected range')
             await page.reload()
             await page.get_by_role('button', name='Analysis', exact=True).click()
-            await expect(page.locator(f'#{side}{edge}')).to_have_value(value, timeout=15000)
+            await expect(page.locator(f'#{side}{edge}')).to_have_value(f'{float(value):.3f}', timeout=15000)
             await expect(page.locator(f'#{side}Range')).to_have_value('custom')
-            await expect(page.locator(f'#{side}Segment')).to_have_value('1')
+            assert await page.locator(f'#{side}Segment').count() == 0
             await expect(page.locator('#axisElapsed')).to_have_attribute('aria-pressed', 'true')
             await expect(page.locator('#comparisonStatus')).to_have_text('', timeout=15000)
             await page.wait_for_function('''({side, stamp}) =>

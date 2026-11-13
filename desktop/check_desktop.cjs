@@ -6,6 +6,14 @@ const os = require('node:os');
 const path = require('node:path');
 const net = require('node:net');
 
+
+async function revealControl(page, selector) {
+  const closedDetails = page.locator(selector).locator('xpath=ancestor::details[not(@open)]');
+  for (let count = await closedDetails.count(); count > 0; count = await closedDetails.count()) {
+    await closedDetails.last().locator(':scope > summary').click();
+  }
+}
+
 async function main() {
   const executablePath = process.argv[2];
   if (!executablePath) throw new Error('Usage: node desktop/check_desktop.cjs <packaged executable>');
@@ -59,7 +67,14 @@ async function main() {
         }
         assert.deepEqual((await page.locator('.main-tabs button').allTextContents()).map(value => value.trim()), ['Analysis', 'Credits']);
         assert.equal(await page.locator('#view-analysis').isVisible(), true);
-        assert.equal(await page.locator('#view-monitor').count(), 0);
+        assert.equal(await page.locator('#view-monitor, #view-calibration, #view-sessions, #importRecording').count(), 0);
+        const removedControls = ['comparisonAlignmentMode', 'confirmAlignment', 'confirmFinishAlignment',
+          'confirmSameTrack', 'trackProgressMode', 'trackManualControls', 'trackcurrentCar', 'trackreferenceCar',
+          'alignmentSetStart', 'alignmentSetEnd', 'referenceAutoCalibration'];
+        for (const role of ['current', 'reference']) {
+          for (const suffix of ['Segment', 'SaveLapRange', 'FindCrossing', 'EditContext']) removedControls.push(role + suffix);
+        }
+        for (const id of removedControls) assert.equal(await page.locator('#' + id).count(), 0, `Removed control ${id}`);
         const api = async endpoint => {
           const response = await fetch(origin + endpoint);
           assert.equal(response.status, 200, endpoint);
@@ -75,7 +90,8 @@ async function main() {
           assert.deepEqual(await api('/api/sessions'), []);
           for (const role of ['current', 'reference']) {
             console.log(`Importing ${role} recording…`);
-            await page.locator('#importRecording').click();
+            await revealControl(page, `#${role}ImportRecording`);
+            await page.locator(`#${role}ImportRecording`).click();
             await page.locator('#referenceImportDialog').waitFor({ state: 'visible' });
             await page.locator('#recordingImportRole').selectOption(role);
             await page.locator('#referenceName').fill(`Desktop test ${role}`);
@@ -106,22 +122,56 @@ async function main() {
           }
         }
         assert.equal((await api('/api/sessions')).length, 2);
+        const inferred = await fetch(origin + '/api/track-inference', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: sessionIds.current, range: { start_time: 0, end_time: 2.5 }, range_is_lap: false })
+        });
+        const inference = await inferred.json();
+        assert.equal(inferred.status, 200, `Installed backend provides circuit inference: ${JSON.stringify(inference)}`);
+        assert.equal(inference.auto_select, false, 'A three-second clip must not identify a circuit.');
+        assert.equal(inference.track_id, null);
+
         await page.waitForFunction(() => document.getElementById('comparisonValues').textContent.includes('Source'));
         await page.waitForFunction(ids => !document.getElementById('trackReviewPlay').disabled &&
           ['current', 'reference'].every(role => {
             const video = document.getElementById('track' + role + 'Native');
             return video?.videoWidth > 0 && !video.hidden && video.currentSrc.includes(`/api/sessions/${ids[role]}/`);
           }), sessionIds, { timeout: 60000 });
+        if (attempt === 0) {
+          console.log('Checking start/end selection and a single Lock action…');
+          for (const role of ['current', 'reference']) {
+            for (const [edge, time] of [['Start', '0.1'], ['End', '2.5']]) {
+              const untouched = edge === 'Start' ? 'End' : 'Start';
+              const previous = await page.locator(`#${role}${untouched}`).inputValue();
+              await page.locator(`#${role}${edge}Boundary`).click();
+              await page.locator('#alignmentDialog').waitFor({ state: 'visible' });
+              assert.equal(await page.locator('#alignmentTitle').innerText(), `Selecting ${edge.toLowerCase()} of lap`);
+              assert.equal(await page.locator('#alignmentDialog').getByRole('button', { name: 'Lock', exact: true }).count(), 1);
+              await page.locator('#alignmentTime').fill(time);
+              await page.locator('#alignmentTime').dispatchEvent('change');
+              await page.waitForFunction(() => !document.getElementById('alignmentLock').disabled);
+              await page.locator('#alignmentLock').click();
+              await page.locator('#alignmentDialog').waitFor({ state: 'hidden' });
+              assert.ok(Math.abs(Number(await page.locator(`#${role}${edge}`).inputValue()) - Number(time)) <= 0.04);
+              assert.equal(await page.locator(`#${role}${untouched}`).inputValue(), previous, 'Lock changes only the chosen boundary.');
+              await page.waitForFunction(() => document.getElementById('runComparison').getAttribute('aria-busy') === 'false' &&
+                !document.getElementById('comparisonStatus').classList.contains('comparison-dirty'));
+            }
+          }
+        } else {
+          for (const role of ['current', 'reference']) {
+            assert.ok(Math.abs(Number(await page.locator(`#${role}Start`).inputValue()) - 0.1) <= 0.04);
+            assert.ok(Math.abs(Number(await page.locator(`#${role}End`).inputValue()) - 2.5) <= 0.04);
+          }
+        }
         if (attempt === 0) await page.locator('#trackSelect').selectOption('silverstone');
         else await page.waitForFunction(() => document.getElementById('trackSelect').value === 'silverstone');
         await page.waitForFunction(ids => document.getElementById('trackAnnotations').dataset.trackId === 'silverstone' &&
           JSON.parse(window.ACCCDesktopPreferences.getItem(`accc.track-review.v2.${ids.current}:${ids.reference}`) || '{}').track === 'silverstone', sessionIds);
         await page.screenshot({ path: path.join(output, `desktop-analysis-${attempt + 1}.png`), fullPage: false });
 
-        console.log('Checking recording library and CSV export…');
-        await page.locator('.main-tabs [data-view="analysis"]').click();
-        await page.getByRole('button', { name: 'Recordings', exact: true }).click();
-        await page.locator('#view-sessions').waitFor({ state: 'visible' });
+        console.log('Checking CSV export from video options…');
+        await revealControl(page, '#currentExportCsv');
         await application.evaluate(({ session }, savePath) => {
           globalThis.acccTestDownload = new Promise(resolve => {
             session.defaultSession.once('will-download', (_event, item) => {
@@ -130,15 +180,11 @@ async function main() {
             });
           });
         }, path.join(output, 'session.csv'));
-        const row = page.locator('tr').filter({ has: page.locator(`.session-open[data-id="${sessionIds.current}"]`) });
-        await row.getByRole('link', { name: 'Export CSV', exact: true }).click();
+        await page.locator('#currentExportCsv').click();
         assert.equal(await application.evaluate(() => Promise.race([
           globalThis.acccTestDownload, new Promise(resolve => setTimeout(() => resolve('timeout'), 15000))
         ])), 'completed');
         assert.ok(fs.readFileSync(path.join(output, 'session.csv'), 'utf8').startsWith('source_time_s'));
-        await page.locator('.main-tabs [data-view="analysis"]').click();
-        await page.getByRole('button', { name: 'Calibration', exact: true }).click();
-        await page.locator('#view-calibration').waitFor({ state: 'visible' });
         console.log('Checking credits, copy and external donation link…');
         await page.locator('.main-tabs [data-view="credits"]').click();
         await page.locator('#creditsTitle').waitFor({ state: 'visible' });
@@ -164,7 +210,7 @@ async function main() {
         await page.screenshot({ path: path.join(output, `desktop-credits-${attempt + 1}.png`), fullPage: false });
         assert.deepEqual(errors, []);
         report.launches.push({ ...desktop, origin, recordedImports: 'passed', comparison: 'passed', videoPlayback: 'passed',
-          csvExport: 'passed', persistence: 'passed', credits: 'passed', donationCopyAndLink: 'passed', javascriptErrors: errors });
+          simplifiedInterface: 'passed', lapBoundaryLock: 'passed', circuitInference: 'passed', csvExport: 'passed', persistence: 'passed', credits: 'passed', donationCopyAndLink: 'passed', javascriptErrors: errors });
       } catch (error) {
         for (const filename of ['desktop-settings.json', 'analysis-preferences.json']) {
           const source = path.join(env.ACCC_DESKTOP_USER_DATA, filename);

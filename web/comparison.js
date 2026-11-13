@@ -75,8 +75,6 @@ window.ACCCComparison = (() => {
     exportResultRevision: null,
     libraryEpoch: 0,
     deletedSessions: new Set(),
-    catalog: null,
-    contextEditor: null,
     importing: false,
     playback: {playing: false, frame: null, clock: [], lastPaint: 0, lastPreview: 0}
   };
@@ -90,56 +88,28 @@ window.ACCCComparison = (() => {
   const notifySelectedRecording = () => helpers.onCurrentLoaded?.(state.runs.current.data || state.runs.reference.data || null);
 
   function sourceMarkup(side) {
-    return `<div class="comparison-run"><div class="run-label"><span class="run-line ${side === 'reference' ? 'reference' : ''}"></span>${names[side].toUpperCase()}<span class="tag" id="${side}Calibration">NO RECORDING</span></div><div class="run-session-row"><div class="run-fields"><select id="${side}Session" aria-label="${names[side]} session"><option value="">Select a recording</option></select><div class="run-range-row"><select id="${side}Range" aria-label="${names[side]} lap or segment" disabled><option value="">Select a lap or segment</option></select><label class="range-time">IN <input id="${side}Start" type="number" step="0.001" min="0" aria-label="${names[side]} start time" disabled></label><label class="range-time">OUT <input id="${side}End" type="number" step="0.001" min="0" aria-label="${names[side]} end time" disabled></label></div></div><div class="run-thumbnail"><img id="${side}Frame" alt="${names[side]} source frame" hidden><span class="thumb-empty" id="${side}FrameEmpty">NO FRAME</span><span class="thumb-time" id="${side}FrameTime" hidden></span></div></div><div class="run-detail"><span id="${side}Detail">No recording selected</span><select class="run-custom-segment" id="${side}Segment" aria-label="${names[side]} custom segment" hidden></select></div></div>`;
+    return `<div class="comparison-run"><div class="run-label"><span class="run-line ${side === 'reference' ? 'reference' : ''}"></span>${names[side].toUpperCase()}<span class="tag" id="${side}RecordingStatus">NO RECORDING</span></div><details class="run-video-options" open><summary>Video options</summary><div class="run-video-options-content"><button class="button subtle compact" id="${side}ImportRecording"><i data-lucide="video"></i>Import recording</button><select id="${side}Session" aria-label="${names[side]} saved recording"><option value="">Select a recording</option></select><a class="button subtle compact disabled" id="${side}ExportCsv" aria-label="Export ${names[side].toLowerCase()} CSV" aria-disabled="true"><i data-lucide="download"></i>Export CSV</a><button class="icon-button run-delete" id="${side}DeleteSession" title="Delete recording" aria-label="Delete ${names[side].toLowerCase()} recording" disabled><i data-lucide="trash-2"></i></button></div></details><div class="run-boundary-actions">${['Start', 'End'].map(edge => `<button class="button subtle lap-boundary-button inspect-boundary" id="${side}${edge}Boundary" data-side="${side}" data-edge="${edge}" disabled><span>${edge} of lap</span><small id="${side}${edge}BoundaryTime">Not selected</small></button>`).join('')}</div><div class="run-detail"><span id="${side}Detail">No recording selected</span></div><input type="hidden" id="${side}Range"><input type="hidden" id="${side}Start"><input type="hidden" id="${side}End"><div class="run-thumbnail" hidden><img id="${side}Frame" alt="${names[side]} source frame" hidden><span id="${side}FrameEmpty">NO FRAME</span><span id="${side}FrameTime" hidden></span></div></div>`;
   }
 
   function alignmentMarkup() {
-    return `<div class="lap-registration"><div class="registration-heading"><label class="registration-mode">Distance registration<select id="comparisonAlignmentMode" aria-label="Distance registration"><option value="raw">Raw speed distance</option><option value="lap_endpoints">Same-lap endpoints</option><option value="landmarks">Paired track landmarks</option></select></label><div class="registration-confirmations" id="registrationConfirmations"><label class="align-toggle"><input id="confirmFinishAlignment" type="checkbox">OUT points are the same finish crossing</label></div><span id="registrationStatus" class="registration-status"></span></div><div id="landmarkEditor" hidden><div class="landmark-heading"><span>TRACK LANDMARK</span><span>Your source / s</span><span>Reference source / s</span><span></span></div><div id="landmarkRows"></div><div class="landmark-actions"><button class="button subtle compact" id="addComparisonLandmark"><i data-lucide="plus"></i>Add landmark</button><span id="landmarkError" role="status"></span></div></div></div><div class="comparison-legend" aria-label="Lap legend"><div><span class="run-line current"></span><span><strong id="comparisonLegendCurrent">Your run</strong><small>YOUR RUN / SOLID</small></span></div><div><span class="run-line reference"></span><span><strong id="comparisonLegendReference">Reference</strong><small>REFERENCE / DASHED</small></span></div><span class="delta-sign-note">Delta + slower / - faster</span></div>`;
+    return `<p class="lap-boundary-hint" id="lapBoundaryHint" hidden>Lock the start of each lap to confirm time alignment.</p><div class="comparison-legend" aria-label="Lap legend"><div><span class="run-line current"></span><span><strong id="comparisonLegendCurrent">Your run</strong><small>YOUR RUN / SOLID</small></span></div><div><span class="run-line reference"></span><span><strong id="comparisonLegendReference">Reference</strong><small>REFERENCE / DASHED</small></span></div><span class="delta-sign-note">Delta + slower / - faster</span></div>`;
   }
 
   function init(context) {
     if (ready) return;
     helpers = context;
-    $('referenceWorkspace').innerHTML = `<div class="reference-header"><h2>Reference comparison</h2><div class="reference-header-actions"><button class="icon-button" id="refreshComparisons" title="Refresh recordings" aria-label="Refresh recordings"><i data-lucide="refresh-cw"></i></button><button class="button subtle compact" id="openReferenceImport"><i data-lucide="video"></i>Import reference</button></div></div><div class="import-status-strip" id="activeImport" hidden><i data-lucide="scan-line"></i><div class="import-status-copy"><strong id="activeImportName">Reference import</strong><small id="activeImportDetail"></small><div class="import-progress"><span id="activeImportProgress"></span></div></div><span class="import-percent" id="activeImportPercent"></span><button class="icon-button" id="cancelActiveImport" title="Cancel import" aria-label="Cancel import"><i data-lucide="x"></i></button></div><div class="run-pair">${sourceMarkup('current')}${sourceMarkup('reference')}</div><div class="compare-toolbar"><div class="compare-toolbar-left"><div class="axis-segments" role="group" aria-label="Comparison axis"><button id="axisDistance" class="active" aria-pressed="true">Distance</button><button id="axisElapsed" aria-pressed="false">Time</button></div><label class="align-toggle"><input id="confirmAlignment" type="checkbox">Same track and start marker</label></div><div class="compare-toolbar-right"><span class="compare-unit-note" id="compareAxisNote">Estimated distance / metres</span><button class="icon-button" id="compareZoomOut" title="Zoom out" aria-label="Zoom out"><i data-lucide="zoom-out"></i></button><button class="icon-button" id="compareZoomIn" title="Zoom in" aria-label="Zoom in"><i data-lucide="zoom-in"></i></button><button class="icon-button" id="compareZoomReset" title="Reset zoom" aria-label="Reset zoom"><i data-lucide="maximize-2"></i></button><button class="button primary compact" id="runComparison"><i data-lucide="chart-no-axes-combined"></i>Compare</button></div></div><div class="comparison-empty-status" id="comparisonStatus" role="status">Select two recordings to compare.</div><div class="comparison-body"><canvas id="synchronizedChart" class="synchronized-chart" aria-label="Synchronized speed, brake, throttle, gear, steering and time delta traces" tabindex="0"></canvas><aside class="comparison-inspector"><div class="cursor-heading"><span>CURSOR</span><strong id="comparisonCursor">-- m</strong></div><table class="cursor-table"><thead><tr><th>Channel</th><th>Your</th><th>Ref.</th><th>Diff.</th></tr></thead><tbody id="comparisonValues"></tbody></table><div class="section-bar"><h2>Channel coverage</h2></div><div class="compare-channel-availability" id="comparisonAvailability"></div><div class="comparison-warning-list" id="comparisonWarnings"></div></aside></div><div class="compare-summary-line"><span id="comparisonCurrentSummary">YOUR RUN <strong>--</strong></span><span id="comparisonDeltaSummary">DELTA <strong>Awaiting alignment</strong></span><span id="comparisonReferenceSummary">REFERENCE <strong>--</strong></span></div>`;
+    $('referenceWorkspace').innerHTML = `<div class="reference-header"><h2>Reference comparison</h2><div class="reference-header-actions"><button class="icon-button" id="refreshComparisons" title="Refresh recordings" aria-label="Refresh recordings"><i data-lucide="refresh-cw"></i></button></div></div><div class="import-status-strip" id="activeImport" hidden><i data-lucide="scan-line"></i><div class="import-status-copy"><strong id="activeImportName">Reference import</strong><small id="activeImportDetail"></small><div class="import-progress"><span id="activeImportProgress"></span></div></div><span class="import-percent" id="activeImportPercent"></span><button class="icon-button" id="cancelActiveImport" title="Cancel import" aria-label="Cancel import"><i data-lucide="x"></i></button></div><div class="run-pair">${sourceMarkup('current')}${sourceMarkup('reference')}</div><div class="compare-toolbar"><div class="compare-toolbar-left"><div class="axis-segments" role="group" aria-label="Comparison axis"><button id="axisDistance" class="active" aria-pressed="true">Distance</button><button id="axisElapsed" aria-pressed="false">Time</button></div></div><div class="compare-toolbar-right"><span class="compare-unit-note" id="compareAxisNote">Estimated distance / metres</span><button class="icon-button" id="compareZoomOut" title="Zoom out" aria-label="Zoom out"><i data-lucide="zoom-out"></i></button><button class="icon-button" id="compareZoomIn" title="Zoom in" aria-label="Zoom in"><i data-lucide="zoom-in"></i></button><button class="icon-button" id="compareZoomReset" title="Reset zoom" aria-label="Reset zoom"><i data-lucide="maximize-2"></i></button><button class="button primary compact" id="runComparison"><i data-lucide="chart-no-axes-combined"></i>Compare</button></div></div><div class="comparison-empty-status" id="comparisonStatus" role="status">Select two recordings to compare.</div><div class="comparison-body"><canvas id="synchronizedChart" class="synchronized-chart" aria-label="Synchronized speed, brake, throttle, gear, steering and time delta traces" tabindex="0"></canvas><aside class="comparison-inspector"><div class="cursor-heading"><span>CURSOR</span><strong id="comparisonCursor">-- m</strong></div><table class="cursor-table"><thead><tr><th>Channel</th><th>Your</th><th>Ref.</th><th>Diff.</th></tr></thead><tbody id="comparisonValues"></tbody></table><div class="section-bar"><h2>Channel coverage</h2></div><div class="compare-channel-availability" id="comparisonAvailability"></div><div class="comparison-warning-list" id="comparisonWarnings"></div></aside></div><div class="compare-summary-line"><span id="comparisonCurrentSummary">YOUR RUN <strong>--</strong></span><span id="comparisonDeltaSummary">DELTA <strong>Awaiting alignment</strong></span><span id="comparisonReferenceSummary">REFERENCE <strong>--</strong></span></div>`;
     $('referenceWorkspace').querySelector('.comparison-empty-status').insertAdjacentHTML('beforebegin', alignmentMarkup());
     $('refreshComparisons').insertAdjacentHTML('beforebegin', '<button class="icon-button" id="swapComparisonRuns" title="Swap your run and reference" aria-label="Swap your run and reference" disabled><i data-lucide="arrow-left-right"></i></button>');
-    const startConfirmation = $('confirmAlignment').parentElement;
-    startConfirmation.lastChild.textContent = 'Same circuit layout; IN points are the same start crossing';
-    $('registrationConfirmations').prepend(startConfirmation);
-    document.querySelector('.compare-toolbar-left').insertAdjacentHTML('beforeend', '<label class="align-toggle" id="sameTrackConfirmation"><input id="confirmSameTrack" type="checkbox">Same circuit layout</label>');
-    document.querySelector('.compare-summary-line').insertAdjacentHTML('afterend', '<section class="observed-segments" id="observedSegments" hidden><div class="section-bar"><h2>Observed segment differences</h2></div><p id="observedSegmentsNote"></p><div class="segment-table-scroll"><table><thead><tr><th>Physical markers</th><th>Your run / s</th><th>Reference / s</th><th>Delta / s</th></tr></thead><tbody id="observedSegmentsRows"></tbody></table></div></section>');
-    for (const side of ['current', 'reference']) {
-      $(`${side}Detail`).parentElement.insertAdjacentHTML('afterend', `<div class="run-context"><span id="${side}Context">Car and circuit not labelled</span><button class="icon-button" id="${side}EditContext" title="Edit car, circuit and conditions" aria-label="Edit ${names[side].toLowerCase()} car, circuit and conditions" disabled><i data-lucide="sliders-horizontal"></i></button></div>`);
-      $(`${side}Calibration`).insertAdjacentHTML('afterend', `<button class="icon-button run-delete" id="${side}DeleteSession" title="Delete recording" aria-label="Delete ${names[side].toLowerCase()} recording" disabled><i data-lucide="trash-2"></i></button>`);
-      $(`${side}Detail`).parentElement.insertAdjacentHTML('afterend', `<div class="run-boundary-actions"><button class="icon-button inspect-boundary" data-side="${side}" data-edge="Start" title="Inspect start crossing" aria-label="Inspect ${names[side].toLowerCase()} start crossing"><i data-lucide="log-in"></i></button><button class="icon-button inspect-boundary" data-side="${side}" data-edge="End" title="Inspect finish crossing" aria-label="Inspect ${names[side].toLowerCase()} finish crossing"><i data-lucide="log-out"></i></button><span class="boundary-tool-slot" id="${side}BoundaryTools"></span></div>`);
-      $(`${side}BoundaryTools`).innerHTML = `<button class="button subtle compact" id="${side}FindCrossing"><i data-lucide="scan-line"></i>Find next crossing</button><span id="${side}CrossingStatus" role="status"></span><div class="boundary-candidates" id="${side}CrossingCandidates" hidden><select id="${side}CrossingChoice" aria-label="${names[side]} suggested finish crossing"></select><button class="icon-button" id="${side}InspectCrossing" title="Inspect suggested finish crossing" aria-label="Inspect ${names[side].toLowerCase()} suggested finish crossing"><i data-lucide="scan"></i></button><button class="button subtle compact" id="${side}ApplyCrossing">Use OUT</button></div>`;
-      $(`${side}FindCrossing`).disabled = true;
-      $(`${side}BoundaryTools`).insertAdjacentHTML('beforebegin', `<button class="icon-button" id="${side}SaveLapRange" title="Save lap boundaries as an unverified range" aria-label="Save ${names[side].toLowerCase()} lap boundaries" disabled><i data-lucide="save"></i></button>`);
-      $(`${side}FindCrossing`).insertAdjacentHTML('afterend', `<button class="icon-button" id="${side}CancelCrossing" title="Cancel crossing search" aria-label="Cancel ${names[side].toLowerCase()} crossing search" hidden><i data-lucide="x"></i></button>`);
-      const tools = document.createElement('details');
-      tools.className = 'run-review-tools';
-      tools.innerHTML = '<summary>Lap boundaries and recording labels</summary>';
-      const card = $(`${side}Session`).closest('.comparison-run');
-      for (const selector of ['.run-detail', '.run-boundary-actions', '.run-context']) tools.appendChild(card.querySelector(selector));
-      card.appendChild(tools);
-    }
     state.importKind = 'file';
     const dialog = document.createElement('dialog');
     dialog.id = 'referenceImportDialog';
-    dialog.innerHTML = `<div class="dialog-header"><div><span class="eyebrow">INDEPENDENT VIDEO ANALYSIS</span><h2>Import recording</h2></div><button class="icon-button" id="closeReferenceImport" title="Close" aria-label="Close recording import"><i data-lucide="x"></i></button></div><label class="field-label">Use this recording as<select id="recordingImportRole"><option value="current">Your run</option><option value="reference">Reference lap</option></select></label><div class="dialog-tabs" role="tablist"><button class="active" data-import-kind="file">Local recording</button><button data-import-kind="youtube">Video link</button></div><div class="import-kind-pane" id="import-url"><label class="field-label">Recorded video URL<input id="referenceUrl" type="url" placeholder="YouTube, Twitch VOD / clip, or video-file URL" autocomplete="off" aria-describedby="referenceUrlHint"></label><p class="reference-url-hint" id="referenceUrlHint">Import a completed recording: YouTube video, Twitch VOD or clip, or a direct video file. Live streams are not supported.</p></div><div class="import-kind-pane active" id="import-file"><label class="field-label">Recording<select id="referenceLocalFile"><option value="">Select a local recording</option></select></label><button class="button subtle compact" id="referenceUpload"><i data-lucide="upload"></i>Browse files</button><input id="referenceUploadInput" type="file" accept="video/*,.mkv" hidden></div><label class="field-label reference-name-input">Recording name<input id="referenceName" type="text" placeholder="My lap" maxlength="100"></label><label class="toggle-row"><span>Automatic HUD calibration</span><input id="referenceAutoCalibration" type="checkbox" checked></label><button class="button primary full-width" id="startReferenceImport"><i data-lucide="download"></i>Import and analyze</button><div class="dialog-error" id="referenceImportError" role="alert"></div><div class="import-history" id="referenceImportHistory"></div>`;
+    dialog.innerHTML = `<div class="dialog-header"><div><span class="eyebrow">INDEPENDENT VIDEO ANALYSIS</span><h2>Import recording</h2></div><button class="icon-button" id="closeReferenceImport" title="Close" aria-label="Close recording import"><i data-lucide="x"></i></button></div><label class="field-label">Use this recording as<select id="recordingImportRole"><option value="current">Your run</option><option value="reference">Reference lap</option></select></label><div class="dialog-tabs" role="tablist"><button class="active" data-import-kind="file">Local recording</button><button data-import-kind="youtube">Video link</button></div><div class="import-kind-pane" id="import-url"><label class="field-label">Recorded video URL<input id="referenceUrl" type="url" placeholder="YouTube, Twitch VOD / clip, or video-file URL" autocomplete="off" aria-describedby="referenceUrlHint"></label><p class="reference-url-hint" id="referenceUrlHint">Import a completed recording: YouTube video, Twitch VOD or clip, or a direct video file. Live streams are not supported.</p></div><div class="import-kind-pane active" id="import-file"><label class="field-label">Recording<select id="referenceLocalFile"><option value="">Select a local recording</option></select></label><button class="button subtle compact" id="referenceUpload"><i data-lucide="upload"></i>Browse files</button><input id="referenceUploadInput" type="file" accept="video/*,.mkv" hidden></div><label class="field-label reference-name-input">Recording name<input id="referenceName" type="text" placeholder="My lap" maxlength="100"></label><button class="button primary full-width" id="startReferenceImport"><i data-lucide="download"></i>Import and analyze</button><div class="dialog-error" id="referenceImportError" role="alert"></div><div class="import-history" id="referenceImportHistory"></div>`;
     document.body.appendChild(dialog);
-    const contextDialog = document.createElement('dialog');
-    contextDialog.id = 'recordingContextDialog';
-    contextDialog.innerHTML = '<div class="dialog-header"><div><span class="eyebrow">RECORDING LABELS / USER SUPPLIED</span><h2>Car and circuit</h2></div><button class="icon-button" id="closeRecordingContext" title="Close" aria-label="Close recording labels"><i data-lucide="x"></i></button></div><p id="recordingContextName" class="context-recording-name"></p><label class="field-label">GT3 car<select id="recordingContextCar"><option value="">Unknown car</option></select></label><label class="field-label">Circuit layout<select id="recordingContextTrack"><option value="">Unknown circuit</option></select></label><div class="context-optional-fields"><label class="field-label">Platform<select id="recordingContextPlatform"><option value="">Unknown</option><option value="pc">PC</option><option value="ps5">PS5</option><option value="xbox_series">Xbox Series</option></select></label><label class="field-label">Game version<input id="recordingContextVersion" maxlength="160" placeholder="Unknown"></label></div><label class="field-label">Conditions<input id="recordingContextConditions" maxlength="160" placeholder="Weather, track temperature, fuel and tyres"></label><label class="field-label">Balance of Performance<input id="recordingContextBop" maxlength="160" placeholder="Unknown"></label><div class="dialog-error" id="recordingContextError" role="alert"></div><button class="button primary full-width" id="saveRecordingContext"><i data-lucide="save"></i>Save labels</button>';
-    document.body.appendChild(contextDialog);
-    for (const input of contextDialog.querySelectorAll('input')) input.type = 'text';
     const frameDialog = document.createElement('dialog');
     frameDialog.id = 'alignmentDialog';
-    frameDialog.innerHTML = '<div class="dialog-header"><div><span class="eyebrow" id="alignmentSide">SOURCE FRAME</span><h2>Range alignment</h2></div><button class="icon-button" id="closeAlignment" title="Close" aria-label="Close alignment frame"><i data-lucide="x"></i></button></div><div class="alignment-image"><img id="alignmentImage" alt="Full source frame for range alignment"></div><div class="alignment-controls"><button class="icon-button" id="alignmentBack" title="Previous second" aria-label="Previous second"><i data-lucide="chevron-left"></i></button><label class="range-time">SOURCE <input id="alignmentTime" type="number" min="0" step="0.033" aria-label="Alignment source timestamp">s</label><button class="icon-button" id="alignmentForward" title="Next second" aria-label="Next second"><i data-lucide="chevron-right"></i></button><span id="alignmentFrameStamp" class="subtle-text"></span><button class="button subtle compact" id="alignmentSetStart">Set IN</button><button class="button primary compact" id="alignmentSetEnd">Set OUT</button></div>';
+    frameDialog.innerHTML = '<div class="dialog-header"><div><span class="eyebrow" id="alignmentSide">YOUR RUN</span><h2 id="alignmentTitle">Selecting start of lap</h2></div><button class="icon-button" id="closeAlignment" title="Close" aria-label="Close lap selection"><i data-lucide="x"></i></button></div><p class="lap-boundary-instruction">Choose the same start/finish line in both recordings.</p><div class="alignment-image"><video id="alignmentVideo" controls muted playsinline preload="metadata" hidden></video><img id="alignmentImage" alt="Source frame for lap boundary selection"></div><div class="alignment-controls"><button class="icon-button" id="alignmentFrameBack" title="Back one frame" aria-label="Back one frame"><i data-lucide="chevrons-left"></i></button><button class="icon-button" id="alignmentBack" title="Back one second" aria-label="Back one second"><i data-lucide="chevron-left"></i></button><label class="range-time">Time <input id="alignmentTime" type="number" min="0" step="0.001" aria-label="Lap boundary source time">s</label><button class="icon-button" id="alignmentForward" title="Forward one second" aria-label="Forward one second"><i data-lucide="chevron-right"></i></button><button class="icon-button" id="alignmentFrameForward" title="Forward one frame" aria-label="Forward one frame"><i data-lucide="chevrons-right"></i></button><span id="alignmentFrameStamp" class="subtle-text"></span><button class="button primary" id="alignmentLock" disabled><i data-lucide="lock-keyhole"></i>Lock</button></div><p class="dialog-error" id="alignmentError" role="alert"></p>';
     document.body.appendChild(frameDialog);
-    $('alignmentBack').insertAdjacentHTML('beforebegin', '<button class="icon-button" id="alignmentFrameBack" title="Back 1/30 second" aria-label="Back 1/30 second"><i data-lucide="chevrons-left"></i></button>');
-    $('alignmentForward').insertAdjacentHTML('afterend', '<button class="icon-button" id="alignmentFrameForward" title="Forward 1/30 second" aria-label="Forward 1/30 second"><i data-lucide="chevrons-right"></i></button>');
-    $('alignmentSetEnd').insertAdjacentHTML('afterend', '<button class="button primary compact" id="alignmentSetLandmark" hidden><i data-lucide="map-pin"></i>Use landmark</button>');
     try {
       // Keep existing recording selections when upgrading from the old name.
       const key = 'accc.comparison.v1', desktop = window.ACCCDesktopPreferences;
@@ -152,26 +122,18 @@ window.ACCCComparison = (() => {
       state.saved = {};
     }
     state.axis = state.saved.axis === 'elapsed' ? 'elapsed' : 'distance';
-    state.alignmentMode = ['raw', 'lap_endpoints', 'landmarks'].includes(state.saved.alignment_mode) ? state.saved.alignment_mode : 'raw';
-    state.landmarks = Array.isArray(state.saved.landmarks) ? state.saved.landmarks.slice(0, 32) : [];
-    $('comparisonAlignmentMode').value = state.alignmentMode;
-    $('confirmAlignment').checked = state.saved.align_start === true;
-    $('confirmSameTrack').checked = state.saved.confirm_same_track === true;
-    $('confirmFinishAlignment').checked = state.saved.align_end === true;
+    state.alignmentMode = 'raw';
+    state.landmarks = [];
     for (const axis of ['distance', 'elapsed']) {
       const button = $(`axis${axis === 'distance' ? 'Distance' : 'Elapsed'}`);
       button.classList.toggle('active', axis === state.axis);
       button.setAttribute('aria-pressed', String(axis === state.axis));
     }
     bind();
-    renderLandmarks();
     updateRegistration();
     ready = true;
     window.ACCCTrackReview?.init({api: helpers.api, icons: helpers.icons,
-      carName: side => {
-        const context = recordingContext(side);
-        return context.car_name || state.catalog?.cars?.find(car => car.id === context.car_id)?.name || 'Car not labelled';
-      }, trackId: () => {
+      trackId: () => {
         const tracks = selectedSides().map(side => recordingContext(side).track_id).filter(Boolean);
         return tracks.length && tracks.every(id => id === tracks[0]) ? tracks[0] : null;
       }, rangeInfo, pointAt, sourceSamples: side => state.runs[side]?.data?.samples || [],
@@ -184,14 +146,12 @@ window.ACCCComparison = (() => {
       if (!state.runs[side]?.id) return;
       openFrame(side, time);
     }});
-    helpers.api('/api/catalog').then(catalog => {state.catalog = catalog; renderMetadata(); updateCursor();}).catch(() => {});
     helpers.icons();
     renderMetadata();
     updateCursor();
     $('comparisonStatus').textContent = 'Select a recording.';
     $('runComparison').disabled = true;
     for (const button of document.querySelectorAll('.inspect-boundary')) button.disabled = true;
-    for (const side of ['current', 'reference']) $(`${side}Segment`).disabled = true;
     notifySelectedRecording();
     draw();
     refreshJobs();
@@ -222,7 +182,6 @@ window.ACCCComparison = (() => {
       if (staleSaved.length === 2) {
         persistPreferences({});
         state.alignmentMode = 'raw';
-        $('comparisonAlignmentMode').value = 'raw';
         resetAlignment(true);
       } else if (staleSaved.length) {
         const preferences = {...state.saved, align_start: false, align_end: false, landmarks: []};
@@ -299,7 +258,16 @@ window.ACCCComparison = (() => {
   function updateSessionActions() {
     const loading = Object.values(state.runs).some(run => run.loading);
     $('swapComparisonRuns').disabled = state.restoring || loading || selectedSides().length === 0;
-    for (const side of ['current', 'reference']) $(`${side}DeleteSession`).disabled = !state.runs[side].id || state.runs[side].loading || !helpers.deleteSession;
+    for (const side of ['current', 'reference']) {
+      const run = state.runs[side], available = Boolean(run.id && !run.loading);
+      $(`${side}DeleteSession`).disabled = !available || !helpers.deleteSession;
+      const link = $(`${side}ExportCsv`);
+      link.classList.toggle('disabled', !available);
+      link.setAttribute('aria-disabled', String(!available));
+      if (available) link.href = `/api/export/${encodeURIComponent(run.id)}.csv`;
+      else link.removeAttribute('href');
+      for (const edge of ['Start', 'End']) $(`${side}${edge}Boundary`).disabled = !available;
+    }
   }
 
   function swapRuns() {
@@ -308,15 +276,13 @@ window.ACCCComparison = (() => {
     const snapshots = {};
     for (const side of sides) {
       const run = state.runs[side];
-      snapshots[side] = {run, rangeOptions: $(`${side}Range`).innerHTML, range: $(`${side}Range`).value,
+      snapshots[side] = {run, range: $(`${side}Range`).value,
         start: $(`${side}Start`).value, end: $(`${side}End`).value,
-        segmentOptions: $(`${side}Segment`).innerHTML, segment: $(`${side}Segment`).value,
-        segmentHidden: $(`${side}Segment`).hidden, calibration: $(`${side}Calibration`).textContent,
+        segment: state.runs[side].segment, recordingStatus: $(`${side}RecordingStatus`).textContent,
         detail: $(`${side}Detail`).textContent, detailTitle: $(`${side}Detail`).title};
       clearTimeout(run.frameTimer);
       run.frameAbort?.abort();
       if (run.frameUrl) URL.revokeObjectURL(run.frameUrl);
-      if (run.crossingJob) cancelCrossing(side);
     }
     state.libraryEpoch++;
     state.restored = true;
@@ -330,15 +296,12 @@ window.ACCCComparison = (() => {
         frameBusy: false, frameKey: null, frameUrl: null, frameDecodedTime: null, frameRequested: 0,
         frameTimer: null, frameAbort: null, crossingJob: null, crossings: [], crossingAnchor: null};
       $(`${side}Session`).value = run.id || '';
-      $(`${side}Range`).innerHTML = incoming.rangeOptions;
       $(`${side}Range`).value = incoming.range;
-      $(`${side}Segment`).innerHTML = incoming.segmentOptions;
-      $(`${side}Segment`).value = incoming.segment;
-      $(`${side}Segment`).hidden = incoming.segmentHidden;
+      state.runs[side].segment = incoming.segment;
       $(`${side}Start`).value = incoming.start;
       $(`${side}End`).value = incoming.end;
-      for (const field of ['Range', 'Start', 'End', 'Segment']) $(`${side}${field}`).disabled = !run.data?.samples?.length;
-      $(`${side}Calibration`).textContent = incoming.calibration;
+      for (const field of ['Range', 'Start', 'End']) $(`${side}${field}`).disabled = !run.data?.samples?.length;
+      $(`${side}RecordingStatus`).textContent = incoming.recordingStatus;
       $(`${side}Detail`).textContent = incoming.detail;
       $(`${side}Detail`).title = incoming.detailTitle;
       $(`${side}Frame`).hidden = true;
@@ -346,14 +309,9 @@ window.ACCCComparison = (() => {
       $(`${side}FrameEmpty`).hidden = false;
       $(`${side}FrameTime`).hidden = true;
       $(`${side}FrameTime`).textContent = '';
-      $(`${side}CrossingCandidates`).hidden = true;
-      $(`${side}CrossingStatus`).textContent = '';
-      $(`${side}CancelCrossing`).hidden = true;
-      $(`${side}FindCrossing`).disabled = !run.id;
       for (const button of document.querySelectorAll(`.inspect-boundary[data-side="${side}"]`)) button.disabled = !run.id;
     }
     state.landmarks = state.landmarks.map(({label, current_time, reference_time}) => ({label, current_time: reference_time, reference_time: current_time}));
-    renderLandmarks();
     clearResult();
     notifySelectedRecording();
     state.restoring = false;
@@ -363,10 +321,7 @@ window.ACCCComparison = (() => {
 
   async function removeSession(id) {
     if (!ready || !id) return;
-    if (state.contextEditor?.id === id) {
-      state.contextEditor = null;
-      $('recordingContextDialog').close();
-    }
+
     const pendingRestore = !state.restored || state.restoring;
     const affected = ['current', 'reference'].filter(side => state.runs[side].id === id || $(`${side}Session`).value === id);
     const savedAffected = ['current', 'reference'].filter(side => state.saved[side]?.id === id || affected.includes(side));
@@ -476,11 +431,6 @@ window.ACCCComparison = (() => {
   async function loadRun(side, id, restore = false) {
     if (state.deletedSessions.has(id)) id = '';
     if (!restore) resetAlignment(true);
-    if (state.runs[side].crossingJob) cancelCrossing(side);
-    $(`${side}CrossingCandidates`).hidden = true;
-    $(`${side}CrossingStatus`).textContent = '';
-    $(`${side}FindCrossing`).disabled = !id;
-    $(`${side}CancelCrossing`).hidden = true;
     const previous = state.runs[side], token = (previous.token || 0) + 1;
     clearTimeout(previous.frameTimer);
     previous.frameAbort?.abort();
@@ -490,16 +440,13 @@ window.ACCCComparison = (() => {
       $('alignmentImage').removeAttribute('src');
       state.viewer = null;
     }
-    const run = state.runs[side] = {token, loading: Boolean(id)};
+    const run = state.runs[side] = {token, segment: '', loading: Boolean(id)};
     updateSessionActions();
     $(`${side}Session`).value = id;
-    $(`${side}Range`).innerHTML = '<option value="">Select a lap or segment</option>';
-    $(`${side}Segment`).innerHTML = '';
-    $(`${side}Segment`).hidden = true;
-    for (const field of ['Range', 'Start', 'End', 'Segment']) $(`${side}${field}`).disabled = true;
+    for (const field of ['Range', 'Start', 'End']) $(`${side}${field}`).disabled = true;
     for (const edge of ['Start', 'End']) $(`${side}${edge}`).value = '';
     $(`${side}Detail`).textContent = 'No recording selected';
-    $(`${side}Calibration`).textContent = 'NO RECORDING';
+    $(`${side}RecordingStatus`).textContent = 'NO RECORDING';
     $(`${side}Frame`).hidden = true;
     $(`${side}Frame`).removeAttribute('src');
     $(`${side}FrameEmpty`).hidden = false;
@@ -514,10 +461,10 @@ window.ACCCComparison = (() => {
     }
     $(`${side}Detail`).textContent = 'Loading recording...';
     run.loading = true;
-    for (const field of ['Range','Start','End','Segment']) $(`${side}${field}`).disabled = true;
+    for (const field of ['Range','Start','End']) $(`${side}${field}`).disabled = true;
     $(`${side}Frame`).hidden = true;
     $(`${side}FrameEmpty`).hidden = false;
-    $(`${side}Calibration`).textContent = 'LOADING';
+    $(`${side}RecordingStatus`).textContent = 'LOADING';
     $('comparisonStatus').textContent = `Loading ${names[side].toLowerCase()} recording...`;
     state.request++;
     try {
@@ -533,15 +480,14 @@ window.ACCCComparison = (() => {
       state.runs[side] = {
         id,
         data,
+        segment: '',
         ranges: makeRanges(data),
         defaultsRevision: String(data.session?.metadata?.comparison_defaults?.revision || ''),
         token
       };
       notifySelectedRecording();
       const current = state.runs[side];
-      $(`${side}Range`).innerHTML = current.ranges.map(range => `<option value="${esc(range.id)}">${esc(range.label)}</option>`).join('') + '<option value="custom">Custom time range</option>';
       $(`${side}Range`).disabled = !data.samples?.length;
-      $(`${side}Segment`).disabled = !data.samples?.length;
       const configured = data.session?.metadata?.comparison_defaults;
       const preferred = current.ranges.find(range => range.id === configured?.range_id) || current.ranges.find(range => range.lap && range.valid !== false) || current.ranges.filter(range => !range.lap && range.id !== 'full').sort((a, b) => b.duration - a.duration)[0] || current.ranges[0];
       $(`${side}Range`).value = preferred?.id || 'custom';
@@ -550,20 +496,21 @@ window.ACCCComparison = (() => {
       const saved = revisionChanged ? null : previousPreference;
       if (revisionChanged) {
         state.alignmentMode = 'raw';
-        $('comparisonAlignmentMode').value = 'raw';
         resetAlignment(true);
       }
       if (saved && (saved.range === 'custom' || current.ranges.some(range => range.id === saved.range))) $(`${side}Range`).value = saved.range;
-      const segments = [...new Set(data.samples.map(sample => sample.segment_id).filter(value => value != null))];
-      $(`${side}Segment`).innerHTML = '<option value="">All segments</option>' + segments.map(segment => `<option value="${segment}">Segment ${segment}</option>`).join('');
-      const calibration = data.session?.metadata?.calibration || data.session?.metadata?.profile?.auto_calibrate;
-      const lastCalibration = [...data.samples].reverse().find(sample => sample.hud_visible && sample.calibration)?.calibration;
-      $(`${side}Calibration`).textContent = lastCalibration?.status ? `HUD ${String(lastCalibration.status).toUpperCase()}` : calibration ? 'AUTO HUD' : 'SAVED HUD';
+      $(`${side}RecordingStatus`).textContent = 'READY';
       chooseRange(side);
       if (saved?.range === 'custom') {
         $(`${side}Start`).value = saved.start;
         $(`${side}End`).value = saved.end;
-        $(`${side}Segment`).value = saved.segment ?? '';
+        current.segment = saved.segment !== undefined && saved.segment !== null &&
+          data.samples.some(sample => String(sample.segment_id) === String(saved.segment)) ? String(saved.segment) : '';
+        current.boundaryLocks = {};
+        for (const edge of ['Start', 'End']) {
+          const value = saved.boundary_locks?.[edge.toLowerCase()];
+          if (finite(value) && Number(value) === Number($(`${side}${edge}`).value)) current.boundaryLocks[edge.toLowerCase()] = Number(value);
+        }
         updateFrame(side, Number(saved.start));
       }
       applyReviewedAlignment(!restore);
@@ -584,168 +531,187 @@ window.ACCCComparison = (() => {
     if (range) {
       $(`${side}Start`).value = Number(range.start).toFixed(3);
       $(`${side}End`).value = Number(range.end).toFixed(3);
-      $(`${side}Segment`).value = range.segment ?? '';
+      state.runs[side].segment = range.segment ?? '';
     }
-    $(`${side}Segment`).hidden = value !== 'custom';
-    const description = range?.reviewed ? `${range.boundariesVerified ? 'Reviewed boundaries' : 'Saved boundaries / unverified'}${finite(range.timingUncertainty) ? ` / +/-${number(range.timingUncertainty, 3)} s` : ''}` : range?.lap ? 'Lap selection' : value === 'custom' ? 'Custom source timestamps' : value === 'full' ? 'Entire recording' : 'Continuous segment selection';
+    const description = value === 'custom' ? 'Lap boundaries selected' : 'Choose the start and end of a lap';
     $(`${side}Detail`).textContent = run.data ? `${run.data.samples.length.toLocaleString()} samples / ${description}` : 'No recording selected';
     $(`${side}Detail`).title = range?.notes || '';
     updateFrame(side, Number($(`${side}Start`).value));
   }
 
-  function applyReviewedAlignment(force = false) {
-    const ranges = ['current', 'reference'].map(side => state.runs[side].ranges?.find(range => range.id === $(`${side}Range`).value));
-    const [current, reference] = ranges;
-    if (!ranges.every(range => range?.reviewed && range.boundariesVerified) || !current.startMarker || !current.endMarker || current.startMarker !== reference.startMarker || current.endMarker !== reference.endMarker) return;
-    const restored = ['current', 'reference'].every(side => {
-      const run = state.runs[side], saved = state.saved[side];
-      return saved?.id === run.id && saved.range === $(`${side}Range`).value && String(saved.defaults_revision || '') === run.defaultsRevision;
-    });
-    if (!force && restored) return;
-    const referenceMarkers = new Map(reference.landmarks.map(marker => [marker.marker_id, marker]));
-    const landmarks = current.landmarks.filter(marker => marker.marker_id && finite(marker.time) && marker.time > current.start && marker.time < current.end).map(marker => {
-      const paired = referenceMarkers.get(marker.marker_id);
-      return paired && finite(paired.time) && paired.time > reference.start && paired.time < reference.end ? {label: marker.label || paired.label || marker.marker_id, current_time: sourceTime(marker.time), reference_time: sourceTime(paired.time)} : null;
-    }).filter(Boolean).sort((a, b) => a.current_time - b.current_time);
-    const ordered = landmarks.every((landmark, index) => index === 0 || landmark.current_time > landmarks[index - 1].current_time && landmark.reference_time > landmarks[index - 1].reference_time);
-    state.landmarks = ordered ? landmarks.slice(0, 32) : [];
-    state.alignmentMode = state.landmarks.length ? 'landmarks' : 'lap_endpoints';
-    state.axis = 'distance';
-    $('comparisonAlignmentMode').value = state.alignmentMode;
-    $('confirmAlignment').checked = true;
-    $('confirmFinishAlignment').checked = true;
-    for (const axis of ['distance', 'elapsed']) {
-      const button = $(`axis${axis === 'distance' ? 'Distance' : 'Elapsed'}`);
-      button.classList.toggle('active', axis === state.axis);
-      button.setAttribute('aria-pressed', String(axis === state.axis));
-    }
-    renderLandmarks();
+  function applyReviewedAlignment() {
     updateRegistration();
   }
 
-  function resetAlignment(clearLandmarks = false, edge = null) {
-    if (edge !== 'End') $('confirmAlignment').checked = false;
-    if (edge !== 'Start') $('confirmFinishAlignment').checked = false;
-    if (clearLandmarks) {
-      $('confirmSameTrack').checked = false;
-      state.landmarks = [];
-      renderLandmarks();
-    }
+  function resetAlignment() {
+    state.alignmentMode = 'raw';
+    state.landmarks = [];
     updateRegistration();
+  }
+
+  function boundaryLocked(side, edge) {
+    const locked = state.runs[side]?.boundaryLocks?.[edge.toLowerCase()];
+    return finite(locked) && finite($(`${side}${edge}`).value) && Number(locked) === Number($(`${side}${edge}`).value);
+  }
+
+  function alignmentState() {
+    const sides = ['current', 'reference'];
+    const contexts = sides.map(recordingContext);
+    const mismatch = contexts.every(context => context.track_id) && contexts[0].track_id !== contexts[1].track_id;
+    const ranges = sides.map(side => state.runs[side].ranges?.find(range => range.id === $(`${side}Range`).value));
+    const reviewed = edge => ranges.every(range => range?.reviewed && range.boundariesVerified && range[edge + 'Marker']) && ranges[0][edge + 'Marker'] === ranges[1][edge + 'Marker'];
+    return {
+      align_start: isPaired() && !mismatch && (sides.every(side => boundaryLocked(side, 'Start')) || reviewed('start')),
+      align_end: isPaired() && !mismatch && (sides.every(side => boundaryLocked(side, 'End')) || reviewed('end')),
+      confirm_same_track: false, alignment_mode: 'raw', landmarks: []
+    };
   }
 
   function updateRegistration() {
-    const registered = state.alignmentMode !== 'raw';
-    const timeAxis = state.axis !== 'distance';
-    document.querySelector('.lap-registration').hidden = !isPaired();
-    $('comparisonAlignmentMode').disabled = timeAxis || !isPaired();
-    const contexts = ['current', 'reference'].map(recordingContext);
-    $('sameTrackConfirmation').hidden = !isPaired() || contexts.every(context => context.track_id);
-    $('confirmSameTrack').disabled = !isPaired();
-    $('confirmAlignment').disabled = timeAxis || !isPaired();
-    $('confirmFinishAlignment').disabled = timeAxis || !isPaired();
-    $('landmarkEditor').hidden = timeAxis || state.alignmentMode !== 'landmarks';
-    $('confirmFinishAlignment').parentElement.hidden = timeAxis || !registered;
-    const missingStart = !$('confirmAlignment').checked;
-    const missingEnd = registered && !$('confirmFinishAlignment').checked;
-    $('registrationStatus').textContent = state.axis !== 'distance' ? 'Time axis / delta at lap progress' : missingStart || missingEnd ? `Unconfirmed ${[missingStart ? 'start' : '', missingEnd ? 'finish' : ''].filter(Boolean).join(' + ')}` : registered ? 'Estimated track-position registration' : 'Speed-integrated distance';
-    $('registrationStatus').classList.toggle('unconfirmed', missingStart || missingEnd);
-  }
-
-  function renderLandmarks() {
-    for (const landmark of state.landmarks) {
-      for (const side of ['current', 'reference']) {
-        if (finite(landmark[`${side}_time`])) landmark[`${side}_time`] = sourceTime(landmark[`${side}_time`]);
+    const alignment = alignmentState();
+    $('lapBoundaryHint').hidden = !isPaired() || alignment.align_start;
+    for (const side of ['current', 'reference']) {
+      for (const edge of ['Start', 'End']) {
+        const locked = boundaryLocked(side, edge);
+        const value = $(`${side}${edge}`).value;
+        $(`${side}${edge}BoundaryTime`).textContent = !state.runs[side].id || !finite(value) ? 'Not selected' : `${stamp(Number(value))}${locked ? ' · Locked' : ''}`;
+        $(`${side}${edge}Boundary`).classList.toggle('is-locked', locked);
       }
     }
-    $('landmarkRows').innerHTML = state.landmarks.map((landmark, index) => `<div class="landmark-row" data-landmark="${index}"><input data-field="label" type="text" aria-label="Landmark ${index + 1} name" maxlength="60" value="${esc(landmark.label || '')}" placeholder="Track landmark ${index + 1}">${['current', 'reference'].map(side => `<div class="landmark-time"><input data-field="${side}_time" type="number" min="0" step="0.001" aria-label="Landmark ${index + 1} ${names[side].toLowerCase()} source time" value="${finite(landmark[`${side}_time`]) ? Number(landmark[`${side}_time`]) : ''}"><button class="icon-button landmark-frame" data-side="${side}" title="Pick ${names[side].toLowerCase()} landmark frame" aria-label="Pick landmark ${index + 1} ${names[side].toLowerCase()} frame"><i data-lucide="scan"></i></button>${side === 'reference' ? `<button class="icon-button find-landmark-match" title="Find matching scene near the reference timestamp" aria-label="Find landmark ${index + 1} matching reference scene" ${landmark.matching ? 'disabled' : ''}><i data-lucide="search"></i></button>` : ''}</div>`).join('')}<button class="icon-button remove-landmark" title="Remove landmark" aria-label="Remove landmark ${index + 1}"><i data-lucide="x"></i></button>${landmark.matchStatus || landmark.matches?.length ? `<div class="landmark-matches"><span role="status">${esc(landmark.matchStatus || '')}</span>${landmark.matches?.length ? `<select class="landmark-match-choice" aria-label="Landmark ${index + 1} matching scene candidate">${landmark.matches.map((candidate, candidateIndex) => `<option value="${candidateIndex}">${stamp(candidate.target_time)} / ${candidate.inliers} image matches / unconfirmed</option>`).join('')}</select><button class="icon-button inspect-landmark-match" title="Review suggested reference scene" aria-label="Review landmark ${index + 1} suggested reference scene"><i data-lucide="scan"></i></button>` : ''}</div>` : ''}</div>`).join('');
-    $('addComparisonLandmark').disabled = state.landmarks.length >= 32;
-    helpers.icons();
   }
 
-  function selectedLandmarks() {
-    return state.landmarks.map((landmark, index) => {
-      if (!finite(landmark.current_time) || !finite(landmark.reference_time)) throw new Error(`Landmark ${index + 1} needs both source timestamps.`);
-      return {current_time: sourceTime(landmark.current_time), reference_time: sourceTime(landmark.reference_time), label: landmark.label || `Landmark ${index + 1}`};
-    });
-  }
-
-  async function findLandmarkMatch(index) {
-    const landmark = state.landmarks[index];
-    if (!landmark || landmark.matching) return;
-    if (!finite(landmark.current_time) || !state.runs.current.id || !state.runs.reference.id) {
-      landmark.matchStatus = 'Select both recordings and a source landmark first.';
-      renderLandmarks();
-      return;
-    }
-    const start = Number($('referenceStart').value), end = Number($('referenceEnd').value);
-    const currentStart = Number($('currentStart').value), currentEnd = Number($('currentEnd').value);
-    const guess = finite(landmark.reference_time) ? Number(landmark.reference_time) : start + (Number(landmark.current_time) - currentStart) / (currentEnd - currentStart) * (end - start);
-    const body = {anchor_session_id: state.runs.current.id, target_session_id: state.runs.reference.id,
-      anchor_time: Number(landmark.current_time), search_start: Math.max(start, guess - 10), search_end: Math.min(end, guess + 10)};
-    landmark.matching = true;
-    landmark.matches = [];
-    landmark.matchStatus = 'Matching track scene...';
-    renderLandmarks();
-    const unchanged = () => state.landmarks.includes(landmark) && state.runs.current.id === body.anchor_session_id && state.runs.reference.id === body.target_session_id && Number(landmark.current_time) === body.anchor_time;
-    let job = null;
-    try {
-      job = await helpers.api('/api/landmark-detection', {method: 'POST', body: JSON.stringify(body)});
-      const deadline = Date.now() + 10 * 60 * 1000;
-      while (!['completed', 'failed', 'error', 'cancelled'].includes(job.state)) {
-        if (!unchanged()) return;
-        if (Date.now() > deadline) throw new Error('Scene search is taking too long. Retry later.');
-        await new Promise(resolve => setTimeout(resolve, 900));
-        if (!unchanged()) return;
-        job = await helpers.api(`/api/lap-detection/${encodeURIComponent(job.id)}`);
-      }
-      if (!unchanged()) return;
-      if (job.state !== 'completed') throw new Error(job.error || 'Scene search failed.');
-      landmark.matches = job.result?.candidates || [];
-      landmark.matchStatus = landmark.matches.length ? 'Scene suggestions / physical marker unconfirmed' : job.result?.warnings?.[0] || 'No reliable matching scene found.';
-    } catch (error) {
-      if (unchanged()) landmark.matchStatus = error.message;
-    } finally {
-      await cancelUnfinishedDetection(job);
-      if (!unchanged()) landmark.matchStatus = 'Landmark changed. Search cancelled.';
-      landmark.matching = false;
-      if (state.landmarks.includes(landmark)) renderLandmarks();
-    }
-  }
-
-  async function cancelUnfinishedDetection(job) {
-    if (!job?.id || ['completed', 'failed', 'error', 'cancelled'].includes(job.state)) return;
-    try {
-      await helpers.api(`/api/lap-detection/${encodeURIComponent(job.id)}/cancel`, {method: 'POST', body: '{}'});
-    } catch {
-      /* A lost connection must not leave the local search controls locked. */
-    }
-  }
-
-  function openFrame(side, time, landmarkIndex = null) {
-    if (!state.runs[side]?.id) return;
+  function openFrame(side, time, edge = 'Start') {
+    const run = state.runs[side];
+    if (!run?.id || run.loading) return;
     pausePlayback();
-    state.viewer = {side, landmarkIndex};
-    $('alignmentSide').textContent = `${names[side].toUpperCase()} / ${landmarkIndex === null ? 'SOURCE FRAME' : state.landmarks[landmarkIndex]?.label || 'TRACK LANDMARK'}`;
-    time = sourceTime(time);
-    $('alignmentTime').value = time;
-    $('alignmentImage').src = $(`${side}Frame`).src;
-    $('alignmentFrameStamp').textContent = 'Loading frame...';
-    $('alignmentSetLandmark').hidden = landmarkIndex === null;
-    $('alignmentSetStart').hidden = landmarkIndex !== null;
-    $('alignmentSetEnd').hidden = landmarkIndex !== null;
-    $('alignmentDialog').showModal();
+    edge = edge === 'End' ? 'End' : 'Start';
+    const bounds = (run.data?.samples || []).reduce((bounds, sample) => {
+      const value = Number(sample.time);
+      if (Number.isFinite(value)) {bounds.min = Math.min(bounds.min, value); bounds.max = Math.max(bounds.max, value);}
+      return bounds;
+    }, {min: Infinity, max: -Infinity});
+    const min = Number.isFinite(bounds.min) ? Math.max(0, bounds.min) : 0;
+    const max = Number.isFinite(bounds.max) ? Math.max(min, bounds.max) : min;
+    time = clamp(finite(time) ? sourceTime(time) : min, min, max);
+    const viewer = state.viewer = {side, edge, sessionId: run.id, token: run.token, min, max, pendingTime: time};
+    $('alignmentTitle').textContent = `Selecting ${edge.toLowerCase()} of lap`;
+    $('alignmentSide').textContent = names[side].toUpperCase();
+    $('alignmentTime').value = time.toFixed(3);
+    $('alignmentTime').min = min;
+    $('alignmentTime').max = max;
+    $('alignmentError').textContent = '';
+    $('alignmentFrameStamp').textContent = 'Loading frame…';
+    const image = $('alignmentImage'), video = $('alignmentVideo');
+    image.hidden = false;
+    if (run.frameUrl) image.src = run.frameUrl;
+    else image.removeAttribute('src');
+    video.pause();
+    video.hidden = true;
+    const stillCurrent = () => state.viewer === viewer && state.runs[side].id === viewer.sessionId && $('alignmentDialog').open;
+    const syncVideo = () => {
+      if (!stillCurrent() || video.seeking || video.readyState < 2) return;
+      if (finite(viewer.pendingTime)) {
+        const target = clamp(viewer.pendingTime, min, Math.min(max, Math.max(min, video.duration - .001)));
+        if (Math.abs(video.currentTime - target) > .005) {
+          setFrameReady(false);
+          video.currentTime = target;
+          return;
+        }
+        viewer.pendingTime = null;
+      }
+      if (video.currentTime < min || video.currentTime > max) {
+        video.pause();
+        video.currentTime = clamp(video.currentTime, min, max);
+        return;
+      }
+      video.hidden = false;
+      image.hidden = true;
+      $('alignmentTime').value = sourceTime(video.currentTime).toFixed(3);
+      $('alignmentFrameStamp').textContent = `Frame ${stamp(video.currentTime)}`;
+      setFrameReady(true);
+    };
+    video.onloadedmetadata = () => {
+      if (!stillCurrent()) return;
+      const requested = finite(viewer.pendingTime) ? viewer.pendingTime : Number($('alignmentTime').value);
+      video.currentTime = clamp(requested, min, Math.min(max, Math.max(min, video.duration - .001)));
+    };
+    video.onloadeddata = syncVideo;
+    video.onseeking = () => {if (stillCurrent()) setFrameReady(false);};
+    video.onseeked = syncVideo;
+    video.ontimeupdate = syncVideo;
+    video.onerror = () => {
+      if (!stillCurrent()) return;
+      video.hidden = true;
+      image.hidden = false;
+      updateFrame(side, Number($('alignmentTime').value));
+    };
+    video.src = `/api/sessions/${encodeURIComponent(run.id)}/video/media`;
+    if (!$('alignmentDialog').open) $('alignmentDialog').showModal();
     setFrameReady(false);
+    video.load();
     updateFrame(side, time);
   }
 
+  function seekBoundaryFrame(time) {
+    const viewer = state.viewer;
+    if (!viewer || !finite(time)) return;
+    const value = sourceTime(clamp(Number(time), viewer.min, viewer.max));
+    viewer.pendingTime = value;
+    $('alignmentTime').value = value.toFixed(3);
+    $('alignmentError').textContent = '';
+    $('alignmentFrameStamp').textContent = 'Loading frame…';
+    setFrameReady(false);
+    const video = $('alignmentVideo');
+    video.pause();
+    if (video.readyState >= 1) video.currentTime = Math.min(value, Math.max(0, video.duration - .001));
+    updateFrame(viewer.side, value);
+  }
+
+  function lockBoundary() {
+    const viewer = state.viewer;
+    if (!viewer || $('alignmentLock').disabled) return;
+    const {side, edge} = viewer, run = state.runs[side];
+    if (!run.id || run.id !== viewer.sessionId || run.token !== viewer.token || run.loading) return;
+    const video = $('alignmentVideo');
+    video.pause();
+    if (!video.hidden && (video.seeking || video.readyState < 2)) return;
+    const value = sourceTime(!video.hidden ? video.currentTime : Number($('alignmentTime').value));
+    if (!Number.isFinite(value) || value < viewer.min || value > viewer.max) {
+      $('alignmentError').textContent = 'Choose a time inside this recording.';
+      return;
+    }
+    const opposite = edge === 'Start' ? 'End' : 'Start';
+    const other = Number($(`${side}${opposite}`).value);
+    if (edge === 'Start' ? value >= other : value <= other) {
+      $('alignmentError').textContent = edge === 'Start'
+        ? 'Choose a start before the end of the lap, or adjust End of lap first.'
+        : 'Choose an end after the start of the lap, or adjust Start of lap first.';
+      return;
+    }
+    $(`${side}${edge}`).value = sourceTime(value).toFixed(3);
+    $(`${side}Range`).value = 'custom';
+    const start = Number($(`${side}Start`).value), end = Number($(`${side}End`).value);
+    const candidates = (run.ranges || []).filter(range => range.id.startsWith('segment-') &&
+      range.start <= start + .001 && range.end >= end - .001);
+    const retained = candidates.find(range => String(range.segment) === String(run.segment));
+    run.segment = retained?.segment ?? (candidates.length === 1 ? candidates[0].segment : '');
+    run.boundaryLocks ||= {};
+    run.boundaryLocks[edge.toLowerCase()] = sourceTime(value);
+    $(`${side}Detail`).textContent = 'Lap boundaries saved automatically';
+    markDirty();
+    $('alignmentDialog').close();
+    updateFrame(side, value);
+  }
+
   function setFrameReady(ready) {
-    for (const id of ['alignmentSetStart', 'alignmentSetEnd', 'alignmentSetLandmark']) $(id).disabled = !ready;
+    $('alignmentLock').disabled = !ready;
   }
 
   function showInspectorFrame(side, time, url, decodedTime = null) {
     if (state.viewer?.side !== side || !$('alignmentDialog').open || Math.abs(Number($('alignmentTime').value) - Number(time)) > .005) return;
     $('alignmentImage').src = url;
+    const video = $('alignmentVideo');
+    if (!video.hidden) return;
     const displayed = finite(decodedTime) ? Number(decodedTime) : Number(time);
     $('alignmentFrameStamp').textContent = `Frame ${Math.floor(displayed / 60)}:${(displayed % 60).toFixed(3).padStart(6, '0')}`;
     setFrameReady(true);
@@ -756,140 +722,17 @@ window.ACCCComparison = (() => {
     return run.data?.session?.name || run.data?.session?.source?.name || state.sessions.find(session => session.id === run.id)?.name || names[side];
   }
 
-  async function findCrossing(side) {
-    const run = state.runs[side];
-    const anchor = Number($(`${side}Start`).value);
-    if (!run.id || run.loading || !Number.isFinite(anchor)) return;
-    $(`${side}FindCrossing`).disabled = true;
-    $(`${side}CrossingCandidates`).hidden = true;
-    $(`${side}CrossingStatus`).textContent = 'Scanning track scene...';
-    const unchanged = () => state.runs[side] === run && Number($(`${side}Start`).value) === anchor;
-    let job = null;
-    try {
-      job = await helpers.api('/api/lap-detection', {method: 'POST', body: JSON.stringify({session_id: run.id, anchor_time: anchor})});
-      run.crossingJob = job.id;
-      if (state.runs[side] === run) $(`${side}CancelCrossing`).hidden = false;
-      const deadline = Date.now() + 10 * 60 * 1000;
-      while (!['completed', 'failed', 'error', 'cancelled'].includes(job.state)) {
-        if (!unchanged()) return;
-        if (Date.now() > deadline) throw new Error('Crossing search is taking too long. Retry later.');
-        await new Promise(resolve => setTimeout(resolve, 900));
-        if (!unchanged()) return;
-        job = await helpers.api(`/api/lap-detection/${encodeURIComponent(job.id)}`);
-      }
-      if (!unchanged()) return;
-      if (job.state !== 'completed') throw new Error(job.error || (job.state === 'cancelled' ? 'Crossing search cancelled.' : 'Crossing search failed.'));
-      run.crossings = job.result?.candidates || [];
-      run.crossingAnchor = anchor;
-      $(`${side}CrossingChoice`).innerHTML = run.crossings.map((candidate, index) => `<option value="${index}">${stamp(candidate.end_time)} / ${stamp(candidate.duration)} lap / unconfirmed</option>`).join('');
-      $(`${side}CrossingCandidates`).hidden = !run.crossings.length;
-      $(`${side}CrossingStatus`).textContent = run.crossings.length ? `${run.crossings.length} scene match${run.crossings.length === 1 ? '' : 'es'} / unconfirmed` : job.result?.warnings?.[0] || 'No reliable returning scene found.';
-    } catch (error) {
-      if (unchanged()) $(`${side}CrossingStatus`).textContent = error.message;
-    } finally {
-      await cancelUnfinishedDetection(job);
-      run.crossingJob = null;
-      if (state.runs[side] === run) {
-        if (!unchanged()) $(`${side}CrossingStatus`).textContent = 'Start changed. Search cancelled.';
-        $(`${side}FindCrossing`).disabled = false;
-        $(`${side}CancelCrossing`).hidden = true;
-      }
-    }
-  }
-
-  async function cancelCrossing(side) {
-    const run = state.runs[side];
-    if (!run.crossingJob) return;
-    try {
-      await helpers.api(`/api/lap-detection/${encodeURIComponent(run.crossingJob)}/cancel`, {method: 'POST', body: '{}'});
-    } catch (error) {
-      if (state.runs[side] === run) $(`${side}CrossingStatus`).textContent = error.message;
-    }
-  }
-
-  function proposedCrossing(side) {
-    const run = state.runs[side];
-    if (run.crossingAnchor !== Number($(`${side}Start`).value)) {
-      $(`${side}CrossingStatus`).textContent = 'Start changed. Search again.';
-      return null;
-    }
-    return run.crossings?.[Number($(`${side}CrossingChoice`).value)] || null;
-  }
-
   function recordingContext(side) {
     const session = state.runs[side].data?.session;
     return session?.context || session?.metadata?.telemetry_context || {};
-  }
-
-  function contextLabel(side) {
-    const context = recordingContext(side);
-    const car = context.car_name || state.catalog?.cars?.find(item => item.id === context.car_id)?.name || context.car_id || 'Unknown car';
-    const track = context.track_name || state.catalog?.tracks?.find(item => item.id === context.track_id)?.name || context.track_id || 'Unknown circuit';
-    return `${car} / ${track}`;
-  }
-
-  async function openContext(side) {
-    const run = state.runs[side];
-    if (!run.id || run.loading) return;
-    const editor = state.contextEditor = {id: run.id, side};
-    $('recordingContextName').textContent = sessionName(side);
-    $('recordingContextError').textContent = '';
-    $('saveRecordingContext').disabled = true;
-    $('recordingContextDialog').showModal();
-    try {
-      state.catalog ||= await helpers.api('/api/catalog');
-      if (state.contextEditor !== editor) return;
-      $('recordingContextCar').innerHTML = '<option value="">Unknown car</option>' + (state.catalog.cars || []).map(item => `<option value="${esc(item.id)}">${esc(item.name)}</option>`).join('');
-      $('recordingContextTrack').innerHTML = '<option value="">Unknown circuit</option>' + (state.catalog.tracks || []).map(item => `<option value="${esc(item.id)}">${esc(item.name)}</option>`).join('');
-      const context = recordingContext(side);
-      for (const [field, key] of Object.entries({Car: 'car_id', Track: 'track_id', Platform: 'platform', Version: 'game_version', Conditions: 'conditions', Bop: 'bop'})) $('recordingContext' + field).value = context[key] || '';
-      $('saveRecordingContext').disabled = false;
-    } catch (error) {
-      if (state.contextEditor === editor) $('recordingContextError').textContent = error.message;
-    }
-  }
-
-  async function saveContext() {
-    const editor = state.contextEditor;
-    if (!editor || state.deletedSessions.has(editor.id)) return;
-    $('saveRecordingContext').disabled = true;
-    $('recordingContextError').textContent = '';
-    try {
-      const body = {};
-      for (const [field, key] of Object.entries({Car: 'car_id', Track: 'track_id', Platform: 'platform', Version: 'game_version', Conditions: 'conditions', Bop: 'bop'})) body[key] = $('recordingContext' + field).value.trim() || null;
-      const response = await helpers.api(`/api/sessions/${encodeURIComponent(editor.id)}/context`, {method: 'PATCH', body: JSON.stringify(body)});
-      if (state.deletedSessions.has(editor.id)) return;
-      const context = response.context || body;
-      let trackChanged = false;
-      for (const side of ['current', 'reference']) {
-        const run = state.runs[side];
-        if (run.id !== editor.id || !run.data?.session) continue;
-        trackChanged ||= recordingContext(side).track_id !== context.track_id;
-        run.data.session.context = context;
-        run.data.session.metadata = {...run.data.session.metadata, telemetry_context: body};
-      }
-      const session = state.sessions.find(item => item.id === editor.id);
-      if (session) session.metadata = {...session.metadata, telemetry_context: body};
-      if (trackChanged) resetAlignment(true);
-      if (state.contextEditor === editor) $('recordingContextDialog').close();
-      clearResult();
-      markDirty();
-      notifySelectedRecording();
-    } catch (error) {
-      if (state.contextEditor === editor) $('recordingContextError').textContent = error.message;
-    } finally {
-      if (state.contextEditor === editor) $('saveRecordingContext').disabled = false;
-    }
   }
 
   function updateLegend() {
     $('comparisonLegendCurrent').textContent = sessionName('current');
     $('comparisonLegendReference').textContent = sessionName('reference');
     for (const side of ['current', 'reference']) {
-      $(`${side}Context`).textContent = state.runs[side].id ? contextLabel(side) : 'Car and circuit not labelled';
-      $(`${side}EditContext`).disabled = !state.runs[side].id || state.runs[side].loading;
       const legend = $(`comparisonLegend${side === 'current' ? 'Current' : 'Reference'}`).parentElement.querySelector('small');
-      legend.textContent = `${side === 'current' ? 'YOUR RUN / SOLID' : 'REFERENCE / DASHED'} / ${contextLabel(side)}`;
+      legend.textContent = side === 'current' ? 'YOUR RUN / SOLID' : 'REFERENCE / DASHED';
       $(`comparisonLegend${side === 'current' ? 'Current' : 'Reference'}`).parentElement.parentElement.hidden = !state.runs[side].id;
       $(`comparison${side === 'current' ? 'Current' : 'Reference'}Summary`).hidden = !state.runs[side].id;
       const thumbnail = $(`${side}Frame`).parentElement;
@@ -906,37 +749,6 @@ window.ACCCComparison = (() => {
       helpers.icons();
     }
     $('synchronizedChart').setAttribute('aria-label', isPaired() ? 'Synchronized speed, brake, throttle, gear, steering and time delta traces' : 'Speed, brake, throttle, gear and steering traces');
-  }
-
-  async function saveLapRange(side) {
-    const run = state.runs[side];
-    if (!run.id || $(`${side}Range`).value !== 'custom') return;
-    const button = $(`${side}SaveLapRange`);
-    button.disabled = true;
-    try {
-      const range = selectedRange(side);
-      const lap = {id: `saved-${Date.now().toString(36)}`, lap_number: 1,
-        start_time: range.start_time, end_time: range.end_time, valid: null, boundaries_verified: false,
-        ...(range.segment_id != null ? {segment_id: range.segment_id} : {})};
-      const metadata = await helpers.api(`/api/sessions/${encodeURIComponent(run.id)}/reviewed-laps`, {
-        method: 'PATCH', body: JSON.stringify({lap, make_default: true})
-      });
-      if (state.runs[side] !== run) return;
-      run.data.session.metadata = {...run.data.session.metadata, ...metadata};
-      run.defaultsRevision = String(metadata.comparison_defaults?.revision || '');
-      run.ranges = makeRanges(run.data);
-      const session = state.sessions.find(item => item.id === run.id);
-      if (session) session.metadata = {...session.metadata, ...metadata};
-      $(`${side}Range`).innerHTML = run.ranges.map(item => `<option value="${esc(item.id)}">${esc(item.label)}</option>`).join('') + '<option value="custom">Custom time range</option>';
-      $(`${side}Range`).value = lap.id;
-      chooseRange(side);
-      markDirty();
-      helpers.notify('Lap boundaries saved. Physical markers remain unverified.');
-    } catch (error) {
-      helpers.notify(error.message, true);
-    } finally {
-      if (state.runs[side] === run) button.disabled = $(`${side}Range`).value !== 'custom';
-    }
   }
 
   function canExportComparison() {
@@ -1000,7 +812,7 @@ window.ACCCComparison = (() => {
     if (run.loading) throw new Error(`Wait for ${names[side].toLowerCase()} to finish loading.`);
     if (value !== 'custom') {
       const range = run.ranges.find(item => item.id === value);
-      if (!range) throw new Error(`Select ${names[side].toLowerCase()} lap or segment.`);
+      if (!range) throw new Error(`Select ${names[side].toLowerCase()} lap.`);
       return range.selection;
     }
     const start = Number($(`${side}Start`).value),
@@ -1010,7 +822,7 @@ window.ACCCComparison = (() => {
       start_time: start,
       end_time: end
     };
-    if ($(`${side}Segment`).value !== '') result.segment_id = Number($(`${side}Segment`).value);
+    if (state.runs[side].segment !== '') result.segment_id = Number(state.runs[side].segment);
     return result;
   }
 
@@ -1028,14 +840,16 @@ window.ACCCComparison = (() => {
       startMarker: item.startMarker || null, endMarker: item.endMarker || null,
       landmarks: item.landmarks || []});
     const lapRanges = (run.ranges || []).filter(item => item.lap).map(describe);
+    const lockedLap = boundaryLocked(side, 'Start') && boundaryLocked(side, 'End');
     return {...(range ? describe(range) : {}), id,
-      kind: range?.lap ? 'lap' : id === 'full' ? 'full' : id === 'custom' ? 'custom' : 'segment',
-      lap: range?.lap === true, reviewed: range?.reviewed === true,
+      segment: range?.segment ?? range?.selection?.segment_id ?? (finite(run.segment) ? Number(run.segment) : null),
+      kind: range?.lap || lockedLap ? 'lap' : id === 'full' ? 'full' : id === 'custom' ? 'custom' : 'segment',
+      lap: range?.lap === true || lockedLap, reviewed: range?.reviewed === true,
       boundariesVerified: range?.boundariesVerified === true,
       start: finite(start) ? start : null, end: finite(end) ? end : null,
       duration: finite(resolved?.duration) ? Number(resolved.duration) : finite(start) && finite(end) ? end - start : null,
       selection: resolved?.selection || (range ? {...range.selection} : {start_time: start, end_time: end,
-        ...($(`${side}Segment`).value ? {segment_id: Number($(`${side}Segment`).value)} : {})}),
+        ...(state.runs[side].segment ? {segment_id: Number(state.runs[side].segment)} : {})}),
       lapRanges, reviewedLaps: lapRanges.filter(item => item.reviewed)};
   }
 
@@ -1153,7 +967,6 @@ window.ACCCComparison = (() => {
     updateRegistration();
     updateLegend();
     updateSessionActions();
-    for (const side of ['current', 'reference']) $(`${side}SaveLapRange`).disabled = !state.runs[side].id || $(`${side}Range`).value !== 'custom';
     savePreferences();
     $('comparisonStatus').textContent = isPaired() ? 'Selections changed. Updating comparison...' : selectedSides().length ? 'Updating recording...' : 'Select a recording.';
     $('comparisonStatus').classList.add('comparison-dirty');
@@ -1166,18 +979,15 @@ window.ACCCComparison = (() => {
     if (state.restoring || !state.restored) return;
     const preferences = {
       axis: state.axis,
-      align_start: $('confirmAlignment').checked,
-      confirm_same_track: $('confirmSameTrack').checked,
-      align_end: $('confirmFinishAlignment').checked,
-      alignment_mode: state.alignmentMode,
-      landmarks: state.landmarks.map(({label, current_time, reference_time}) => ({label, current_time, reference_time}))
+      ...alignmentState()
     };
     for (const side of ['current', 'reference']) preferences[side] = {
       id: state.runs[side].id || '',
       range: $(`${side}Range`).value,
       start: $(`${side}Start`).value,
       end: $(`${side}End`).value,
-      segment: $(`${side}Segment`).value,
+      segment: state.runs[side].segment,
+      boundary_locks: Object.fromEntries(['Start', 'End'].map(edge => [edge.toLowerCase(), boundaryLocked(side, edge) ? Number($(`${side}${edge}`).value) : null])),
       defaults_revision: state.runs[side].defaultsRevision || ''
     };
     persistPreferences(preferences);
@@ -1295,11 +1105,7 @@ window.ACCCComparison = (() => {
         current_range: selectedRange('current'),
         reference_range: selectedRange('reference'),
         axis: state.axis,
-        align_start: $('confirmAlignment').checked,
-        confirm_same_track: $('confirmSameTrack').checked,
-        align_end: $('confirmFinishAlignment').checked,
-        alignment_mode: state.axis === 'distance' ? state.alignmentMode : 'raw',
-        landmarks: state.axis === 'distance' && state.alignmentMode === 'landmarks' ? selectedLandmarks() : []
+        ...alignmentState()
       } : {session_id: state.runs[sides[0]].id, range: selectedRange(sides[0]), axis: state.axis};
       $('comparisonStatus').textContent = paired ? 'Aligning recorded samples...' : 'Loading recorded samples...';
       const ranges = sourceReviewRanges(sides);
@@ -1392,11 +1198,6 @@ window.ACCCComparison = (() => {
       .map(warning => warning.replace('Estimated delta assumes the selected ranges begin', 'The selected ranges are assumed to begin')
         .replace('delta is estimated and raw speed remains missing', 'raw speed remains missing'));
     $('comparisonWarnings').innerHTML = warnings.map(warning => `<p>${esc(warning)}</p>`).join('');
-    const segments = result.observed_segments;
-    $('observedSegments').hidden = !state.result || !isPaired();
-    $('observedSegmentsNote').textContent = segments?.reason || 'Segment differences need confirmed paired track landmarks.';
-    $('observedSegmentsRows').innerHTML = (segments?.segments || []).map(segment => `<tr><td>${esc(segment.start_label)} / ${esc(segment.end_label)}</td><td>${number(segment.current_seconds, 3)}</td><td>${number(segment.reference_seconds, 3)}</td><td class="${segment.delta_seconds > 0 ? 'segment-slower' : 'segment-faster'}">${segment.delta_seconds > 0 ? '+' : ''}${number(segment.delta_seconds, 3)}</td></tr>`).join('');
-    $('observedSegmentsRows').closest('.segment-table-scroll').hidden = !segments?.available;
     $('comparisonAvailability').innerHTML = !state.result ? '' : channelSpecs.filter(spec => spec.key !== 'delta_time_s').map(spec => {
       const availability = result.channels?.[spec.key];
       const a = availability?.current,
@@ -1424,15 +1225,7 @@ window.ACCCComparison = (() => {
     $('comparisonDeltaSummary').innerHTML = isPaired() ? lastDelta ? `DELTA <strong>${lastDelta.delta_time_s > 0 ? '+' : ''}${number(lastDelta.delta_time_s, 3)} s</strong>${lastDelta.position < result.points.at(-1).position ? ' / last comparable point' : ''}` : '<strong>No overlapping distance data</strong>' : '';
     $('comparisonDeltaSummary').title = lastDelta ? `At ${number(lastDelta.position, state.axis === 'elapsed' ? 2 : 0)} ${state.axis === 'elapsed' ? 's' : 'm'} on the chart; ${deltaBasis}.` : '';
     $('compareAxisNote').textContent = state.axis === 'distance' ? result.alignment?.mode && result.alignment.mode !== 'raw' ? 'Registered distance / estimated metres' : 'Speed distance / estimated metres' : 'Elapsed time / seconds';
-    const registrationFallback = result.alignment?.requested_mode && !result.alignment.applied && result.alignment.fallback_reason;
-    $('registrationStatus').title = registrationFallback || '';
-    if (registrationFallback) {
-      $('registrationStatus').textContent = 'Raw distance / registration unavailable';
-      $('registrationStatus').classList.add('unconfirmed');
-    } else if (result.alignment?.applied) {
-      $('registrationStatus').textContent = `${result.alignment.mode === 'landmarks' ? 'Landmarks' : 'Endpoints'} / ${result.alignment.anchors?.length || 2} anchors / estimated`;
-      $('registrationStatus').classList.remove('unconfirmed');
-    }
+
   }
 
   function pointAt(position) {
@@ -1779,12 +1572,12 @@ window.ACCCComparison = (() => {
       $('activeImport').hidden = !active;
       if (active) {
         $('activeImportName').textContent = active.name || active.url || 'Recording import';
-        $('activeImportDetail').textContent = `${active.state}${active.processed_frames?' / '+Number(active.processed_frames).toLocaleString()+' frames':''}${active.calibration?.status?' / HUD '+active.calibration.status:''}`;
+        $('activeImportDetail').textContent = `${active.state === 'calibrating' ? 'Analyzing video' : active.state}${active.processed_frames?' / '+Number(active.processed_frames).toLocaleString()+' frames':''}`;
         $('activeImportProgress').style.width = `${finite(active.progress)?clamp(active.progress,0,100):5}%`;
         $('activeImportPercent').textContent = finite(active.progress) ? `${number(active.progress)}%` : '';
       }
       const available = new Set(state.sessions.map(session => session.id || session.session_id));
-      $('referenceImportHistory').innerHTML = state.jobs.slice(0, 6).map(job => `<div class="import-job"><div><strong>${esc(job.name||job.url||job.path||'Recording')}</strong><small>${esc(job.error||job.state)}${job.calibration?.status?' / HUD '+esc(job.calibration.status):''}</small></div>${job.state==='completed'&&job.session_id&&available.has(job.session_id)&&!state.deletedSessions.has(job.session_id)?`<button class="button subtle compact import-use" data-session="${esc(job.session_id)}" data-role="${job.role === 'current' ? 'current' : 'reference'}">Use ${job.role === 'current' ? 'your run' : 'reference'}</button>`:!['completed','cancelled','error'].includes(job.state)?`<button class="icon-button import-cancel" data-id="${esc(job.id)}" title="Cancel import" aria-label="Cancel import"><i data-lucide="x"></i></button>`:''}</div>`).join('');
+      $('referenceImportHistory').innerHTML = state.jobs.slice(0, 6).map(job => `<div class="import-job"><div><strong>${esc(job.name||job.url||job.path||'Recording')}</strong><small>${esc(job.error || (job.state === 'calibrating' ? 'Analyzing video' : job.state))}</small></div>${job.state==='completed'&&job.session_id&&available.has(job.session_id)&&!state.deletedSessions.has(job.session_id)?`<button class="button subtle compact import-use" data-session="${esc(job.session_id)}" data-role="${job.role === 'current' ? 'current' : 'reference'}">Use ${job.role === 'current' ? 'your run' : 'reference'}</button>`:!['completed','cancelled','error'].includes(job.state)?`<button class="icon-button import-cancel" data-id="${esc(job.id)}" title="Cancel import" aria-label="Cancel import"><i data-lucide="x"></i></button>`:''}</div>`).join('');
       helpers.icons();
       const completed = state.jobs.find(job => job.id === state.pendingImport && job.state === 'completed' && job.session_id);
       if (completed) {
@@ -1821,12 +1614,7 @@ window.ACCCComparison = (() => {
       if (view && view !== 'analysis') pausePlayback();
     }, true);
     $('swapComparisonRuns').onclick = swapRuns;
-    $('closeRecordingContext').onclick = () => $('recordingContextDialog').close();
-    $('recordingContextDialog').addEventListener('close', () => { state.contextEditor = null; });
-    $('saveRecordingContext').onclick = saveContext;
-    $('confirmSameTrack').onchange = () => markDirty();
     for (const side of ['current', 'reference']) {
-      $(`${side}EditContext`).onclick = () => openContext(side);
       $(`${side}DeleteSession`).onclick = async () => {
         const id = state.runs[side].id;
         if (!id || !helpers.deleteSession) return;
@@ -1836,24 +1624,7 @@ window.ACCCComparison = (() => {
           helpers.notify(error.message, true);
         }
       };
-      $(`${side}FindCrossing`).onclick = () => findCrossing(side);
-      $(`${side}SaveLapRange`).onclick = () => saveLapRange(side);
-      $(`${side}CancelCrossing`).onclick = () => cancelCrossing(side);
-      $(`${side}InspectCrossing`).onclick = () => {
-        const crossing = proposedCrossing(side);
-        if (crossing) openFrame(side, crossing.end_time);
-      };
-      $(`${side}ApplyCrossing`).onclick = () => {
-        const crossing = proposedCrossing(side);
-        if (!crossing) return;
-        $(`${side}End`).value = Number(crossing.end_time).toFixed(3);
-        $(`${side}Range`).value = 'custom';
-        $(`${side}Segment`).hidden = false;
-        resetAlignment(false, 'End');
-        markDirty();
-        updateFrame(side, crossing.end_time);
-        $(`${side}CrossingStatus`).textContent = 'OUT updated / finish crossing unconfirmed';
-      };
+      $(`${side}ImportRecording`).onclick = () => openImport(side);
       $(`${side}Session`).onchange = () => loadRun(side, $(`${side}Session`).value);
       $(`${side}Range`).onchange = () => {
         resetAlignment(false);
@@ -1862,9 +1633,9 @@ window.ACCCComparison = (() => {
         markDirty();
       };
       for (const edge of ['Start', 'End']) $(`${side}${edge}`).onchange = () => {
+        if (state.runs[side].boundaryLocks) delete state.runs[side].boundaryLocks[edge.toLowerCase()];
         resetAlignment(false, edge);
         $(`${side}Range`).value = 'custom';
-        $(`${side}Segment`).hidden = false;
         markDirty();
       };
       for (const edge of ['Start', 'End']) {
@@ -1886,103 +1657,30 @@ window.ACCCComparison = (() => {
           thumbnail.click();
         }
       };
-      $(`${side}Segment`).onchange = () => { resetAlignment(false); markDirty(); };
     }
-    for (const button of document.querySelectorAll('.inspect-boundary')) button.onclick = () => openFrame(button.dataset.side, Number($(`${button.dataset.side}${button.dataset.edge}`).value));
+    for (const button of document.querySelectorAll('.inspect-boundary')) button.onclick = () => openFrame(button.dataset.side, Number($(`${button.dataset.side}${button.dataset.edge}`).value), button.dataset.edge);
     $('closeAlignment').onclick = () => $('alignmentDialog').close();
-    $('alignmentTime').oninput = () => {
+    $('alignmentLock').onclick = lockBoundary;
+    $('alignmentDialog').addEventListener('close', () => {
+      const video = $('alignmentVideo');
+      video.pause();
+      video.removeAttribute('src');
+      video.load();
+      state.viewer = null;
       setFrameReady(false);
-      $('alignmentFrameStamp').textContent = 'Loading frame...';
-      updateFrame(state.viewer.side, Number($('alignmentTime').value));
-    };
+    });
+    $('alignmentTime').oninput = () => seekBoundaryFrame($('alignmentTime').value);
     for (const [id, direction] of [
         ['alignmentBack', -1],
         ['alignmentForward', 1],
         ['alignmentFrameBack', -1 / 30],
         ['alignmentFrameForward', 1 / 30]
       ]) $(id).onclick = () => {
-      $('alignmentTime').value = Math.max(0, Number($('alignmentTime').value) + direction).toFixed(3);
-      setFrameReady(false);
-      $('alignmentFrameStamp').textContent = 'Loading frame...';
-      updateFrame(state.viewer.side, Number($('alignmentTime').value));
-    };
-    for (const [id, edge] of [
-        ['alignmentSetStart', 'Start'],
-        ['alignmentSetEnd', 'End']
-      ]) $(id).onclick = () => {
-      const side = state.viewer.side;
-      resetAlignment(false, edge);
-      $(`${side}${edge}`).value = $('alignmentTime').value;
-      $(`${side}Range`).value = 'custom';
-      $(`${side}Segment`).hidden = false;
-      markDirty();
-      helpers.notify(`${names[side]} ${edge === 'Start' ? 'IN' : 'OUT'} set to ${stamp(Number($('alignmentTime').value))}.`);
-    };
-    $('alignmentSetLandmark').onclick = () => {
-      const {side, landmarkIndex} = state.viewer;
-      const time = Number($('alignmentTime').value);
-      const landmark = state.landmarks[landmarkIndex];
-      if (!landmark || !Number.isFinite(time) || time < 0) return;
-      landmark[`${side}_time`] = time;
-      renderLandmarks();
-      markDirty();
-      $('alignmentDialog').close();
-    };
-    $('comparisonAlignmentMode').onchange = () => {
-      state.alignmentMode = $('comparisonAlignmentMode').value;
-      markDirty();
-    };
-    $('confirmFinishAlignment').onchange = () => markDirty();
-    $('addComparisonLandmark').onclick = () => {
-      state.landmarks.push({label: '', current_time: null, reference_time: null});
-      renderLandmarks();
-      markDirty(false);
-      $('landmarkRows').lastElementChild.querySelector('input').focus();
-    };
-    $('landmarkRows').onchange = event => {
-      const row = event.target.closest('[data-landmark]');
-      if (!row || !event.target.dataset.field) return;
-      state.landmarks[Number(row.dataset.landmark)][event.target.dataset.field] = event.target.value;
-      $('landmarkError').textContent = '';
-      markDirty();
-    };
-    $('landmarkRows').oninput = event => {
-      const row = event.target.closest('[data-landmark]');
-      if (row && event.target.dataset.field) {
-        state.landmarks[Number(row.dataset.landmark)][event.target.dataset.field] = event.target.value;
-        invalidateExport();
-      }
-    };
-    $('landmarkRows').onclick = event => {
-      const row = event.target.closest('[data-landmark]');
-      if (!row) return;
-      const index = Number(row.dataset.landmark);
-      if (event.target.closest('.find-landmark-match')) {
-        findLandmarkMatch(index);
-        return;
-      }
-      if (event.target.closest('.inspect-landmark-match')) {
-        const candidate = state.landmarks[index].matches?.[Number(row.querySelector('.landmark-match-choice').value)];
-        if (candidate) openFrame('reference', candidate.target_time, index);
-        return;
-      }
-      if (event.target.closest('.remove-landmark')) {
-        state.landmarks.splice(index, 1);
-        renderLandmarks();
-        markDirty();
-        return;
-      }
-      const frameButton = event.target.closest('.landmark-frame');
-      if (frameButton) {
-        const side = frameButton.dataset.side;
-        const time = state.landmarks[index][`${side}_time`];
-        openFrame(side, finite(time) ? Number(time) : pointAt(state.cursor)?.[side]?.time ?? Number($(`${side}Start`).value), index);
-      }
+      seekBoundaryFrame(Number($('alignmentTime').value) + direction);
     };
     $('refreshComparisons').onclick = () => refresh(true);
     $('runComparison').onclick = compare;
     $('exportComparison').onclick = exportComparison;
-    $('confirmAlignment').onchange = () => markDirty();
     for (const axis of ['distance', 'elapsed']) $(`axis${axis==='distance'?'Distance':'Elapsed'}`).onclick = () => {
       setAxis(axis);
       markDirty();
@@ -2045,7 +1743,6 @@ window.ACCCComparison = (() => {
       updateCursor();
       draw();
     };
-    $('openReferenceImport').onclick = () => openImport('reference');
     $('recordingImportRole').onchange = () => {$('referenceName').placeholder = $('recordingImportRole').value === 'current' ? 'My lap' : 'Reference lap';};
     $('closeReferenceImport').onclick = () => $('referenceImportDialog').close();
     for (const button of document.querySelectorAll('[data-import-kind]')) button.onclick = () => {
@@ -2086,7 +1783,7 @@ window.ACCCComparison = (() => {
         const body = {
           kind,
           role: $('recordingImportRole').value,
-          auto_calibrate: $('referenceAutoCalibration').checked
+          auto_calibrate: true
         };
         if ($('referenceName').value.trim()) body.name = $('referenceName').value.trim();
         if (kind === 'file') {

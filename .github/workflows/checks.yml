@@ -34,5 +34,14 @@ jobs:
       - run: npm ci --prefix desktop
       - run: python -m pytest -q
       - run: npm test --prefix desktop
+      - name: Check the simplified comparison and circuit guide
+        run: |
+          python scripts/check_analysis_focus_browser.py
+          python scripts/check_lap_boundaries_browser.py
+          python scripts/check_boundary_video_browser.py
+          python scripts/check_track_inference_browser.py
+          python scripts/check_comparison_export_browser.py
+          python scripts/check_analysis_layout_browser.py
+          python scripts/check_missing_hud_browser.py
       - name: Check release helper syntax
         run: python -m py_compile .github/scripts/prepare_release.py

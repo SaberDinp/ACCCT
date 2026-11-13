@@ -1,6 +1,6 @@
 """Read-only delta integration against two existing reviewed recordings.
 
-Only GET and the read-only trace/compare POST endpoints are allowed.
+Only GET and the read-only trace/compare/circuit-inference POST endpoints are allowed.
 """
 import argparse
 import asyncio
@@ -36,7 +36,7 @@ async def main(args):
         async def guard(route):
             request = route.request
             path = urlparse(request.url).path
-            if request.method not in {'GET', 'HEAD', 'OPTIONS'} and not (request.method == 'POST' and path in {'/api/trace', '/api/compare'}):
+            if request.method not in {'GET', 'HEAD', 'OPTIONS'} and not (request.method == 'POST' and path in {'/api/trace', '/api/compare', '/api/track-inference'}):
                 blocked.append([request.method, path])
                 await route.abort()
             else:
@@ -47,9 +47,7 @@ async def main(args):
         await page.goto(base)
         await page.get_by_role('button', name='Analysis', exact=True).click()
         await expect(page.locator('#comparisonStatus')).to_have_text('', timeout=30000)
-        await page.locator('#comparisonAlignmentMode').select_option('raw')
-        await page.locator('#confirmAlignment').uncheck()
-        await page.locator('#confirmSameTrack').uncheck()
+        assert await page.locator('#comparisonAlignmentMode, #confirmAlignment, #confirmSameTrack').count() == 0
         for axis, button in [('distance', '#axisDistance'), ('elapsed', '#axisElapsed')]:
             await page.locator(button).click()
             await expect(page.locator('#comparisonStatus')).to_have_text('', timeout=30000)

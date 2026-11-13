@@ -77,9 +77,14 @@ npm test --prefix desktop
 ```
 
 Tests requiring a developer's private sample recording skip when it is absent.
-Browser inspection scripts under `scripts/check_*_browser.py` can require a running
-source server, local recordings, or a particular generated fixture; inspect their
-arguments before running them. The packaged smoke check creates an isolated
+The source CI also runs isolated browser checks for navigation/imports, the
+Start/End/Lock workflow, circuit inference and manual overrides, comparison
+export, responsive native-video layout, and missing HUD observations. They use
+local generated fixtures and do not change a user's library. Legacy standalone
+checks dedicated to the removed registration/editor interface have been retired;
+backend coverage for registration and recording context remains in `tests/`.
+Other scripts under `scripts/check_*_browser.py` can require a running source
+server or local recordings; inspect their arguments before running them. The packaged smoke check creates an isolated
 temporary library, opens the actual app twice, and checks resource loading,
 recording persistence, export, and shutdown. Set `ACCC_SMOKE_VIDEO` to exercise a
 specific local recording without shipping it in the repository.
@@ -118,7 +123,7 @@ download is not proof of accurate telemetry for that car/HUD combination.
 
 Update `desktop/package.json`, its lockfile, the README download filenames, and
 the release notes together. Run source checks and inspect the UI before creating
-a version tag such as `v1.2.4` matching the desktop package version.
+a version tag such as `v1.3.0` matching the desktop package version.
 
 The release workflow builds and exercises all five targets on native runners:
 Apple Silicon Mac, Intel Mac, Windows x64, Linux x64, and Linux ARM64. It only

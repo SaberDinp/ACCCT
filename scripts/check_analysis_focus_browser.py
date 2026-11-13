@@ -1,4 +1,4 @@
-"""Recorded import roles, local HUD calibration and analysis-only navigation."""
+"""Recorded import roles and the simplified analysis-only navigation."""
 import asyncio
 import functools
 import json
@@ -9,24 +9,18 @@ from urllib.parse import urlparse
 from playwright.async_api import async_playwright, expect
 from browser_fixtures import ROOT, SOCKET_FIXTURE, StaticHandler
 from check_delete_swap_browser import Fixtures, CURRENT, REFERENCE
-from telemetry.profiles import default_profile
 
 
 class RecordingFixtures(Fixtures):
     def __init__(self):
         super().__init__()
         self.imports, self.jobs = [], []
-        self.profile = default_profile()
 
     async def route(self, route):
         request = route.request
         path = urlparse(request.url).path
         if path == '/api/sources':
             return await route.fulfill(json=[{'name': 'My saved lap.mp4', 'path': 'fixture.mp4'}])
-        if path == '/api/profile':
-            if request.method == 'PUT':
-                self.profile = request.post_data_json
-            return await route.fulfill(json=self.profile)
         if path == '/api/imports':
             if request.method == 'GET':
                 return await route.fulfill(json=self.jobs)
@@ -57,12 +51,14 @@ async def main():
             await page.goto(f'http://127.0.0.1:{server.server_port}')
             await expect(page.locator('#view-analysis')).to_be_visible()
             assert await page.locator('.main-tabs button').all_text_contents() == ['Analysis', 'Credits']
-            assert await page.locator('#view-monitor, #phoneDialog, #sourceDialog, #captureVideo').count() == 0
+            assert await page.locator('#view-monitor, #view-calibration, #view-sessions, #importRecording, #phoneDialog, #sourceDialog, #captureVideo').count() == 0
             checks.append('Analysis is default; primary navigation is Analysis and Credits')
 
             for role, expected in [('current', CURRENT), ('reference', REFERENCE)]:
                 await page.locator('#currentSession' if role == 'current' else '#referenceSession').select_option('')
-                await page.locator('#importRecording').click()
+                await page.locator(f'#{role}ImportRecording').locator('xpath=ancestor::details').evaluate_all(
+                    'elements => elements.forEach(element => {element.open = true;})')
+                await page.locator(f'#{role}ImportRecording').click()
                 await expect(page.locator('#import-file')).to_be_visible()
                 await page.locator('#recordingImportRole').select_option(role)
                 await page.locator('#referenceLocalFile').select_option('fixture.mp4')
@@ -73,20 +69,15 @@ async def main():
                 assert fixture.imports[-1]['role'] == role and fixture.imports[-1]['kind'] == 'file'
             checks.append('Local recorded imports select Your run or Reference according to explicit role')
 
-            await page.get_by_role('button', name='Calibration', exact=True).click()
-            await expect(page.locator('#view-calibration')).to_be_visible()
-            await expect(page.locator('#calibrationRecording')).to_have_value(CURRENT)
-            await page.wait_for_function('ACCCTelemetry.state.calibrationImage?.naturalWidth > 0')
-            await page.locator('#calibrationTime').fill('12.5')
-            async with page.expect_response(lambda response: '/frame.jpg?time=12.5' in response.url):
-                await page.locator('#refreshCalibration').click()
-            await page.locator('#profileName').fill('Recorded lap HUD')
-            await page.locator('#saveProfile').click()
-            await expect(page.locator('#profileMessage')).to_have_text('Profile saved.')
-            assert fixture.profile['name'] == 'Recorded lap HUD'
-            await page.locator('#view-calibration').get_by_role('button', name='Back to analysis').click()
-            await expect(page.locator('#view-analysis')).to_be_visible()
-            checks.append('HUD calibration loads a frame from a saved recording and saves its profile')
+            removed = ['comparisonAlignmentMode', 'confirmAlignment', 'confirmFinishAlignment',
+                       'confirmSameTrack', 'trackProgressMode', 'trackManualControls',
+                       'trackcurrentCar', 'trackreferenceCar', 'alignmentSetStart', 'alignmentSetEnd',
+                       'referenceAutoCalibration']
+            for role in ('current', 'reference'):
+                removed.extend(role + suffix for suffix in ('Segment', 'SaveLapRange', 'FindCrossing', 'EditContext'))
+            for control in removed:
+                assert await page.locator('#' + control).count() == 0, control
+            checks.append('Redundant navigation, calibration, labels and manual-position controls are absent')
 
             await page.get_by_role('button', name='Credits', exact=True).click()
             await expect(page.locator('#view-credits')).to_be_visible()

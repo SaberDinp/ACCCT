@@ -6,18 +6,19 @@ not collect live game telemetry or use delayed broadcasts for live driving advic
 
 ## Import and select
 
-Use **Import recording** to add a video as **Your run** or **Reference lap**.
+Open **Video options** for **Your run** or **Reference**, then use
+**Import recording** to add a video.
 Local files work without Internet access. Supported public YouTube recordings,
 Twitch VODs/clips, and direct video URLs are downloaded for local analysis.
 Private, expired, restricted, or unavailable videos can fail to import; use an
 accessible local recording in that case. The app does not request platform
 passwords or bypass sign-in restrictions.
 
-Each recording remains available through **Recordings** in Analysis. Select a
-detected lap or define source-time start/end boundaries. A reference is optional
-for reviewing one recording. Label each recording with its car, circuit, game
-version, and conditions when known. Titles are discovery hints, not verified
-identity. Known different circuit layouts cannot be compared.
+Each recording remains available in the comparison area's **Video options**.
+The app starts with detected lap boundaries when available. Use **Start of lap**
+and **End of lap** to pick the source frames and press **Lock**. A reference is optional for reviewing one
+recording. Choose recordings from the same circuit layout; known different
+circuit layouts cannot be compared.
 
 No sample race videos or existing session libraries are shipped in the source
 repository. Start with your own footage or a public recording you may download.
@@ -60,21 +61,22 @@ lap progress along the centerline; it does not measure which racing line was use
 ## Boundaries and physical alignment
 
 A detected timer reset is a useful starting point, but the visible clock may be
-hidden, rounded, or compressed. Inspect lap start/end frames and choose matching
-physical crossings when comparing precise sections. Custom ranges can be saved
-without claiming they have been independently verified.
+hidden, rounded, or compressed. **Start of lap** and **End of lap** open a frame
+picker whose title identifies the boundary. Seek to the start/finish crossing,
+then press **Lock**. Pick the same physical line in both recordings. Locking one
+boundary changes only that boundary and remembers the choice automatically.
 
-**Same-lap endpoints** registers distance between confirmed IN and OUT crossings.
-**Paired track landmarks** adds corresponding source timestamps inside the lap.
-Registration adjusts the comparison axis, not the recorded inputs or source
-elapsed times. Braking patterns are never automatically matched because that
-could erase the driving differences being studied. Large corrections are flagged.
+Distance comes from integrating visible speed. Locking both lap starts confirms the physical crossing used in the
+distance-based comparison; until then, time delta is explicitly approximate. Existing reviewed physical markers are still honored.
+The app does not shift braking or throttle traces to make the drivers look alike.
 
-**Find next crossing** looks for the selected IN scene later in the same video.
-The landmark image-match control can suggest a matching scene in the reference.
-Both are bounded local feature-matching searches, not proof of exact position.
-Inspect each suggestion before accepting it; choosing an arbitrary frame does
-not make it a start/finish line.
+## Automatic track guide
+
+The guide always places markers using estimated lap progress. It can attempt to
+select a circuit from the chosen lap's telemetry, using lap distance and the signed steering pattern when available.
+Incomplete or ambiguous data may leave the circuit unselected. Select the circuit yourself whenever needed.
+Your saved manual circuit choice takes priority over automatic suggestions.
+These are estimates from video, not GPS or measured car position.
 
 ## Missing data and interrupted laps
 
@@ -87,19 +89,16 @@ estimated when adjacent readings pass plausibility checks. Original speed stays
 missing, and repaired intervals are disclosed. Cuts and longer gaps break delta
 locally. An interrupted lap is not presented as a complete lap.
 
-## Calibration and footage quality
+## Footage quality
 
-Automatic calibration locates supported ACC instrument clusters, including current
-and legacy overlays, at their visible scale and position. Units are standardized
-to km/h when they can be read; ambiguous units suppress speed rather than corrupt
-distance. The legacy overlay has no usable steering strip.
+HUD detection automatically locates supported ACC instrument clusters, including
+current and legacy overlays, at their visible scale and position. Units are
+standardized to km/h when they can be read; ambiguous units suppress speed rather
+than corrupt distance. The legacy overlay has no usable steering strip.
 
-Use **Calibration** inside Analysis to inspect a recording frame, adjust HUD
-regions, and set the layout or speed units. Keep the complete pedal fills,
-visibility anchors, digits, and lap clock inside their regions. The profile is
-saved in your local library. Different fonts, very small HUDs, hidden input bars,
-or severe compression may require different source footage. Region editing cannot
-recover invisible data or teach the digit reader an arbitrary new font.
+Use footage with the complete pedal fills, digits, and lap clock visible.
+Different fonts, very small HUDs, hidden input bars, and severe compression may
+require clearer source footage. Invisible data cannot be recovered.
 
 The bundled [car/circuit catalog](../assets/catalog/acc.json) is a selection aid,
 not a claim that every car, camera, HUD, and circuit combination has been validated.
@@ -108,7 +107,8 @@ provenance, attribution, and licenses.
 
 ## Exports and storage
 
-CSV exports are ordinary tables with units, not proprietary MoTeC `.ld` files.
+Use **Export CSV** in a recording's **Video options** for ordinary tables with
+units, not proprietary MoTeC `.ld` files.
 The comparison's **Export for AI** button downloads a bounded JSON summary of
 the currently compared ranges. It does not call an AI service or send your data
 anywhere. You choose whether to share the exported file with another tool.

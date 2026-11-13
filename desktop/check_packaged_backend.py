@@ -6,6 +6,7 @@ Windows: python desktop/check_packaged_backend.py path/to/python.exe path/to/app
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -74,6 +75,20 @@ def main():
 
                     assert b"ACCC Telemetry" in request("/")
                     assert b"--accent" in request("/static/styles.css")
+                    if attempt == 0:
+                        # Compare the bundled UI to this release checkout on every
+                        # native target, catching stale platform-specific resources.
+                        web = Path(__file__).resolve().parents[1] / "web"
+                        hashes = {}
+                        for source in sorted(web.rglob("*")):
+                            if not source.is_file():
+                                continue
+                            relative = source.relative_to(web).as_posix()
+                            expected = hashlib.sha256(source.read_bytes()).hexdigest()
+                            actual = hashlib.sha256(request("/static/" + relative)).hexdigest()
+                            assert actual == expected, f"Stale packaged UI: {relative}"
+                            hashes[relative] = actual
+                        reports["shared_ui"] = {"files_verified": len(hashes), "sha256": hashes}
                     assert request("/api/status")["state"] == "idle"
                     assert request("/api/catalog")
                     tracks = request("/api/tracks")

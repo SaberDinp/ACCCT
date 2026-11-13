@@ -9,6 +9,7 @@ import copy
 import functools
 import json
 import math
+import re
 from pathlib import Path
 import sys
 import threading
@@ -50,6 +51,7 @@ class Fixtures:
     def __init__(self):
         self.sessions, self.images = {}, {}
         self.requests, self.unexpected, self.deletes = [], [], []
+        self.comparisons = []
         self.next_compare = self.next_delete = self.next_frame = self.next_session = None
         self.delete_error = None
         self.gates = []
@@ -131,6 +133,7 @@ class Fixtures:
         elif path in {"/api/compare", "/api/trace"} and method == "POST":
             try:
                 if path == "/api/compare":
+                    self.comparisons.append(copy.deepcopy(body))
                     result = compare_session_ranges(self.sessions[body["reference_session_id"]]["samples"],
                         self.sessions[body["current_session_id"]]["samples"], reference_range=body["reference_range"],
                         current_range=body["current_range"], axis=body["axis"], align_start=body["align_start"],
@@ -140,6 +143,10 @@ class Fixtures:
                     result = trace_session_range(self.sessions[body["session_id"]]["samples"], body["range"], body["axis"])
             except (ValueError, KeyError) as error:
                 status, result = 400, {"detail": str(error)}
+        elif path == "/api/track-inference":
+            result = {"status": "insufficient_data", "track_id": None, "name": None,
+                      "source": None, "auto_select": False, "confidence": None,
+                      "reason": "Choose a circuit for this fixture.", "evidence": {}, "candidates": []}
         elif path == "/api/tracks":
             result = list_tracks()
         elif path.startswith("/api/tracks/"):
@@ -168,24 +175,34 @@ async def loaded(page):
     await assert_pair(page)
 
 
+async def lock_boundaries(page):
+    for side in ("current", "reference"):
+        for edge in ("Start", "End"):
+            await page.locator(f"#{side}{edge}Boundary").click()
+            await expect(page.locator("#alignmentLock")).to_be_enabled(timeout=15000)
+            await page.locator("#alignmentLock").click()
+            await expect(page.locator("#alignmentDialog")).to_be_hidden()
+    await expect(page.locator("#comparisonStatus")).not_to_have_class(re.compile("comparison-dirty"), timeout=20000)
+
+
 async def check_swap(page, checks):
-    await expect(page.locator("#comparisonDeltaSummary")).to_contain_text("+2.000")
+    await lock_boundaries(page)
+    await expect(page.locator("#comparisonDeltaSummary")).to_contain_text("-4.392")
     await page.locator("#swapComparisonRuns").click()
     await expect(page.locator("#currentSession")).to_have_value(REFERENCE)
     await expect(page.locator("#referenceSession")).to_have_value(CURRENT)
     for side, start in (("current", "12"), ("reference", "10")):
         await expect(page.locator(f"#{side}Range")).to_have_value("custom")
-        await expect(page.locator(f"#{side}Start")).to_have_value(start)
-        await expect(page.locator(f"#{side}End")).to_have_value("110")
-        await expect(page.locator(f"#{side}Segment")).to_have_value("1")
-    await expect(page.get_by_label("Landmark 1 your run source time", exact=True)).to_have_value("61")
-    await expect(page.get_by_label("Landmark 1 reference source time", exact=True)).to_have_value("60")
-    await expect(page.locator("#comparisonAlignmentMode")).to_have_value("landmarks")
-    await expect(page.locator("#confirmAlignment")).to_be_checked()
-    await expect(page.locator("#confirmFinishAlignment")).to_be_checked()
-    await expect(page.locator("#comparisonDeltaSummary")).to_contain_text("-2.000", timeout=20000)
+        await expect(page.locator(f"#{side}Start")).to_have_value(re.compile(start + r"(?:\.0+)?"))
+        await expect(page.locator(f"#{side}End")).to_have_value(re.compile(r"110(?:\.0+)?"))
+        await expect(page.locator(f"#{side}Segment")).to_have_count(0)
+    saved = await page.evaluate("JSON.parse(localStorage.getItem('accc.comparison.v1'))")
+    assert saved["current"]["boundary_locks"] == {"start": 12, "end": 110}, saved
+    assert saved["reference"]["boundary_locks"] == {"start": 10, "end": 110}, saved
+    assert saved["alignment_mode"] == "raw" and saved["landmarks"] == []
+    await expect(page.locator("#comparisonDeltaSummary")).to_contain_text("+4.392", timeout=20000)
     await assert_pair(page)
-    checks["swap_preserves_ranges_segments_landmarks_and_flips_delta"] = True
+    checks["swap_preserves_exact_ranges_and_locks_and_flips_delta"] = True
 
 
 async def open_delete(page, button):
@@ -212,31 +229,6 @@ async def new_fixture_context(browser, url, errors, missing=None):
 
 
 async def check_races(browser, url, errors, checks):
-    context, page, fixture = await new_fixture_context(browser, url, errors)
-    await page.get_by_role("button", name="Recordings", exact=True).click()
-    await open_delete(page, f'.session-delete[data-id="{PROTECTED}"]')
-    await page.locator("#deleteSessionConfirm").click()
-    await expect(page.locator("#deleteSessionDialog")).to_be_hidden()
-    await page.wait_for_function("!document.querySelector('.session-delete[data-id=\"delete-fixture-protected\"]')")
-    saved = await page.evaluate("JSON.parse(localStorage.getItem('accc.comparison.v1'))")
-    for side in ("current", "reference"):
-        assert saved[side]["id"] == PREFERENCES[side]["id"], saved
-        assert float(saved[side]["start"]) == PREFERENCES[side]["start"], saved
-        assert float(saved[side]["end"]) == PREFERENCES[side]["end"], saved
-    checks["unselected_deletion_before_analysis_preserves_saved_ranges"] = True
-    await open_delete(page, f'.session-delete[data-id="{REFERENCE}"]')
-    await page.locator("#deleteSessionConfirm").click()
-    await expect(page.locator("#deleteSessionDialog")).to_be_hidden()
-    await page.get_by_role("button", name="Analysis", exact=True).click()
-    await expect(page.locator("#currentSession")).to_have_value(CURRENT)
-    await expect(page.locator("#referenceSession")).to_have_value("")
-    await expect(page.locator("#currentRange")).to_have_value("custom")
-    await expect(page.locator("#currentStart")).to_have_value("10")
-    await expect(page.locator("#currentEnd")).to_have_value("110")
-    await assert_single(page)
-    checks["delete_before_analysis_preserves_unrelated_saved_range"] = True
-    await context.close()
-
     context, page, fixture = await new_fixture_context(browser, url, errors, missing=REFERENCE)
     await page.get_by_role("button", name="Analysis", exact=True).click()
     await expect(page.locator("#currentSession")).to_have_value(CURRENT)
@@ -250,16 +242,14 @@ async def check_races(browser, url, errors, checks):
     context, page, fixture = await new_fixture_context(browser, url, errors)
     await loaded(page)
     gate = fixture.gate("frame", CURRENT)
-    await page.locator('.comparison-run').filter(has=page.locator('#currentSession')).locator('.run-review-tools summary').click()
-    await page.locator('.inspect-boundary[data-side="current"][data-edge="Start"]').click()
+    await page.locator('#currentStartBoundary').click()
     await page.locator("#alignmentTime").fill("37")
-    await page.locator("#alignmentTime").dispatch_event("change")
     await asyncio.wait_for(gate.arrived.wait(), 10)
     await page.locator("#closeAlignment").click()
     await page.locator("#swapComparisonRuns").click()
     await expect(page.locator("#currentSession")).to_have_value(REFERENCE)
     await expect(page.locator("#trackcurrentImage")).to_be_visible()
-    await expect(page.locator("#comparisonDeltaSummary")).to_contain_text("-2.000")
+    await expect(page.locator("#comparisonDeltaSummary")).to_contain_text("+4.392")
     current_src = await page.locator("#currentFrame").get_attribute("src")
     gate.release.set()
     await asyncio.wait_for(gate.finished.wait(), 10)
@@ -267,40 +257,33 @@ async def check_races(browser, url, errors, checks):
     assert await page.locator("#currentFrame").get_attribute("src") == current_src
     checks["late_source_frame_cannot_replace_swapped_video"] = True
 
-    # Deleting a selected recording must discard any delayed comparison frame.
     gate = fixture.gate("frame", CURRENT)
-    await page.locator('#referenceStart').fill('47')
-    await page.locator('#referenceStart').dispatch_event('change')
+    await page.locator('#referenceStartBoundary').click()
+    await page.locator('#alignmentTime').fill('47')
     await asyncio.wait_for(gate.arrived.wait(), 10)
-    await page.get_by_role("button", name="Recordings", exact=True).click()
-    await open_delete(page, f'.session-delete[data-id="{CURRENT}"]')
+    await page.locator('#closeAlignment').click()
+    await open_delete(page, '#referenceDeleteSession')
     await page.locator("#deleteSessionConfirm").click()
     await expect(page.locator("#deleteSessionDialog")).to_be_hidden()
     gate.release.set()
     await asyncio.wait_for(gate.finished.wait(), 10)
     await settle_response(page)
-    await page.get_by_role("button", name="Analysis", exact=True).click()
     await expect(page.locator('#referenceSession')).to_have_value('')
     await expect(page.locator('#referenceFrame')).to_be_hidden()
     assert not await page.locator('#referenceFrame').get_attribute('src')
-    checks["deleted_analysis_recording_ignores_late_frame"] = True
+    checks["deleted_recording_ignores_late_source_frame"] = True
 
-    await page.get_by_role("button", name="Recordings", exact=True).click()
     gate = fixture.gate("session", REFERENCE)
-    await page.locator(f'.session-open[data-id="{REFERENCE}"]').click()
+    await page.locator('#referenceSession').select_option(REFERENCE)
     await asyncio.wait_for(gate.arrived.wait(), 10)
-    await page.get_by_role("button", name="Recordings", exact=True).click()
-    await open_delete(page, f'.session-delete[data-id="{REFERENCE}"]')
-    await page.locator("#deleteSessionConfirm").click()
-    await expect(page.locator("#deleteSessionDialog")).to_be_hidden()
+    await page.locator('#referenceSession').select_option(PROTECTED)
+    await expect(page.locator('#referenceDetail')).to_contain_text('samples')
     gate.release.set()
     await asyncio.wait_for(gate.finished.wait(), 10)
     await settle_response(page)
-    await page.get_by_role("button", name="Analysis", exact=True).click()
-    await expect(page.locator('#currentSession')).to_have_value('')
-    await expect(page.locator('#currentFrame')).to_be_hidden()
-    assert not await page.locator('#currentFrame').get_attribute('src')
-    checks["deleted_recording_cannot_load_from_late_review_fetch"] = True
+    await expect(page.locator('#referenceSession')).to_have_value(PROTECTED)
+    await expect(page.locator('#comparisonLegendReference')).to_have_text('Protected external video')
+    checks["late_recording_fetch_cannot_replace_new_selection"] = True
     assert not fixture.unexpected, fixture.unexpected
     await context.close()
 
@@ -345,20 +328,21 @@ async def run(args):
             await page.reload()
             await loaded(page)
             await expect(page.locator("#currentSession")).to_have_value(REFERENCE)
-            await expect(page.locator("#comparisonDeltaSummary")).to_contain_text("-2.000")
-            await expect(page.get_by_label("Landmark 1 your run source time", exact=True)).to_have_value("61")
-            checks["swapped_roles_and_landmarks_survive_reload"] = True
+            await expect(page.locator("#comparisonDeltaSummary")).to_contain_text("+4.392")
+            saved = await page.evaluate("JSON.parse(localStorage.getItem('accc.comparison.v1'))")
+            assert saved["current"]["boundary_locks"] == {"start": 12, "end": 110}
+            checks["swapped_roles_and_locks_survive_reload"] = True
             print("Reload persistence verified", flush=True)
 
             gate = fixture.gate("compare")
             await page.locator("#runComparison").click()
             await asyncio.wait_for(gate.arrived.wait(), 10)
             await page.locator("#swapComparisonRuns").click()
-            await expect(page.locator("#comparisonDeltaSummary")).to_contain_text("+2.000", timeout=20000)
+            await expect(page.locator("#comparisonDeltaSummary")).to_contain_text("-4.392", timeout=20000)
             gate.release.set()
             await asyncio.wait_for(gate.finished.wait(), 10)
             await settle_response(page)
-            await expect(page.locator("#comparisonDeltaSummary")).to_contain_text("+2.000")
+            await expect(page.locator("#comparisonDeltaSummary")).to_contain_text("-4.392")
             checks["stale_compare_after_swap_ignored"] = True
             print("Stale comparison ignored", flush=True)
 
@@ -371,7 +355,6 @@ async def run(args):
             await page.locator("#swapComparisonRuns").click()
             await assert_single(page)
             await page.locator("#referenceSession").select_option(REFERENCE)
-            await page.locator("#comparisonAlignmentMode").select_option("raw")
             await assert_pair(page)
             print("One-sided swap verified", flush=True)
 
@@ -418,8 +401,9 @@ async def run(args):
             checks["deleted_reference_remains_empty_after_reload"] = True
             print("Reference deletion, pending, error and reload verified", flush=True)
 
-            await page.get_by_role("button", name="Recordings", exact=True).click()
-            await open_delete(page, f'.session-delete[data-id="{PROTECTED}"]')
+            await page.locator("#referenceSession").select_option(PROTECTED)
+            await expect(page.locator("#referenceDeleteSession")).to_be_enabled()
+            await open_delete(page, "#referenceDeleteSession")
             await expect(page.locator("#deleteSessionVideo")).to_be_disabled()
             await expect(page.locator("#deleteSessionVideoReason")).to_contain_text("Outside managed")
             await page.set_viewport_size({"width": 390, "height": 844})
@@ -431,13 +415,12 @@ async def run(args):
             await page.set_viewport_size({"width": 1440, "height": 1050})
             checks["external_media_protected_and_dialog_mobile_fits"] = True
 
-            await page.locator(f'.session-open[data-id="{CURRENT}"]').click()
+            await page.locator("#referenceSession").select_option("")
             await expect(page.locator("#currentSession")).to_have_value(CURRENT)
             await expect(page.locator("#trackReviewPlay")).to_be_enabled()
             await page.locator("#trackReviewPlay").click()
             await expect(page.locator("#trackReviewPlay")).to_have_attribute('aria-label', 'Pause comparison')
-            await page.get_by_role("button", name="Recordings", exact=True).click()
-            await open_delete(page, f'.session-delete[data-id="{CURRENT}"]')
+            await open_delete(page, "#currentDeleteSession")
             await expect(page.locator("#deleteSessionVideo")).to_be_enabled()
             await expect(page.locator("#deleteSessionVideo")).not_to_be_checked()
             await page.locator("#deleteSessionVideo").check()

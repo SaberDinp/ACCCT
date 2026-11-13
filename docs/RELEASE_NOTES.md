@@ -1,20 +1,22 @@
-# 1.2.4
+# 1.3.0
 
-This update fixes an upgrade issue where an older, cached Monitor interface could
-still appear after installing a newer ACCC Telemetry app.
+A simpler recorded-lap workflow, shared by every macOS, Windows, and Linux app.
 
-- Each launch now clears the HTTP cache before loading the app's bundled UI.
-  The current **Analysis** and **Credits** layout appears consistently after an
-  update on macOS, Windows, and Linux.
-- Only cached web responses are cleared. Recordings, saved sessions, calibration,
-  and app preferences stay intact.
-- Analysis opens first, with **Recordings** and **Calibration** available inside
-  it. The app remains focused on recorded-lap analysis and comparison.
+- **Analysis** and **Credits** are the only pages. Choose or import recordings
+  through **Video options**; the extra Recordings, Calibration, and top import
+  buttons have been removed. HUD detection runs automatically.
+- Select **Start of lap** or **End of lap**, inspect the frame, and press **Lock**.
+  The picker title names the boundary you are selecting. Segment-number controls,
+  separate save/search actions, recording-label editing, car labels, and manual
+  distance-registration controls are removed.
+- Track guide progress is automatic. Circuit detection uses the available lap
+  telemetry and leaves uncertain matches for you to choose manually. Your manual
+  circuit choice takes priority.
+- Existing recordings and preferences are preserved. The cached-interface upgrade
+  fix from 1.2.4 is included.
 
-Install the matching 1.2.4 package, close any older running copy, and reopen
-**ACCC Telemetry**. On older versions, **View > Force Reload** can refresh a stale
-interface: **Command+Shift+R** on macOS or **Ctrl+Shift+R** on Windows/Linux.
-Version 1.2.4 handles this automatically on launch.
+Close the older running app, install the matching **1.3.0** package, and reopen
+**ACCC Telemetry**.
 
 Choose an installer for your OS and CPU from the assets below. You do not need
 Python or Node.js. GitHub's source-code archives are for developers.

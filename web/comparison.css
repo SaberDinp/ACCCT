@@ -103,12 +103,17 @@
   border: 1px solid var(--line);
 }
 
-.alignment-image img {
+.alignment-image img,
+.alignment-image video {
   width: 100%;
   height: 100%;
   object-fit: contain;
   display: block;
 }
+
+.alignment-image [hidden] { display: none; }
+.lap-boundary-instruction { margin: 0 0 14px; color: var(--muted); line-height: 1.5; }
+.alignment-controls #alignmentLock { min-width: 94px; }
 
 .alignment-controls {
   display: flex;
@@ -194,6 +199,19 @@
   font-weight: 650;
   margin-bottom: 12px
 }
+
+.run-video-options { margin-bottom: 13px; }
+.run-video-options > summary { cursor: pointer; color: #91a797; font-size: 11px; padding: 3px 0; }
+.run-video-options[open] > summary { margin-bottom: 8px; }
+.run-video-options-content { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.run-video-options-content > select { flex: 1 1 180px; min-width: 0; max-width: 100%; }
+.run-video-options-content .disabled { pointer-events: none; opacity: .45; }
+.run-boundary-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.lap-boundary-button { flex-direction: column; align-items: flex-start; gap: 5px; text-align: left; padding: 10px 12px; }
+.lap-boundary-button small { color: #91a797; font-size: 10px; font-weight: 400; font-variant-numeric: tabular-nums; }
+.lap-boundary-button.is-locked { border-color: #5b7448; }
+.lap-boundary-button.is-locked small { color: #d5e991; }
+.lap-boundary-hint { margin: 3px 0 14px; color: #c7d5c9; font-size: 11px; line-height: 1.5; }
 
 .run-line {
   display: inline-block;

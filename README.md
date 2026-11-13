@@ -52,6 +52,11 @@ and Alpine/musl Linux are not supported. See each release's notes for test cover
 
 ## Your first comparison
 
+<img src="docs/images/analysis-page.png" width="640" alt="ACCC Telemetry Analysis page comparing two Silverstone laps with synchronized videos, a circuit map, and telemetry charts">
+
+*Compare your lap with a reference using synchronized video, input traces, and
+the circuit map.*
+
 1. **Import your recording.** Open **Video options** for **Your run**, choose
    **Import recording**, and browse to a gameplay video with the ACC input HUD visible.
 2. **Find a reference.** Under **Reference → Video options**, choose **Find reference lap**,

@@ -43,5 +43,9 @@ jobs:
           python scripts/check_comparison_export_browser.py
           python scripts/check_analysis_layout_browser.py
           python scripts/check_missing_hud_browser.py
+      - name: Check reference library and browser video actions
+        run: |
+          python scripts/check_reference_library_browser.py
+          python scripts/check_video_watch_browser.py
       - name: Check release helper syntax
         run: python -m py_compile .github/scripts/prepare_release.py

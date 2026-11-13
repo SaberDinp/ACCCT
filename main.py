@@ -18,8 +18,8 @@ from typing import Literal
 
 import av
 import cv2
-from fastapi import FastAPI, File, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
+from fastapi import FastAPI, File, HTTPException, Query, Request, UploadFile
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 import uvicorn
@@ -27,6 +27,8 @@ from starlette.background import BackgroundTask
 
 from telemetry.engine import TelemetryEngine
 from telemetry.imports import ReferenceImports
+from telemetry.reference_library import ReferenceLibrary
+from telemetry.video_watch import original_video_url, watch_document
 from telemetry.comparison import compare_session_ranges, trace_session_range
 from telemetry.tracks import get_track, list_tracks
 from telemetry.track_inference import infer_track
@@ -191,6 +193,7 @@ def ranged_media(handle, request, media_type, filename):
 def create_app(root=ROOT, database=None, port=8000):
     engine = TelemetryEngine(Path(root), database)
     imports = ReferenceImports(engine)
+    reference_library = ReferenceLibrary(engine, imports)
     lap_detection = LapDetectionJobs()
     review_audio = ReviewAudio(engine)
 
@@ -205,6 +208,7 @@ def create_app(root=ROOT, database=None, port=8000):
     app = FastAPI(title="ACCC Telemetry", lifespan=lifespan)
     app.state.engine = engine
     app.state.imports = imports
+    app.state.reference_library = reference_library
     app.state.lap_detection = lap_detection
     app.state.review_audio = review_audio
 
@@ -245,6 +249,19 @@ def create_app(root=ROOT, database=None, port=8000):
     @app.get("/api/catalog")
     def acc_catalog():
         return catalog()
+
+    @app.get("/api/reference-library")
+    def curated_references(car_id: str | None = None, track_id: str | None = None):
+        return reference_library.list(car_id, track_id)
+
+    @app.post("/api/reference-library/{reference_id}/import")
+    def import_curated_reference(reference_id: str, body: dict | None = None):
+        if body:
+            raise ValueError("Choose a reference by its library identifier; this endpoint does not accept import overrides.")
+        try:
+            return reference_library.start(reference_id)
+        except KeyError:
+            raise HTTPException(404, "Reference library recording not found.")
 
     @app.get("/api/validation")
     def validation_coverage():
@@ -424,6 +441,31 @@ def create_app(root=ROOT, database=None, port=8000):
     def session_video_media(session_id: str, request: Request):
         return video_media(request, session_id)
 
+    @app.get("/api/sessions/{session_id}/watch")
+    def session_watch_link(session_id: str):
+        session = engine.store.get_session(session_id)
+        if session is None:
+            raise HTTPException(404, "Session not found.")
+        external = original_video_url(session.get("source"))
+        if external:
+            return {"url": external, "kind": "external", "available": True}
+        try:
+            handle, _, _ = open_video(session_id)
+            handle.close()
+        except HTTPException:
+            return {"url": None, "kind": "local", "available": False}
+        return {"url": f"/api/sessions/{session_id}/video/watch", "kind": "local", "available": True}
+
+    @app.get("/api/sessions/{session_id}/video/watch", response_class=HTMLResponse)
+    def session_watch_page(session_id: str):
+        handle, _, _ = open_video(session_id)
+        handle.close()
+        session = engine.store.get_session(session_id)
+        if session is None:
+            raise HTTPException(404, "Session not found.")
+        document, headers = watch_document(session)
+        return HTMLResponse(document, headers=headers)
+
     @app.get("/api/profile")
     def profile():
         return engine.profile
@@ -441,8 +483,17 @@ def create_app(root=ROOT, database=None, port=8000):
             return [sample for sample in engine.history if sample["time"] >= cutoff]
 
     @app.get("/api/sessions")
-    def sessions():
+    def sessions(include: list[str] = Query(default=[], max_length=8)):
         values = engine.store.list_sessions()
+        present = {value["id"] for value in values}
+        for identifier in include:
+            if len(identifier) > 128:
+                raise ValueError("Recording identifiers must be at most 128 characters.")
+            if identifier not in present:
+                extra = engine.store.get_session(identifier)
+                if extra:
+                    values.append(extra)
+                    present.add(identifier)
         for value in values:
             value["context"] = session_context(value)
         return values

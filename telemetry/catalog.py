@@ -38,7 +38,8 @@ def _data() -> dict:
                 raise ValueError(f"Missing catalog provenance: {item['id']}")
             item["platforms"] = list(value["platforms"])
             if kind == "cars":
-                item["category"] = "GT3"
+                if item.get("category") not in {"GT3", "GT2", "GT4", "Cup", "Challenge", "Super Trofeo", "TCX"}:
+                    raise ValueError(f"Unknown car category: {item['id']}")
             for alias in (item["id"], item["name"], *item["aliases"]):
                 key = _key(alias)
                 if key in aliases and aliases[key] != item["id"]:
@@ -56,7 +57,7 @@ def _list(kind: str, platform: str | None) -> list[dict]:
 
 
 def list_cars(platform: str | None = None) -> list[dict]:
-    """List distinct GT3 variants, excluding Cup/Challenge/Super Trofeo cars."""
+    """List distinct ACC car variants across all racing categories."""
     return _list("cars", platform)
 
 
@@ -121,6 +122,10 @@ def resolve_circuit(value: str | None) -> dict | None:
 def catalog() -> dict:
     """Return a detached, JSON-compatible roster including source provenance."""
     result = copy.deepcopy(_data())
-    result["counts"] = {"gt3_cars": len(result["cars"]), "circuits": len(result["tracks"]),
+    categories = {}
+    for car in result["cars"]:
+        categories[car["category"]] = categories.get(car["category"], 0) + 1
+    result["counts"] = {"cars": len(result["cars"]), "gt3_cars": categories.get("GT3", 0),
+                        "cars_by_category": categories, "circuits": len(result["tracks"]),
                         "car_track_pairs": len(result["cars"]) * len(result["tracks"])}
     return result

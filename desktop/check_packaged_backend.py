@@ -90,7 +90,21 @@ def main():
                             hashes[relative] = actual
                         reports["shared_ui"] = {"files_verified": len(hashes), "sha256": hashes}
                     assert request("/api/status")["state"] == "idle"
-                    assert request("/api/catalog")
+                    roster = request("/api/catalog")
+                    assert roster["counts"]["cars"] == 54
+                    if attempt == 0:
+                        source_catalog = Path(__file__).resolve().parents[1] / "assets/references/catalog.json"
+                        expected_library = json.loads(source_catalog.read_text(encoding="utf-8"))
+                        library = request("/api/reference-library")
+                        assert library["count"] == len(expected_library["references"])
+                        assert [{key: value for key, value in entry.items() if key != "cache"}
+                                for entry in library["references"]] == expected_library["references"], "Stale packaged reference library"
+                        assert all(entry["cache"]["state"] == "not_cached" for entry in library["references"])
+                        assert request("/api/imports") == [], "Browsing must not download videos"
+                        reports["reference_library"] = {"references": library["count"],
+                            "cars": len(library["cars"]), "tracks": len(library["tracks"]),
+                            "catalog_sha256": hashlib.sha256(source_catalog.read_bytes()).hexdigest(),
+                            "browse_without_download": "passed"}
                     tracks = request("/api/tracks")
                     assert tracks
                     assert request("/api/validation")
@@ -134,6 +148,10 @@ def main():
                             time.sleep(0.1)
                         assert status["state"] == "ended" and status["error"] is None, status
                         assert request(f"/api/sessions/{source['session_id']}/video/media") == media
+                        watch = request(f"/api/sessions/{source['session_id']}/watch")
+                        assert watch["available"] and watch["url"] == f"/api/sessions/{source['session_id']}/video/watch"
+                        player = request(watch["url"])
+                        assert b"<video controls" in player and b"Keep ACCC Telemetry open" in player
                         assert len(request("/api/sessions")) == 1
                         reports["video"] = "upload, decode, analysis and playback passed"
                     else:

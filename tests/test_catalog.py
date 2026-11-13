@@ -4,10 +4,13 @@ from telemetry.catalog import catalog, get_car, get_circuit, lap_search_defaults
 from telemetry.tracks import list_tracks
 
 
-def test_current_gt3_roster_and_circuit_matrix_are_complete_but_not_validation():
+def test_all_acc_classes_and_circuit_matrix_are_complete_but_not_validation():
     value = catalog()
-    assert value["counts"] == {"gt3_cars": 31, "circuits": 25, "car_track_pairs": 775}
-    assert {item["category"] for item in value["cars"]} == {"GT3"}
+    assert value["counts"] == {
+        "cars": 54, "gt3_cars": 31, "circuits": 25, "car_track_pairs": 1350,
+        "cars_by_category": {"GT3": 31, "GT2": 6, "GT4": 11, "Cup": 2,
+                             "Challenge": 1, "Super Trofeo": 2, "TCX": 1},
+    }
     for item in value["cars"] + value["tracks"]:
         assert "supported" not in item and "validated" not in item
         assert item["source_ids"]
@@ -16,7 +19,7 @@ def test_current_gt3_roster_and_circuit_matrix_are_complete_but_not_validation()
 
 @pytest.mark.parametrize("platform", [None, "pc", "ps5", "xbox_series"])
 def test_modern_platforms_have_same_roster_with_dlc_requirements(platform):
-    assert len(list_cars(platform)) == 31
+    assert len(list_cars(platform)) == 54
     assert len(list_circuits(platform)) == 25
     assert get_car("ferrari_296_gt3")["content_pack"] == "gtwc_2023"
     assert get_circuit("red_bull_ring")["content_pack"] == "gt2"
@@ -39,15 +42,18 @@ def test_every_identity_and_alias_round_trips_and_is_unique():
                 assert resolver(alias)["id"] == item["id"]
 
 
-def test_variants_and_excluded_classes_cannot_silently_collapse():
+def test_variants_and_classes_cannot_silently_collapse():
     assert resolve_car("McLaren 720S GT3")["id"] == "mclaren_720s_gt3"
     assert resolve_car("McLaren 720S GT3 Evo")["id"] == "mclaren_720s_gt3_evo"
     assert resolve_car("Audi R8 LMS Evo2")["id"] == "audi_r8_lms_gt3_evo_ii"
     assert resolve_car("Mercedes AMG GT3 2023")["id"] == "mercedes_amg_gt3_evo"
     assert resolve_car("Lexus RC-F GT3")["id"] == "lexus_rc_f_gt3"
+    assert resolve_car("Porsche 992 GT3 Cup")["id"] == "porsche_992_gt3_cup"
+    assert resolve_car("Ferrari 488 Challenge Evo")["category"] == "Challenge"
+    assert resolve_car("Lamborghini Huracan ST EVO2")["category"] == "Super Trofeo"
+    assert resolve_car("BMW M4 GT4")["id"] == "bmw_m4_gt4"
     for ambiguous in ["McLaren", "Bentley Continental GT3", "Nissan GTR", "Porsche 911 GT3 R",
-                      "Porsche 992 GT3 Cup", "Ferrari 488 Challenge Evo", "Lamborghini Huracan ST EVO2",
-                      "BMW M4 GT4", "McLaren 720S GT3 Evo onboard Silverstone"]:
+                      "McLaren 720S GT3 Evo onboard Silverstone"]:
         assert resolve_car(ambiguous) is None
 
 

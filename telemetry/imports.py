@@ -376,9 +376,12 @@ class ReferenceImports:
             name = source.get("name") or name
             local_source = {"kind": "file", "path": str(path), "name": name, "realtime": False,
                             "role": source["role"], "original_url": source.get("url")}
-            session_id = self.store.create_session(local_source, {"profile": profile, "measurement": "video-derived",
-                                                                  "role": source["role"], "import_id": job_id,
-                                                                  "telemetry_context": source.get("context") or {}})
+            metadata = {"profile": profile, "measurement": "video-derived", "role": source["role"],
+                        "import_id": job_id, "telemetry_context": source.get("context") or {}}
+            if source.get("curated_reference"):
+                local_source["reference_library_id"] = source["curated_reference"]["id"]
+                metadata["reference_library"] = copy.deepcopy(source["curated_reference"])
+            session_id = self.store.create_session(local_source, metadata)
             self._update(job_id, state="analyzing", progress=0, session_id=session_id, name=name)
             last_stamp = last_thumb = unchanged_since = None
             last_revision = None

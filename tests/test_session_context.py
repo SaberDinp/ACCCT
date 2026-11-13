@@ -124,7 +124,7 @@ def catalog_comparison_fixture():
 
 @pytest.mark.parametrize("car_id", [item["id"] for item in list_cars()])
 @pytest.mark.parametrize("track_id", [item["id"] for item in list_circuits()])
-def test_all_775_catalog_pairs_preserve_observed_cross_car_comparison(car_id, track_id, catalog_comparison_fixture):
+def test_all_catalog_pairs_preserve_observed_cross_car_comparison(car_id, track_id, catalog_comparison_fixture):
     context = validate_context({"car_id": car_id, "track_id": track_id, "platform": "pc"})
     other_car = "ferrari_296_gt3" if car_id != "ferrari_296_gt3" else "bmw_m4_gt3"
     current = {"metadata": {"telemetry_context": context}}

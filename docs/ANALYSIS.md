@@ -14,6 +14,28 @@ Private, expired, restricted, or unavailable videos can fail to import; use an
 accessible local recording in that case. The app does not request platform
 passwords or bypass sign-in restrictions.
 
+For a ready-made reference choice, open **Reference → Video options → Find
+reference lap** and select a circuit and car. Choose among the available creator
+laps, preview the original if you like, then press **Import**. Browsing
+the library does not download videos. The first import saves the recording and
+analysis locally; selecting it again reuses that saved recording, including after
+restarting the app. Deleting it, removing its source video, or a failed import
+allows a fresh attempt.
+
+The picker lists every ACC car variant and circuit, but public reference coverage
+is incomplete. A missing combination offers the option to paste your own video
+link. Lap times and game versions are creator stated; patches, weather, fuel,
+and balance of performance can differ. The catalog verifies identities from
+creator metadata, not successful telemetry extraction from every full video.
+See [reference coverage and sources](../assets/references/README.md).
+
+**Open video in browser** is available for both recordings. Imported public
+recordings open their original page. Local files open an app-served player with
+normal video controls and sound; keep the desktop app open while watching.
+If the browser cannot decode the audio, **Use compatible sound** prepares a
+local audio copy. Unsupported video formats can be downloaded from the player
+and opened in a video player.
+
 Each recording remains available in the comparison area's **Video options**.
 The app starts with detected lap boundaries when available. Use **Start of lap**
 and **End of lap** to pick the source frames and press **Lock**. A reference is optional for reviewing one

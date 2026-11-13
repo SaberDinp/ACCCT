@@ -122,6 +122,57 @@ async function main() {
           }
         }
         assert.equal((await api('/api/sessions')).length, 2);
+        console.log('Checking reference library browsing and explicit cached reuse…');
+        const library = await api('/api/reference-library');
+        assert.ok(library.tracks.length && library.cars.length && library.references.length);
+        const reference = library.references[0];
+        const importsBeforeBrowse = await api('/api/imports');
+        await revealControl(page, '#findReferenceLap');
+        await page.locator('#findReferenceLap').click();
+        await page.locator('#referenceLibraryDialog').waitFor({ state: 'visible' });
+        await page.waitForFunction(() => !document.getElementById('referenceLibraryCar').disabled &&
+          document.getElementById('referenceLibraryCar').options.length > 1);
+        await page.locator('#referenceLibraryTrack').selectOption(reference.track_id);
+        await page.locator('#referenceLibraryCar').selectOption(reference.car_id);
+        await page.locator('.reference-library-import').first().waitFor();
+        assert.deepEqual(await api('/api/imports'), importsBeforeBrowse, 'Browsing must not download or import a video.');
+        const chosen = await page.locator('.reference-library-import').first().getAttribute('data-reference-id');
+        const importRoute = `**/api/reference-library/${encodeURIComponent(chosen)}/import`;
+        let explicitReferenceImports = 0;
+        await page.route(importRoute, route => {
+          explicitReferenceImports++;
+          return route.fulfill({ json: { reference_id: chosen, state: 'ready', session_id: sessionIds.reference,
+            job: null, reused: true } });
+        });
+        await page.locator('.reference-library-import').first().click();
+        await page.locator('#referenceLibraryDialog').waitFor({ state: 'hidden' });
+        assert.equal(explicitReferenceImports, 1);
+        await page.unroute(importRoute);
+        await page.waitForFunction(id => document.getElementById('referenceSession').value === id, sessionIds.reference);
+        console.log('Checking both browser video actions without opening an external browser…');
+        await application.evaluate(({ shell, app }) => {
+          app.acccTestVideoLinks = [];
+          shell.openExternal = async url => { app.acccTestVideoLinks.push(url); };
+        });
+        const expectedVideoLinks = [];
+        for (const role of ['current', 'reference']) {
+          const watch = await api(`/api/sessions/${sessionIds[role]}/watch`);
+          assert.equal(watch.available, true);
+          assert.equal(watch.kind, 'local');
+          const url = new URL(watch.url, origin).href;
+          expectedVideoLinks.push(url);
+          const watchPage = await fetch(url);
+          assert.equal(watchPage.status, 200);
+          const html = await watchPage.text();
+          assert.match(html, /<video\b[^>]*controls/i);
+          assert.doesNotMatch(html, /<video\b[^>]*\bmuted(?:\s|=|>)/i);
+          await revealControl(page, `#${role}OpenVideo`);
+          await page.waitForFunction(role => document.getElementById(role + 'OpenVideo').getAttribute('aria-disabled') === 'false', role);
+          await page.locator(`#${role}OpenVideo`).click();
+        }
+        await page.waitForTimeout(150);
+        assert.deepEqual(await application.evaluate(({ app }) => app.acccTestVideoLinks), expectedVideoLinks);
+        assert.equal(application.windows().length, 1, 'Video links use the system browser, not another privileged app window.');
         const inferred = await fetch(origin + '/api/track-inference', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ session_id: sessionIds.current, range: { start_time: 0, end_time: 2.5 }, range_is_lap: false })
@@ -210,7 +261,8 @@ async function main() {
         await page.screenshot({ path: path.join(output, `desktop-credits-${attempt + 1}.png`), fullPage: false });
         assert.deepEqual(errors, []);
         report.launches.push({ ...desktop, origin, recordedImports: 'passed', comparison: 'passed', videoPlayback: 'passed',
-          simplifiedInterface: 'passed', lapBoundaryLock: 'passed', circuitInference: 'passed', csvExport: 'passed', persistence: 'passed', credits: 'passed', donationCopyAndLink: 'passed', javascriptErrors: errors });
+          simplifiedInterface: 'passed', lapBoundaryLock: 'passed', circuitInference: 'passed', referenceLibraryBrowseAndReuseUi: 'passed',
+          openVideoInBrowser: 'passed', csvExport: 'passed', persistence: 'passed', credits: 'passed', donationCopyAndLink: 'passed', javascriptErrors: errors });
       } catch (error) {
         for (const filename of ['desktop-settings.json', 'analysis-preferences.json']) {
           const source = path.join(env.ACCC_DESKTOP_USER_DATA, filename);

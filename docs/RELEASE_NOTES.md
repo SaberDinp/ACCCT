@@ -1,22 +1,25 @@
-# 1.3.0
+# 1.4.0
 
-A simpler recorded-lap workflow, shared by every macOS, Windows, and Linux app.
+Find a reference lap by circuit and car, then study it alongside your own recording.
+This release brings the same reference library and browser playback to every
+macOS, Windows, and Linux app.
 
-- **Analysis** and **Credits** are the only pages. Choose or import recordings
-  through **Video options**; the extra Recordings, Calibration, and top import
-  buttons have been removed. HUD detection runs automatically.
-- Select **Start of lap** or **End of lap**, inspect the frame, and press **Lock**.
-  The picker title names the boundary you are selecting. Segment-number controls,
-  separate save/search actions, recording-label editing, car labels, and manual
-  distance-registration controls are removed.
-- Track guide progress is automatic. Circuit detection uses the available lap
-  telemetry and leaves uncertain matches for you to choose manually. Your manual
-  circuit choice takes priority.
-- Existing recordings and preferences are preserved. The cached-interface upgrade
-  fix from 1.2.4 is included.
+- **Find reference lap** offers 6,084 attributed creator videos covering 1,082
+  car-and-circuit combinations. The selectors include all 54 ACC car variants
+  and all 25 circuits; gaps in reference coverage are clearly identified.
+- Videos download and analyze only after you press **Import**. Later selections
+  reuse the saved recording and analysis, including after an app restart.
+  Installers contain links and metadata, without reference videos.
+- **Open video in browser** is available for both recordings. Public recordings
+  open the original page; local files open a browser player with sound.
+- Local imports and pasted links remain available. The simplified Analysis and
+  Credits structure, automatic HUD detection, and start/end **Lock** controls
+  from 1.3.0 are preserved.
 
-Close the older running app, install the matching **1.3.0** package, and reopen
-**ACCC Telemetry**.
+[Reference library coverage, creators, and verification notes](https://github.com/SaberDinp/ACCCT/blob/v1.4.0/assets/references/README.md)
+
+Close the older running app, install the matching **1.4.0** package, and reopen
+**ACCC Telemetry**. Your saved recordings and preferences are preserved.
 
 Choose an installer for your OS and CPU from the assets below. You do not need
 Python or Node.js. GitHub's source-code archives are for developers.

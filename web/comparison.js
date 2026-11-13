@@ -88,7 +88,7 @@ window.ACCCComparison = (() => {
   const notifySelectedRecording = () => helpers.onCurrentLoaded?.(state.runs.current.data || state.runs.reference.data || null);
 
   function sourceMarkup(side) {
-    return `<div class="comparison-run"><div class="run-label"><span class="run-line ${side === 'reference' ? 'reference' : ''}"></span>${names[side].toUpperCase()}<span class="tag" id="${side}RecordingStatus">NO RECORDING</span></div><details class="run-video-options" open><summary>Video options</summary><div class="run-video-options-content"><button class="button subtle compact" id="${side}ImportRecording"><i data-lucide="video"></i>Import recording</button><select id="${side}Session" aria-label="${names[side]} saved recording"><option value="">Select a recording</option></select><a class="button subtle compact disabled" id="${side}ExportCsv" aria-label="Export ${names[side].toLowerCase()} CSV" aria-disabled="true"><i data-lucide="download"></i>Export CSV</a><button class="icon-button run-delete" id="${side}DeleteSession" title="Delete recording" aria-label="Delete ${names[side].toLowerCase()} recording" disabled><i data-lucide="trash-2"></i></button></div></details><div class="run-boundary-actions">${['Start', 'End'].map(edge => `<button class="button subtle lap-boundary-button inspect-boundary" id="${side}${edge}Boundary" data-side="${side}" data-edge="${edge}" disabled><span>${edge} of lap</span><small id="${side}${edge}BoundaryTime">Not selected</small></button>`).join('')}</div><div class="run-detail"><span id="${side}Detail">No recording selected</span></div><input type="hidden" id="${side}Range"><input type="hidden" id="${side}Start"><input type="hidden" id="${side}End"><div class="run-thumbnail" hidden><img id="${side}Frame" alt="${names[side]} source frame" hidden><span id="${side}FrameEmpty">NO FRAME</span><span id="${side}FrameTime" hidden></span></div></div>`;
+    return `<div class="comparison-run"><div class="run-label"><span class="run-line ${side === 'reference' ? 'reference' : ''}"></span>${names[side].toUpperCase()}<span class="tag" id="${side}RecordingStatus">NO RECORDING</span></div><details class="run-video-options" open><summary>Video options</summary><div class="run-video-options-content"><button class="button subtle compact" id="${side}ImportRecording"><i data-lucide="video"></i>Import recording</button>${side === 'reference' ? '<button class="button subtle compact" id="findReferenceLap"><i data-lucide="search"></i>Find reference lap</button>' : ''}<select id="${side}Session" aria-label="${names[side]} saved recording"><option value="">Select a recording</option></select><a class="button subtle compact disabled" id="${side}OpenVideo" target="_blank" rel="noopener noreferrer" aria-label="Open ${names[side].toLowerCase()} video in browser" aria-disabled="true"><i data-lucide="external-link"></i>Open video in browser</a><a class="button subtle compact disabled" id="${side}ExportCsv" aria-label="Export ${names[side].toLowerCase()} CSV" aria-disabled="true"><i data-lucide="download"></i>Export CSV</a><button class="icon-button run-delete" id="${side}DeleteSession" title="Delete recording" aria-label="Delete ${names[side].toLowerCase()} recording" disabled><i data-lucide="trash-2"></i></button></div></details><div class="run-boundary-actions">${['Start', 'End'].map(edge => `<button class="button subtle lap-boundary-button inspect-boundary" id="${side}${edge}Boundary" data-side="${side}" data-edge="${edge}" disabled><span>${edge} of lap</span><small id="${side}${edge}BoundaryTime">Not selected</small></button>`).join('')}</div><div class="run-detail"><span id="${side}Detail">No recording selected</span></div><input type="hidden" id="${side}Range"><input type="hidden" id="${side}Start"><input type="hidden" id="${side}End"><div class="run-thumbnail" hidden><img id="${side}Frame" alt="${names[side]} source frame" hidden><span id="${side}FrameEmpty">NO FRAME</span><span id="${side}FrameTime" hidden></span></div></div>`;
   }
 
   function alignmentMarkup() {
@@ -106,6 +106,10 @@ window.ACCCComparison = (() => {
     dialog.id = 'referenceImportDialog';
     dialog.innerHTML = `<div class="dialog-header"><div><span class="eyebrow">INDEPENDENT VIDEO ANALYSIS</span><h2>Import recording</h2></div><button class="icon-button" id="closeReferenceImport" title="Close" aria-label="Close recording import"><i data-lucide="x"></i></button></div><label class="field-label">Use this recording as<select id="recordingImportRole"><option value="current">Your run</option><option value="reference">Reference lap</option></select></label><div class="dialog-tabs" role="tablist"><button class="active" data-import-kind="file">Local recording</button><button data-import-kind="youtube">Video link</button></div><div class="import-kind-pane" id="import-url"><label class="field-label">Recorded video URL<input id="referenceUrl" type="url" placeholder="YouTube, Twitch VOD / clip, or video-file URL" autocomplete="off" aria-describedby="referenceUrlHint"></label><p class="reference-url-hint" id="referenceUrlHint">Import a completed recording: YouTube video, Twitch VOD or clip, or a direct video file. Live streams are not supported.</p></div><div class="import-kind-pane active" id="import-file"><label class="field-label">Recording<select id="referenceLocalFile"><option value="">Select a local recording</option></select></label><button class="button subtle compact" id="referenceUpload"><i data-lucide="upload"></i>Browse files</button><input id="referenceUploadInput" type="file" accept="video/*,.mkv" hidden></div><label class="field-label reference-name-input">Recording name<input id="referenceName" type="text" placeholder="My lap" maxlength="100"></label><button class="button primary full-width" id="startReferenceImport"><i data-lucide="download"></i>Import and analyze</button><div class="dialog-error" id="referenceImportError" role="alert"></div><div class="import-history" id="referenceImportHistory"></div>`;
     document.body.appendChild(dialog);
+    const libraryDialog = document.createElement('dialog');
+    libraryDialog.id = 'referenceLibraryDialog';
+    libraryDialog.innerHTML = '<div class="dialog-header"><div><span class="eyebrow">REFERENCE LAP LIBRARY</span><h2>Find a reference lap</h2></div><button class="icon-button" id="closeReferenceLibrary" title="Close" aria-label="Close reference library"><i data-lucide="x"></i></button></div><p class="reference-library-intro">Choose a circuit and car, then import a lap to compare. Videos download only when you choose Import.</p><div class="reference-library-filters"><label class="field-label">Circuit<select id="referenceLibraryTrack"><option value="">Choose a circuit</option></select></label><label class="field-label">Car<select id="referenceLibraryCar"><option value="">Choose a car</option></select></label></div><p id="referenceLibraryStatus" role="status" aria-live="polite"></p><div id="referenceLibraryResults" class="reference-library-results"></div><p id="referenceLibraryError" class="dialog-error" role="alert"></p><div class="reference-library-footer"><button class="button subtle compact" id="referenceLibraryRetry" hidden><i data-lucide="refresh-cw"></i>Try again</button><button class="button subtle compact" id="referenceLibraryPaste"><i data-lucide="link"></i>Paste a video link</button><small>Lap times and game versions are creator stated. HUD readability has not been reviewed for every video.</small></div>';
+    document.body.appendChild(libraryDialog);
     const frameDialog = document.createElement('dialog');
     frameDialog.id = 'alignmentDialog';
     frameDialog.innerHTML = '<div class="dialog-header"><div><span class="eyebrow" id="alignmentSide">YOUR RUN</span><h2 id="alignmentTitle">Selecting start of lap</h2></div><button class="icon-button" id="closeAlignment" title="Close" aria-label="Close lap selection"><i data-lucide="x"></i></button></div><p class="lap-boundary-instruction">Choose the same start/finish line in both recordings.</p><div class="alignment-image"><video id="alignmentVideo" controls muted playsinline preload="metadata" hidden></video><img id="alignmentImage" alt="Source frame for lap boundary selection"></div><div class="alignment-controls"><button class="icon-button" id="alignmentFrameBack" title="Back one frame" aria-label="Back one frame"><i data-lucide="chevrons-left"></i></button><button class="icon-button" id="alignmentBack" title="Back one second" aria-label="Back one second"><i data-lucide="chevron-left"></i></button><label class="range-time">Time <input id="alignmentTime" type="number" min="0" step="0.001" aria-label="Lap boundary source time">s</label><button class="icon-button" id="alignmentForward" title="Forward one second" aria-label="Forward one second"><i data-lucide="chevron-right"></i></button><button class="icon-button" id="alignmentFrameForward" title="Forward one frame" aria-label="Forward one frame"><i data-lucide="chevrons-right"></i></button><span id="alignmentFrameStamp" class="subtle-text"></span><button class="button primary" id="alignmentLock" disabled><i data-lucide="lock-keyhole"></i>Lock</button></div><p class="dialog-error" id="alignmentError" role="alert"></p>';
@@ -168,7 +172,11 @@ window.ACCCComparison = (() => {
     const epoch = state.libraryEpoch;
     state.lastRefresh = Date.now();
     try {
-      const response = await helpers.api('/api/sessions');
+      const include = new Set([state.runs.current.id, state.runs.reference.id, state.saved.current?.id,
+        state.saved.reference?.id, state.referenceLibrarySession].filter(Boolean));
+      const params = new URLSearchParams();
+      for (const id of include) params.append('include', id);
+      const response = await helpers.api('/api/sessions' + (params.size ? '?' + params : ''));
       if (epoch !== state.libraryEpoch) return;
       state.sessions = (Array.isArray(response) ? response : response.sessions || []).filter(session => !state.deletedSessions.has(session.id || session.session_id));
       const available = new Set(state.sessions.map(session => session.id || session.session_id));
@@ -266,6 +274,12 @@ window.ACCCComparison = (() => {
       link.setAttribute('aria-disabled', String(!available));
       if (available) link.href = `/api/export/${encodeURIComponent(run.id)}.csv`;
       else link.removeAttribute('href');
+      const watch = $(`${side}OpenVideo`), watchUrl = available && run.watch?.available && browserVideoUrl(run.watch.url);
+      watch.classList.toggle('disabled', !watchUrl);
+      watch.setAttribute('aria-disabled', String(!watchUrl));
+      watch.title = watchUrl ? run.watch.kind === 'external' ? 'Open the original video in your browser' : 'Open the recording with sound and playback controls' : 'No playable video is available for this recording';
+      if (watchUrl) watch.href = watchUrl;
+      else watch.removeAttribute('href');
       for (const edge of ['Start', 'End']) $(`${side}${edge}Boundary`).disabled = !available;
     }
   }
@@ -316,7 +330,10 @@ window.ACCCComparison = (() => {
     notifySelectedRecording();
     state.restoring = false;
     markDirty();
-    for (const side of sides) if (state.runs[side].id) updateFrame(side, Number($(`${side}Start`).value));
+    for (const side of sides) if (state.runs[side].id) {
+      updateFrame(side, Number($(`${side}Start`).value));
+      if (!state.runs[side].watch) refreshWatchLink(side, state.runs[side]);
+    }
   }
 
   async function removeSession(id) {
@@ -487,6 +504,7 @@ window.ACCCComparison = (() => {
       };
       notifySelectedRecording();
       const current = state.runs[side];
+      refreshWatchLink(side, current);
       $(`${side}Range`).disabled = !data.samples?.length;
       const configured = data.session?.metadata?.comparison_defaults;
       const preferred = current.ranges.find(range => range.id === configured?.range_id) || current.ranges.find(range => range.lap && range.valid !== false) || current.ranges.filter(range => !range.lap && range.id !== 'full').sort((a, b) => b.duration - a.duration)[0] || current.ranges[0];
@@ -1535,6 +1553,113 @@ window.ACCCComparison = (() => {
     draw();
   }
 
+  function browserVideoUrl(value) {
+    if (typeof value !== 'string' || !value.trim()) return null;
+    try {
+      const url = new URL(value, window.location.origin);
+      return ['http:', 'https:'].includes(url.protocol) ? url.href : null;
+    } catch { return null; }
+  }
+
+  async function refreshWatchLink(side, run) {
+    try {
+      const watch = await helpers.api(`/api/sessions/${encodeURIComponent(run.id)}/watch`);
+      if (state.runs[side] !== run || state.deletedSessions.has(run.id)) return;
+      run.watch = watch;
+    } catch {
+      if (state.runs[side] !== run) return;
+      run.watch = {available: false};
+    }
+    updateSessionActions();
+  }
+
+  async function openReferenceLibrary() {
+    $('referenceLibraryDialog').showModal();
+    await refreshReferenceLibrary(!state.referenceLibraryChoices);
+  }
+
+  async function refreshReferenceLibrary(loadChoices = false) {
+    const request = state.referenceLibraryRequest = (state.referenceLibraryRequest || 0) + 1;
+    const track = $('referenceLibraryTrack'), car = $('referenceLibraryCar');
+    $('referenceLibraryError').textContent = '';
+    $('referenceLibraryRetry').hidden = true;
+    $('referenceLibraryStatus').textContent = 'Loading reference laps…';
+    $('referenceLibraryResults').replaceChildren();
+    if (loadChoices) track.disabled = car.disabled = true;
+    try {
+      const params = new URLSearchParams();
+      if (track.value) params.set('track_id', track.value);
+      if (car.value) params.set('car_id', car.value);
+      const result = await helpers.api('/api/reference-library' + (params.size ? '?' + params : ''));
+      if (request !== state.referenceLibraryRequest || !$('referenceLibraryDialog').open) return;
+      if (loadChoices) {
+        const context = recordingContext('current');
+        const preferredTrack = track.value || context.track_id || $('trackSelect')?.value;
+        const preferredCar = car.value || context.car_id;
+        for (const [select, rows, label, preferred] of [[track, result.tracks, 'Choose a circuit', preferredTrack], [car, result.cars, 'Choose a car', preferredCar]]) {
+          select.replaceChildren(new Option(label, ''));
+          for (const item of Array.isArray(rows) ? rows : []) select.add(new Option(item.name || item.id, item.id));
+          if ([...select.options].some(option => option.value === preferred)) select.value = preferred;
+        }
+        state.referenceLibraryChoices = true;
+      }
+      const entries = Array.isArray(result.references) ? result.references : [];
+      state.referenceLibraryEntries = entries.filter(entry => entry.track_id === track.value && entry.car_id === car.value);
+      if (!track.value || !car.value) {
+        $('referenceLibraryStatus').textContent = 'Choose a circuit and car to see available laps.';
+        return;
+      }
+      const matches = state.referenceLibraryEntries;
+      $('referenceLibraryStatus').textContent = matches.length ? `${matches.length} reference ${matches.length === 1 ? 'lap' : 'laps'} available` : 'No reference laps for this combination yet. You can paste a video link instead.';
+      $('referenceLibraryResults').innerHTML = matches.map(entry => {
+        const creator = typeof entry.creator === 'string' ? entry.creator : entry.creator?.name;
+        const info = [creator, entry.lap_time_text ? `Lap ${entry.lap_time_text}` : null, entry.game_version ? `ACC ${entry.game_version}` : null].filter(Boolean);
+        const cache = entry.cache || {};
+        const action = cache.state === 'ready' ? 'Use saved lap' : cache.state === 'importing' ? 'Use when ready' : 'Import';
+        const url = browserVideoUrl(entry.url);
+        return `<article class="reference-library-card"><div><h3>${esc(entry.title || 'Reference lap')}</h3><p>${info.map(esc).join(' · ')}</p>${cache.state === 'ready' ? '<small>Already analyzed on this device</small>' : cache.state === 'importing' ? '<small>Import already in progress</small>' : ''}</div><div class="reference-library-actions">${url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="button subtle compact">Watch original</a>` : ''}<button class="button primary compact reference-library-import" data-reference-id="${esc(entry.id)}">${action}</button></div></article>`;
+      }).join('');
+    } catch (error) {
+      if (request !== state.referenceLibraryRequest || !$('referenceLibraryDialog').open) return;
+      $('referenceLibraryStatus').textContent = 'Reference laps could not be loaded.';
+      $('referenceLibraryError').textContent = error.message;
+      $('referenceLibraryRetry').hidden = false;
+    } finally {
+      if (request === state.referenceLibraryRequest) track.disabled = car.disabled = false;
+    }
+  }
+
+  async function importReferenceLap(id) {
+    if (state.importing || !state.referenceLibraryEntries?.some(entry => entry.id === id)) return;
+    state.importing = true;
+    $('referenceLibraryError').textContent = '';
+    for (const button of document.querySelectorAll('.reference-library-import')) button.disabled = true;
+    try {
+      const result = await helpers.api(`/api/reference-library/${encodeURIComponent(id)}/import`, {method: 'POST', body: '{}'});
+      if (result.state === 'ready' && result.session_id) {
+        state.referenceLibrarySession = result.session_id;
+        await refresh(true);
+        if (!state.sessions.some(session => (session.id || session.session_id) === result.session_id)) {
+          const recording = await helpers.api(`/api/sessions/${encodeURIComponent(result.session_id)}`);
+          if (!recording.session?.id || state.deletedSessions.has(result.session_id)) throw new Error('This saved lap is no longer available. Please import it again.');
+          state.sessions.push(recording.session);
+          renderSessionOptions();
+        }
+        await loadRun('reference', result.session_id, true);
+      } else if (result.state === 'importing' && result.job?.id) {
+        state.pendingImport = result.job.id;
+        await refreshJobs();
+      } else throw new Error('This lap could not be imported. Try another lap or paste its video link.');
+      $('referenceLibraryDialog').close();
+    } catch (error) {
+      $('referenceLibraryError').textContent = error.message;
+    } finally {
+      state.referenceLibrarySession = null;
+      state.importing = false;
+      for (const button of document.querySelectorAll('.reference-library-import')) button.disabled = false;
+    }
+  }
+
   async function openImport(role = 'current') {
     const request = state.importSourceRequest = (state.importSourceRequest || 0) + 1;
     $('recordingImportRole').value = role === 'reference' ? 'reference' : 'current';
@@ -1580,6 +1705,11 @@ window.ACCCComparison = (() => {
       $('referenceImportHistory').innerHTML = state.jobs.slice(0, 6).map(job => `<div class="import-job"><div><strong>${esc(job.name||job.url||job.path||'Recording')}</strong><small>${esc(job.error || (job.state === 'calibrating' ? 'Analyzing video' : job.state))}</small></div>${job.state==='completed'&&job.session_id&&available.has(job.session_id)&&!state.deletedSessions.has(job.session_id)?`<button class="button subtle compact import-use" data-session="${esc(job.session_id)}" data-role="${job.role === 'current' ? 'current' : 'reference'}">Use ${job.role === 'current' ? 'your run' : 'reference'}</button>`:!['completed','cancelled','error'].includes(job.state)?`<button class="icon-button import-cancel" data-id="${esc(job.id)}" title="Cancel import" aria-label="Cancel import"><i data-lucide="x"></i></button>`:''}</div>`).join('');
       helpers.icons();
       const completed = state.jobs.find(job => job.id === state.pendingImport && job.state === 'completed' && job.session_id);
+      const failed = state.jobs.find(job => job.id === state.pendingImport && ['error', 'cancelled'].includes(job.state));
+      if (failed) {
+        state.pendingImport = null;
+        helpers.notify(failed.error || 'The recording import was cancelled.', failed.state === 'error');
+      }
       if (completed) {
         state.pendingImport = null;
         if (!state.deletedSessions.has(completed.session_id)) {
@@ -1607,6 +1737,21 @@ window.ACCCComparison = (() => {
   }
 
   function bind() {
+    $('findReferenceLap').onclick = openReferenceLibrary;
+    $('closeReferenceLibrary').onclick = () => $('referenceLibraryDialog').close();
+    $('referenceLibraryDialog').addEventListener('close', () => {state.referenceLibraryRequest = (state.referenceLibraryRequest || 0) + 1;});
+    for (const id of ['referenceLibraryTrack', 'referenceLibraryCar']) $(id).onchange = () => refreshReferenceLibrary();
+    $('referenceLibraryRetry').onclick = () => refreshReferenceLibrary(!state.referenceLibraryChoices);
+    $('referenceLibraryResults').onclick = event => {
+      const button = event.target.closest('.reference-library-import');
+      if (button) importReferenceLap(button.dataset.referenceId);
+    };
+    $('referenceLibraryPaste').onclick = () => {
+      $('referenceLibraryDialog').close();
+      openImport('reference');
+      document.querySelector('[data-import-kind="youtube"]').click();
+      $('referenceUrl').focus();
+    };
     document.addEventListener('visibilitychange', () => {if (document.hidden) pausePlayback();});
     window.addEventListener('pagehide', pausePlayback);
     document.addEventListener('click', event => {

@@ -2,7 +2,7 @@
   <img src="desktop/icons/icon.png" width="104" height="104" alt="ACCC Telemetry: an A inside three nested C letters">
 </p>
 
-# ACCC Telemetry
+# ACCC Telemetry — Free Assetto Corsa Competizione Video Analysis
 
 **ACC Console Telemetry — understand your inputs, learn from a great lap.**
 
@@ -14,9 +14,16 @@ recorded Assetto Corsa Competizione gameplay into brake, throttle, speed, gear,
 and steering traces you can study alongside a reference lap. Console drivers
 deserve useful analysis tools too.
 
+Record your ACC laps on **PlayStation, Xbox, or PC**, then analyze the gameplay
+video on **Windows, macOS, or Linux**. Compare braking points and throttle
+application, review synchronized videos, and see where time is gained or lost.
+
 This is a **recorded-lap analysis app**. Import a video, review your driving, and
 compare it with a strong lap. It does not monitor live racing or provide live
 telemetry. Your recordings and analysis stay on your computer.
+
+[Download](#download-the-app) · [How to use](#your-first-comparison)
+· [FAQ](#frequently-asked-questions) · [Report a problem](https://github.com/SaberDinp/ACCCT/issues)
 
 ## Download the app
 
@@ -90,6 +97,26 @@ The app reads visible video pixels, so clear footage matters. Hidden inputs,
 compression, missing frames, and different conditions can limit a comparison.
 This is video-derived telemetry: map position and distance are estimates, not
 GPS or a measured racing line. [Read the analysis guide](docs/ANALYSIS.md).
+
+## Frequently asked questions
+
+### Does the app run on a PlayStation or Xbox?
+
+The app runs on a Windows, Mac, or Linux computer. Transfer your recorded console
+gameplay to that computer, then import it with the ACC input HUD visible.
+
+### Do I need an account or an Internet connection?
+
+No account is required. You can analyze local video files without Internet access.
+Importing a public reference video needs an Internet connection; the recording
+and its analysis are then saved locally for reuse.
+
+### Is this the same as live ACC telemetry or a MoTeC data logger?
+
+No. ACCC Telemetry reads visible HUD pixels from recorded videos. It cannot
+recover hidden inputs, suspension data, or an exact racing line. CSV exports are
+available; proprietary MoTeC `.ld` files are not. See the
+[analysis guide](docs/ANALYSIS.md#what-can-be-measured) for supported measurements.
 
 ## Report a problem or suggest a feature
 

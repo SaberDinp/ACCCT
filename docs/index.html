@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101212">
+  <title>ACCC Telemetry — Free ACC Console Video Analysis</title>
+  <meta name="description" content="Analyze Assetto Corsa Competizione recordings from PlayStation, Xbox, or PC. Free brake, throttle, speed, and lap comparison tools for Windows, macOS, and Linux.">
+  <link rel="canonical" href="https://saberdinp.github.io/ACCCT/">
+  <link rel="icon" type="image/svg+xml" href="images/accc-mark.svg">
+  <link rel="sitemap" type="application/xml" href="sitemap.xml">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ACCC Telemetry">
+  <meta property="og:title" content="ACCC Telemetry — Free ACC Console Video Analysis">
+  <meta property="og:description" content="Turn recorded Assetto Corsa Competizione laps into inputs you can study. Compare videos, braking, throttle, speed, and estimated time delta. Free for everyone.">
+  <meta property="og:url" content="https://saberdinp.github.io/ACCCT/">
+  <meta property="og:image" content="https://saberdinp.github.io/ACCCT/images/analysis-page.png">
+  <meta property="og:image:width" content="1408">
+  <meta property="og:image:height" content="1129">
+  <meta property="og:image:alt" content="ACCC Telemetry comparing two Silverstone laps with videos, a circuit map, and telemetry charts">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ACCC Telemetry — Free ACC Console Video Analysis">
+  <meta name="twitter:description" content="Study recorded ACC laps with synchronized video, input traces, and a circuit map. Free desktop analysis for console and PC racers.">
+  <meta name="twitter:image" content="https://saberdinp.github.io/ACCCT/images/analysis-page.png">
+  <meta name="twitter:image:alt" content="Two recorded Silverstone laps compared in ACCC Telemetry">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "ACCC Telemetry",
+    "alternateName": "ACC Console Telemetry",
+    "url": "https://saberdinp.github.io/ACCCT/",
+    "description": "Free desktop analysis of recorded Assetto Corsa Competizione gameplay, with brake, throttle, speed, gear, steering, and reference lap comparison.",
+    "applicationCategory": "SportsApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "isAccessibleForFree": true,
+    "downloadUrl": "https://github.com/SaberDinp/ACCCT/releases/latest",
+    "screenshot": "https://saberdinp.github.io/ACCCT/images/analysis-page.png",
+    "author": {
+      "@type": "Organization",
+      "name": "Rice Racing",
+      "url": "https://www.riceracing.org/"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "url": "https://github.com/SaberDinp/ACCCT/releases/latest"
+    }
+  }
+  </script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101212;
+      --surface: #171b18;
+      --text: #e8eeeb;
+      --muted: #acb8b0;
+      --line: #333c36;
+      --accent: #d8ee88;
+      --cyan: #69cce0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-synthesis: none;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-size: 17px; line-height: 1.65; }
+    a { color: var(--accent); text-underline-offset: .2em; }
+    a:hover { text-decoration-thickness: 2px; }
+    a:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 5px; }
+    .wrap { width: min(1120px, calc(100% - 48px)); margin-inline: auto; }
+    .skip { position: absolute; top: -100px; left: 16px; padding: 12px 18px; background: var(--accent); color: var(--bg); z-index: 2; }
+    .skip:focus { top: 12px; }
+    .header { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-block: 25px; border-bottom: 1px solid var(--line); }
+    .brand { display: inline-flex; align-items: center; gap: 11px; color: var(--text); font-weight: 800; font-size: 22px; letter-spacing: -.04em; text-decoration: none; white-space: nowrap; }
+    .brand img { flex-shrink: 0; }
+    .brand span span { color: var(--accent); }
+    nav { display: flex; flex-wrap: wrap; gap: 24px; }
+    nav a { color: var(--muted); font-size: 14px; font-weight: 600; text-decoration: none; }
+    nav a:hover { color: var(--text); }
+    .hero { padding-block: 78px 50px; }
+    .eyebrow { color: var(--accent); margin: 0 0 19px; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { max-width: 1000px; margin: 0; font-size: clamp(38px, 6.3vw, 76px); font-weight: 750; letter-spacing: -.055em; line-height: 1.08; }
+    h1 span { display: block; color: var(--accent); }
+    .lead { max-width: 730px; margin: 27px 0; color: var(--muted); font-size: clamp(18px, 2vw, 21px); line-height: 1.65; }
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-block: 28px 17px; }
+    .button { display: inline-flex; justify-content: center; align-items: center; min-height: 50px; padding: 12px 22px; border: 1px solid var(--accent); border-radius: 6px; background: var(--accent); color: var(--bg); font-size: 16px; font-weight: 700; text-decoration: none; }
+    .button:hover { background: #e5f6af; text-decoration: none; }
+    .button.secondary { color: var(--text); border-color: var(--line); background: transparent; }
+    .button.secondary:hover { border-color: var(--muted); }
+    .platforms { margin: 0; color: var(--muted); font-size: 14px; }
+    .platforms strong { color: var(--text); font-weight: 600; }
+    figure { margin: 0; }
+    .preview { overflow: hidden; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+    .preview-label { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: 13px 20px; font-size: 11px; letter-spacing: .1em; color: var(--muted); }
+    .preview-label span:first-child { color: var(--cyan); }
+    .preview img { display: block; width: 100%; height: auto; }
+    figcaption { max-width: 850px; margin-top: 14px; color: var(--muted); font-size: 14px; }
+    .benefits { display: grid; grid-template-columns: repeat(3, 1fr); gap: 38px; margin-block: 46px 68px; }
+    h2 { margin: 0 0 18px; font-size: clamp(27px, 4vw, 38px); letter-spacing: -.035em; line-height: 1.2; }
+    h3 { margin: 0 0 10px; font-size: 19px; letter-spacing: -.02em; line-height: 1.35; }
+    .benefits h2 { margin-bottom: 10px; font-size: 19px; letter-spacing: -.02em; line-height: 1.35; }
+    p { margin: 0 0 16px; }
+    .benefits p { color: var(--muted); font-size: 15px; }
+    .section { padding-block: 58px; border-top: 1px solid var(--line); }
+    .section-intro { max-width: 690px; color: var(--muted); }
+    .steps { margin: 32px 0 22px; padding: 0; list-style: none; counter-reset: step; }
+    .steps li { display: grid; grid-template-columns: 48px 1fr; gap: 22px; padding: 25px 0; border-top: 1px solid var(--line); counter-increment: step; }
+    .steps li::before { content: "0" counter(step); color: var(--accent); font-size: 20px; font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; }
+    .steps p { margin: 0; max-width: 810px; color: var(--muted); }
+    .faq { max-width: 900px; }
+    details { border-bottom: 1px solid var(--line); padding-block: 19px; }
+    summary { cursor: pointer; font-weight: 600; padding-right: 16px; }
+    details p { color: var(--muted); margin: 15px 0 0; max-width: 810px; }
+    .download { display: grid; grid-template-columns: 1.25fr 1fr; gap: 50px; align-items: center; }
+    .download p { color: var(--muted); }
+    .download-note { font-size: 14px; }
+    footer { padding-block: 33px 42px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 12px 24px; margin-block: 18px; }
+    footer p { max-width: 820px; }
+    @media (max-width: 700px) {
+      .wrap { width: min(100% - 32px, 1120px); }
+      .header { flex-wrap: wrap; gap: 14px; padding-block: 20px; }
+      nav { gap: 20px; }
+      .hero { padding-block: 48px 36px; }
+      .lead { margin-top: 22px; }
+      .benefits { grid-template-columns: 1fr; gap: 22px; margin-block: 35px 44px; }
+      .benefits p { max-width: 540px; margin-bottom: 0; }
+      .section { padding-block: 42px; }
+      .download { grid-template-columns: 1fr; gap: 10px; }
+      .steps li { gap: 12px; grid-template-columns: 36px 1fr; }
+      .preview-label { padding: 12px; font-size: 10px; letter-spacing: .05em; }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      html { scroll-behavior: smooth; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="header wrap">
+    <a class="brand" href="./" aria-label="ACCC Telemetry home"><img src="images/accc-mark.svg" width="38" height="38" alt=""><span>ACCC <span>Telemetry</span></span></a>
+    <nav aria-label="Main navigation">
+      <a href="#how-it-works">How it works</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/SaberDinp/ACCCT">GitHub</a>
+    </nav>
+  </header>
+  <main id="main" class="wrap">
+    <section class="hero" aria-labelledby="hero-title">
+      <p class="eyebrow">Assetto Corsa Competizione · Made by Rice Racing</p>
+      <h1 id="hero-title">Free ACC console telemetry<span>from recorded video.</span></h1>
+      <p class="lead">Understand your inputs. Learn from a great lap. Turn your PlayStation, Xbox, or PC gameplay recordings into brake, throttle, speed, gear, and steering traces you can compare on your computer.</p>
+      <div class="actions">
+        <a class="button" href="https://github.com/SaberDinp/ACCCT/releases/latest">Download the free app <span aria-hidden="true">&nbsp;↗</span></a>
+        <a class="button secondary" href="https://github.com/SaberDinp/ACCCT">View on GitHub</a>
+      </div>
+      <p class="platforms"><strong>Windows · macOS · Linux</strong> &nbsp; No account, subscription, or purchase required.</p>
+    </section>
+
+    <figure>
+      <div class="preview">
+        <div class="preview-label"><span>THE ANALYSIS WORKSPACE</span><span>YOUR RUN + A REFERENCE LAP</span></div>
+        <img src="images/analysis-page.png" width="1408" height="1129" fetchpriority="high" alt="Two Silverstone laps in ACCC Telemetry, with synchronized cockpit videos above a circuit map and speed, brake, throttle, gear, steering, and estimated time delta charts">
+      </div>
+      <figcaption>A real Silverstone comparison: follow the videos, examine your inputs, and use the circuit guide to review the same part of each lap.</figcaption>
+    </figure>
+
+    <div class="benefits">
+      <section aria-labelledby="inputs-title">
+        <h2 id="inputs-title">See what your inputs reveal.</h2>
+        <p>Review when you brake, how you release the pedal, and where you return to the throttle. Inspect readable speed, gear, and steering alongside the video.</p>
+      </section>
+      <section aria-labelledby="reference-title">
+        <h2 id="reference-title">Put a reference lap beside yours.</h2>
+        <p>Import another recording or find a creator’s lap in the reference library. Review both videos and traces with a shared cursor.</p>
+      </section>
+      <section aria-labelledby="local-title">
+        <h2 id="local-title">Keep your analysis on your computer.</h2>
+        <p>Video processing happens locally. Revisit saved recordings and export CSV data when you want to study your inputs further.</p>
+      </section>
+    </div>
+
+    <section id="how-it-works" class="section" aria-labelledby="how-title">
+      <p class="eyebrow">From a recording to a comparison</p>
+      <h2 id="how-title">Bring your lap. See the difference.</h2>
+      <p class="section-intro">Install the desktop app, then start with a gameplay video that clearly shows the ACC input HUD. You can review one recording before adding a reference.</p>
+      <ol class="steps">
+        <li><div><h3>Import your recording.</h3><p>Open <strong>Video options</strong> under <strong>Your run</strong> and choose <strong>Import recording</strong>. Transfer console footage to your computer first, or use a local PC recording.</p></div></li>
+        <li><div><h3>Add a lap to learn from.</h3><p>Under <strong>Reference → Video options</strong>, choose <strong>Find reference lap</strong> and select your circuit and car. You can also import your own reference recording.</p></div></li>
+        <li><div><h3>Choose the laps and review your inputs.</h3><p>Set each video’s <strong>Start of lap</strong> and <strong>End of lap</strong>, then press <strong>Lock</strong> on the selected frames. Use the same circuit layout and physical start line, and compare braking, throttle, speed, and estimated time delta.</p></div></li>
+      </ol>
+      <a href="https://github.com/SaberDinp/ACCCT#your-first-comparison">Read the full getting-started guide →</a>
+    </section>
+
+    <section id="faq" class="section faq" aria-labelledby="faq-title">
+      <p class="eyebrow">Before your first lap review</p>
+      <h2 id="faq-title">A few useful details.</h2>
+      <details open>
+        <summary>Does this run on a console?</summary>
+        <p>The app runs on a Windows, Mac, or Linux computer. It analyzes recorded Assetto Corsa Competizione gameplay from PlayStation, Xbox, or PC; you do not install it on the console.</p>
+      </details>
+      <details>
+        <summary>Is it really free?</summary>
+        <p>Yes. Every feature is free, with no account, subscription, or purchase required. Donations to Rice Racing are optional.</p>
+      </details>
+      <details>
+        <summary>Is this live telemetry, or a replacement for a data logger?</summary>
+        <p>It is recorded-video analysis. The app reads visible HUD pixels, so hidden inputs cannot be recovered. Distance, map position, and time delta are estimates; it does not measure an exact racing line or suspension data, and it does not export MoTeC <code>.ld</code> files. <a href="https://github.com/SaberDinp/ACCCT/blob/main/docs/ANALYSIS.md">Read the measurement and comparison guide.</a></p>
+      </details>
+      <details>
+        <summary>What kind of recording works best?</summary>
+        <p>Use clear footage with the complete pedal bars, speed, gear, and lap clock visible. Compression, cuts, hidden HUDs, and missing frames can limit the result. Car, setup, weather, tyres, fuel, and game version can also affect a lap comparison.</p>
+      </details>
+      <details>
+        <summary>Does it need an Internet connection?</summary>
+        <p>Local video files can be analyzed offline. Importing a public reference video needs an Internet connection; the recording and analysis are then saved locally for reuse.</p>
+      </details>
+    </section>
+
+    <section class="section download" aria-labelledby="download-title">
+      <div>
+        <p class="eyebrow">Start with the lap you already have</p>
+        <h2 id="download-title">Your next review starts here.</h2>
+        <p>Choose an installer for your computer. You do not need Python, Node.js, or the source-code ZIP.</p>
+      </div>
+      <div>
+        <div class="actions"><a class="button" href="https://github.com/SaberDinp/ACCCT/releases/latest">Get the latest release <span aria-hidden="true">&nbsp;↗</span></a></div>
+        <p class="download-note">Mac builds are not Apple-notarized; Windows builds are unsigned. See the <a href="https://github.com/SaberDinp/ACCCT#download-the-app">supported systems and installation instructions</a> before your first launch.</p>
+      </div>
+    </section>
+  </main>
+  <footer class="wrap">
+    <p>Made by <a href="https://www.riceracing.org/">Rice Racing</a>, Rice University’s Formula SAE team. Built to help console racers understand their driving and learn from the inputs of excellent drivers.</p>
+    <div class="footer-links">
+      <a href="https://github.com/SaberDinp/ACCCT">Repository</a>
+      <a href="https://github.com/SaberDinp/ACCCT/issues">Report a bug or suggest a feature</a>
+      <a href="https://github.com/SaberDinp/ACCCT/blob/main/docs/DEVELOPMENT.md">Contributor guide</a>
+    </div>
+    <p>Independent application; not affiliated with Kunos, PlayStation, Xbox, Twitch, YouTube, or MoTeC.</p>
+  </footer>
+</body>
+</html>

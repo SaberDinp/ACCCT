@@ -119,6 +119,24 @@ ignored `data/validation/` and `artifacts/`. Sparse checks, full-video extractio
 and independent lap review measure different things. A catalog entry or successful
 download is not proof of accurate telemetry for that car/HUD combination.
 
+## Public project page
+
+The public download and introduction page lives in [`index.html`](index.html)
+and is hosted at **https://saberdinp.github.io/ACCCT/**. GitHub Pages publishes
+the `docs/` directory from `main`; `.nojekyll` keeps it a plain static site with
+no build dependencies. The desktop app still runs locally on the user's computer.
+
+Keep its feature descriptions consistent with this repository's README. Download
+buttons link to the latest GitHub release so the page does not pin old installer
+filenames. When changing the public URL, update the canonical URL, social-preview
+metadata, structured data, and `sitemap.xml` together.
+
+The hexadecimal `.txt` file in this directory is a public IndexNow ownership
+verification file. Keep it available when notifying participating search engines
+about this page. Submission requests use the full file URL as `keyLocation`
+because the project is hosted beneath `/ACCCT/`. Search engines decide when to
+crawl and index the page; a submission is not a ranking or indexing guarantee.
+
 ## Releases
 
 Update `desktop/package.json`, its lockfile, the README download filenames, and

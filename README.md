@@ -6,6 +6,9 @@
 
 **ACC Console Telemetry — understand your inputs, learn from a great lap.**
 
+**ACCC Telemetry is completely free for everyone to use.** Every feature is
+available without a purchase, subscription, or donation.
+
 Made by **Rice Racing**, Rice University's Formula SAE team. ACCC Telemetry turns
 recorded Assetto Corsa Competizione gameplay into brake, throttle, speed, gear,
 and steering traces you can study alongside a reference lap. Console drivers
@@ -70,6 +73,17 @@ compression, missing frames, and different conditions can limit a comparison.
 This is video-derived telemetry: map position and distance are estimates, not
 GPS or a measured racing line. [Read the analysis guide](docs/ANALYSIS.md).
 
+## Report a problem or suggest a feature
+
+You can report a bug or suggest a future feature in the
+**[Issues tab](https://github.com/SaberDinp/ACCCT/issues)**. Include your operating
+system, app version, and the steps that caused the problem so we can investigate.
+We'll work on fixing reported problems as soon as possible.
+
+You never need to donate to report an issue or receive fixes. Share only
+recordings you have permission to share; a short HUD example is often more
+useful than a full race.
+
 ## Meet Rice Racing
 
 We are a group of Rice University students designing and building a formula race
@@ -84,12 +98,14 @@ and learn from the inputs of excellent drivers.
 
 [Meet the team at riceracing.org](https://www.riceracing.org/)
 
-## Help build our next race car
+## Free to use — help us keep building
 
-If this app helps you find a better lap, consider supporting the students behind
-it. Your gift to **Rice Formula SAE Club** supports our team's work designing,
-building, and competing with a formula race car. It is a practical way to help
-students put engineering into action.
+**The app is completely free, and donating is entirely optional.** If you enjoy
+ACCC Telemetry and want to see more features in the future, a donation is a way
+to support Rice Racing and encourage us to keep improving the app.
+
+Gifts go to **Rice Formula SAE Club** and support our student team's work
+designing, building, and competing with a formula race car.
 
 ### How to give
 
@@ -117,10 +133,8 @@ build tools, and generated reports are excluded from Git.
 - [Analysis and comparison details](docs/ANALYSIS.md)
 - [Report a problem or suggest an improvement](https://github.com/SaberDinp/ACCCT/issues)
 
-When reporting a problem, include your OS, app version, and the steps that caused
-it. Share only recordings you have permission to share; a short HUD example is
-often more useful than a full race. Bundled track-data licenses and provenance
-are documented in [assets/tracks/README.md](assets/tracks/README.md).
+Bundled track-data licenses and provenance are documented in
+[assets/tracks/README.md](assets/tracks/README.md).
 
 Independent application; not affiliated with Kunos, PlayStation, Xbox, Twitch,
 YouTube, or MoTeC.

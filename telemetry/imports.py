@@ -18,6 +18,7 @@ import numpy as np
 import requests
 
 from .analysis import SessionAnalyzer
+from .download_errors import YouTubeDownloadError, youtube_download_error, youtube_media_forbidden
 from .profiles import default_profile
 from .vision import HUDExtractor
 from .runtime import javascript_runtime_args, module_command, subprocess_options
@@ -207,8 +208,9 @@ class ReferenceImports:
                     "bv[height<=1080][ext=mp4]/bv[height<=1080]/b[height<=1080]")
         command = module_command("yt_dlp") + ["--ignore-config", "--no-playlist",
                    "--socket-timeout", "15", "--retries", "1", "--fragment-retries", "1",
+                   "--abort-on-unavailable-fragments",
                    "--max-filesize", str(MAX_BYTES), "--match-filter", f"!is_live & duration > 0 & duration <= {MAX_DURATION}",
-                   "--no-progress", "--write-info-json", "--no-warnings",
+                   "--no-progress", "--write-info-json",
                    "-f", selector,
                    "-o", str(directory / "media.%(ext)s")]
         if provider == "Twitch":
@@ -217,29 +219,51 @@ class ReferenceImports:
             command.extend(javascript_runtime_args())
         command.extend(["--", source["url"]])
         started = time.monotonic()
-        with (directory / "download.log").open("wb") as log:
-            process = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT,
-                                       stdin=subprocess.DEVNULL, **subprocess_options())
-            try:
-                while process.poll() is None:
-                    self._check(stop)
+        log_path = directory / "download.log"
+        for attempt in range(2):
+            self._check(stop)
+            with log_path.open("ab" if attempt else "wb") as log:
+                if attempt:
                     if time.monotonic() - started > MAX_DOWNLOAD_SECONDS:
                         raise ValueError("Reference download exceeded 20 minutes. Import a local copy instead.")
-                    if sum(path.stat().st_size for path in directory.iterdir() if path.is_file()) > MAX_BYTES:
-                        raise ValueError("Reference exceeds the 4 GB import limit.")
-                    stop.wait(.2)
-            finally:
-                if process.poll() is None:
-                    process.terminate()
-                    try:
-                        process.wait(timeout=3)
-                    except subprocess.TimeoutExpired:
-                        process.kill()
-                        process.wait(timeout=3)
+                    log.write(b"\n[ACCC] Media request was refused (HTTP 403); retrying once with a public HLS format.\n")
+                    log.flush()
+                process = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT,
+                                           stdin=subprocess.DEVNULL, **subprocess_options())
+                try:
+                    while process.poll() is None:
+                        self._check(stop)
+                        if time.monotonic() - started > MAX_DOWNLOAD_SECONDS:
+                            raise ValueError("Reference download exceeded 20 minutes. Import a local copy instead.")
+                        if sum(path.stat().st_size for path in directory.iterdir() if path.is_file()) > MAX_BYTES:
+                            raise ValueError("Reference exceeds the 4 GB import limit.")
+                        stop.wait(.2)
+                finally:
+                    if process.poll() is None:
+                        process.terminate()
+                        try:
+                            process.wait(timeout=3)
+                        except subprocess.TimeoutExpired:
+                            process.kill()
+                            process.wait(timeout=3)
+            self._check(stop)
+            if (not process.returncode or attempt or provider != "YouTube"
+                    or not youtube_media_forbidden(log_path)):
+                break
+            # A refused direct media URL need not mean the public video needs
+            # login. Refresh extraction once and use an exposed HLS stream.
+            # Never resume the first format's partial bytes into another format.
+            self._cleanup_download(job_id)
+            command = [*command[:-2], "--downloader", "m3u8:native",
+                       "--hls-use-mpegts", "--fixup", "never", *command[-2:]]
+            command[command.index("-f") + 1] = (
+                "bv*[height<=1080][protocol^=m3u8][vcodec^=avc1]/"
+                "bv*[height<=1080][protocol^=m3u8]")
         if process.returncode:
-            reason = ("The VOD or clip may have expired, require subscriber access, or be unavailable. "
-                      if provider == "Twitch" else "The video may require sign-in or be unavailable. ")
-            raise ValueError(provider + " download failed. " + reason + "Import a local copy; details are in data/references/" + job_id + "/download.log.")
+            if provider == "YouTube":
+                raise YouTubeDownloadError(youtube_download_error(log_path))
+            raise ValueError("Twitch download failed. The VOD or clip may have expired, require subscriber access, "
+                             "or be unavailable. Import a local copy; details are in data/references/" + job_id + "/download.log.")
         videos = [path for path in directory.iterdir() if path.suffix.lower() in VIDEO_EXTENSIONS]
         if len(videos) != 1:
             raise ValueError("No downloadable video was returned. Choose a public recording under two hours, or import a local copy.")
@@ -247,11 +271,11 @@ class ReferenceImports:
             raise ValueError("Reference exceeds the 4 GB import limit.")
         metadata_path = directory / "media.info.json"
         metadata = json.loads(metadata_path.read_text(encoding="utf-8")) if metadata_path.exists() else {}
-        path = self._remux_twitch_hls(videos[0], stop, started) if provider == "Twitch" else videos[0]
+        path = self._remux_hls(videos[0], stop, started)
         return path, metadata.get("title") or source["url"]
 
-    def _remux_twitch_hls(self, path, stop, started):
-        """Make native-downloaded Twitch MPEG-TS browser-playable without re-encoding.
+    def _remux_hls(self, path, stop, started):
+        """Make native-downloaded MPEG-TS browser-playable without re-encoding.
 
         yt-dlp may retain an .mp4 extension on concatenated HLS transport-stream
         bytes. Detect the container, copy its video/audio packets to genuine MP4,
@@ -273,7 +297,7 @@ class ReferenceImports:
                 if "mpegts" not in recording.format.name.split(","):
                     return path
                 if not recording.streams.video:
-                    raise ValueError("Twitch recording contains no video track.")
+                    raise ValueError("Recording contains no video track.")
                 streams = list(recording.streams.video[:1]) + list(recording.streams.audio[:1])
                 starts = [stream.start_time * stream.time_base for stream in streams
                           if stream.start_time is not None and stream.time_base is not None]
@@ -295,7 +319,7 @@ class ReferenceImports:
                         packet.stream = mapping[packet.stream.index]
                         output.mux(packet)
                     if not copied_video:
-                        raise ValueError("Twitch recording contains no playable video packets.")
+                        raise ValueError("Recording contains no playable video packets.")
             check()
             temporary.replace(target)
             if path != target:
@@ -474,7 +498,7 @@ class ReferenceImports:
             except Exception as exc:
                 self._update(job_id, state="error", error="Could not finalize cancelled import: " + str(exc)[:400])
         except Exception as exc:
-            error = str(exc)[:400]
+            error = str(exc) if isinstance(exc, YouTubeDownloadError) else str(exc)[:400]
             try:
                 if session_id:
                     persist("error")

@@ -1,24 +1,27 @@
-# 1.4.0
+# 1.4.1
 
-Find a reference lap by circuit and car, then study it alongside your own recording.
-This release brings the same reference library and browser playback to every
-macOS, Windows, and Linux app.
+This patch improves recovery when YouTube refuses a public reference video's
+direct download with **HTTP 403**, and explains download failures more clearly.
 
-- **Find reference lap** offers 6,084 attributed creator videos covering 1,082
-  car-and-circuit combinations. The selectors include all 54 ACC car variants
-  and all 25 circuits; gaps in reference coverage are clearly identified.
-- Videos download and analyze only after you press **Import**. Later selections
-  reuse the saved recording and analysis, including after an app restart.
-  Installers contain links and metadata, without reference videos.
-- **Open video in browser** is available for both recordings. Public recordings
-  open the original page; local files open a browser player with sound.
-- Local imports and pasted links remain available. The simplified Analysis and
-  Credits structure, automatic HUD detection, and start/end **Lock** controls
-  from 1.3.0 are preserved.
+- A refused direct video download retries once using an available public HLS
+  stream. The app prepares it for playback while keeping the 1080p, two-hour,
+  4 GB, and 20-minute import limits.
+- Download errors now distinguish refused requests, account or bot verification,
+  unavailable videos, connection problems, and download-component failures.
+  The message includes the location of the local diagnostic log. Failed optional
+  audio downloads also retain their diagnostic log.
+- Installed apps consistently use their bundled JavaScript runtime for YouTube
+  downloads, including when another runtime is installed on the computer.
 
-[Reference library coverage, creators, and verification notes](https://github.com/SaberDinp/ACCCT/blob/v1.4.0/assets/references/README.md)
+The app downloads anonymously and does not use your browser's signed-in session.
+Public videos often work without sign-in, but YouTube can still refuse a request
+or offer no usable public stream. Account-restricted recordings require access
+that this anonymous downloader cannot provide. If a download still fails, choose
+another public reference or import a local copy you have permission to use.
 
-Close the older running app, install the matching **1.4.0** package, and reopen
+[Reference library coverage, creators, and verification notes](https://github.com/SaberDinp/ACCCT/blob/v1.4.1/assets/references/README.md)
+
+Close the older running app, install the matching **1.4.1** package, and reopen
 **ACCC Telemetry**. Your saved recordings and preferences are preserved.
 
 Choose an installer for your OS and CPU from the assets below. You do not need

@@ -45,6 +45,32 @@ circuit layouts cannot be compared.
 No sample race videos or existing session libraries are shipped in the source
 repository. Start with your own footage or a public recording you may download.
 
+### YouTube downloads and sign-in
+
+The app attempts public YouTube downloads without an account. It uses its own
+downloader and does not read your browser's cookies, so signing into YouTube in
+your browser does not sign the app in. Desktop installers include the JavaScript
+runtime needed by the downloader.
+
+If YouTube refuses a video-data request with HTTP 403, version 1.4.1 and later
+retry once using an alternative public stream, when one is available. The retry
+keeps the same download time and size limits and still does not use an account.
+HTTP 403 by itself does not establish that sign-in is required.
+
+Public videos can still fail because of a temporary network error, YouTube
+verification or rate limits, or a change to the site's download formats. Private,
+members-only, age-restricted, removed, and region-restricted videos may not be
+available anonymously. Use another accessible reference or import a local copy
+you are allowed to download when the site requires access the app cannot provide.
+
+If an import fails, open **File → Show Library Folder** in the desktop app, then
+open `data/references/<import ID>/download.log` using the ID in the error message.
+The final `ERROR` line and preceding `WARNING` lines explain the downloader's
+failure. Include those lines, the video URL, your operating system, and app version
+when reporting the problem. Older app versions use the same generic
+“may require sign-in” message for every download error; that message alone does
+not establish that the video requires an account.
+
 ## What can be measured
 
 | Channel | What the video can show |

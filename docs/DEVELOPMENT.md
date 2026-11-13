@@ -30,6 +30,12 @@ Open **http://localhost:8000**, leave the terminal running, and import a recordi
 Stop with **Ctrl+C**. `launch.py` starts the same application. Use `--port 8001` if
 8000 is occupied. The shared VS Code task **Start ACCC Telemetry** uses `.venv`.
 
+For YouTube imports when running Python directly, install **Node.js 22+** or
+**Deno 2.3+** and make it available on `PATH`. The `yt-dlp[default]` dependency
+supplies the matching JavaScript challenge scripts; the runtime is separate.
+Desktop installers already supply their own runtime. See the upstream
+[yt-dlp JavaScript setup guide](https://github.com/yt-dlp/yt-dlp/wiki/EJS).
+
 Recordings and generated data are intentionally absent from a clean checkout.
 The app creates a local library when it starts. Do not add personal race footage,
 session databases, credentials, cookies, or generated analysis reports to Git.

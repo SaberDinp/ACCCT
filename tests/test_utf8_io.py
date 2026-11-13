@@ -69,11 +69,13 @@ def test_unicode_profile_survives_loading_and_saving(windows_ansi_defaults, tmp_
 
 
 def test_recorded_video_title_uses_downloader_utf8_metadata(windows_ansi_defaults, tmp_path, monkeypatch):
+    from tests.test_engine import make_video
+
     title = "東京 – Driver’s reference 🏁"
 
     def finished_download(command, **_):
         template = Path(command[command.index("-o") + 1])
-        template.with_name("media.mp4").write_bytes(b"fixture video")
+        make_video(template.with_name("media.mp4"))
         template.with_name("media.info.json").write_bytes(json.dumps({"title": title}, ensure_ascii=False).encode("utf-8"))
         return SimpleNamespace(poll=lambda: 0, returncode=0)
 

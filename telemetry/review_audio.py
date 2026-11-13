@@ -16,6 +16,7 @@ from urllib.parse import parse_qs, urlparse
 import uuid
 
 import av
+from .download_errors import YouTubeDownloadError, youtube_download_error
 from .runtime import javascript_runtime_args, module_command, subprocess_options
 
 
@@ -159,12 +160,13 @@ class ReviewAudio:
 
     def _download(self, url, directory, stop, started):
         command = module_command("yt_dlp") + ["--ignore-config", "--no-playlist", "--no-progress",
-                   "--no-warnings", "--socket-timeout", "15", "--retries", "1", "--fragment-retries", "1",
+                   "--socket-timeout", "15", "--retries", "1", "--fragment-retries", "1",
                    "--max-filesize", str(MAX_BYTES), "--match-filter", "!is_live & duration <= 7200",
                    "-f", "ba[ext=m4a]/ba", "-o", str(directory / "download.%(ext)s")]
         command.extend(javascript_runtime_args())
         command.extend(["--", url])
-        with (directory / "download.log").open("wb") as log:
+        log_path = directory / "download.log"
+        with log_path.open("wb") as log:
             process = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT,
                                        stdin=subprocess.DEVNULL, **subprocess_options())
             try:
@@ -183,7 +185,7 @@ class ReviewAudio:
                         process.wait(timeout=3)
         self._check(stop, started)
         if process.returncode:
-            raise ValueError("Audio could not be downloaded from YouTube. Try again or import a local copy with audio.")
+            raise YouTubeDownloadError(youtube_download_error(log_path))
         files = [path for path in directory.iterdir()
                  if path.name.startswith("download.") and path.suffix in {".m4a", ".mp4", ".webm", ".opus", ".ogg", ".mp3", ".aac"}]
         if len(files) != 1 or files[0].stat().st_size > MAX_BYTES:
@@ -265,6 +267,17 @@ class ReviewAudio:
         except Exception as error:
             with self.lock:
                 if self.jobs.get(session_id) is job and not stop.is_set():
+                    if isinstance(error, YouTubeDownloadError):
+                        # Keep one closed diagnostic log after media cleanup.
+                        # The lock prevents deletion from racing this move; an
+                        # active download's open log stays in its temporary folder.
+                        retained_log = directory / "download.log"
+                        try:
+                            (temporary / "download.log").replace(retained_log)
+                        except OSError:
+                            pass
+                        else:
+                            error = YouTubeDownloadError(youtube_download_error(retained_log))
                     message = str(error) if isinstance(error, ValueError) else "The recording's audio could not be prepared. Try a supported local recording."
                     job["result"] = self._result(session_id, "unavailable" if isinstance(error, AudioUnavailable) else "error", message)
         finally:
@@ -290,7 +303,7 @@ class ReviewAudio:
             if job:
                 job["stop"].set()
             directory = self._directory(session_id)
-            for name in ("audio.m4a", "audio.json"):
+            for name in ("audio.m4a", "audio.json", "download.log"):
                 (directory / name).unlink(missing_ok=True)
             try:
                 directory.rmdir()

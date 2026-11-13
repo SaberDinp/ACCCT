@@ -32,10 +32,13 @@ def javascript_runtime_args() -> list[str]:
     if bundled:
         if not bundled.startswith(("node:", "deno:")):
             raise ValueError("ACCC_JS_RUNTIME must start with node: or deno:")
-        return ["--js-runtimes", bundled]
+        # yt-dlp adds runtimes to its defaults, rather than replacing them.
+        # Clear those defaults so a machine-wide Deno cannot take precedence
+        # over the known-compatible runtime supplied by the desktop shell.
+        return ["--no-js-runtimes", "--js-runtimes", bundled]
     for runtime in ("deno", "node"):
         if shutil.which(runtime):
-            return ["--js-runtimes", runtime]
+            return ["--no-js-runtimes", "--js-runtimes", runtime]
     return []
 
 

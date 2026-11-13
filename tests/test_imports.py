@@ -549,7 +549,7 @@ def test_twitch_hls_remux_is_real_mp4_preserves_video_audio_and_common_time_orig
         hashes = [hashlib.sha256(frame.to_ndarray().tobytes()).hexdigest() for frame in old_frames]
     with av.open(str(path)) as original:
         old_audio_start = next(original.decode(audio=0)).time
-    result = importer._remux_twitch_hls(path, threading.Event(), time.monotonic())
+    result = importer._remux_hls(path, threading.Event(), time.monotonic())
     assert result == path and result.is_file()
     data = result.read_bytes()
     assert data[4:8] == b"ftyp"
@@ -602,8 +602,155 @@ def test_twitch_hls_remux_failure_keeps_input_and_cleans_partial_output(client, 
     monkeypatch.setattr(importer, "_check", interrupt_during_remux)
     expected = module.ImportCancelled if failure == "cancel" else ValueError
     with pytest.raises(expected):
-        importer._remux_twitch_hls(path, stop, time.monotonic())
+        importer._remux_hls(path, stop, time.monotonic())
     assert calls >= 4
     assert path.read_bytes() == before
     assert not (directory / "media.mp4").exists()
     assert not (directory / "media.remux.mp4.part").exists()
+
+
+def test_youtube_media_403_retries_public_hls_and_returns_playable_mp4(client, monkeypatch):
+    import json
+    from pathlib import Path
+    import av
+    import yt_dlp
+    from telemetry import imports as module
+
+    importer = client.app.state.imports
+    commands = []
+    url = "https://www.youtube.com/watch?v=RJl2an-kbZk"
+
+    class Download:
+        def __init__(self, command, **kwargs):
+            commands.append(command)
+            directory = Path(command[command.index("-o") + 1]).parent
+            if len(commands) == 1:
+                (directory / "media.mp4.part").write_bytes(b"failed direct media")
+                (directory / "media.mp4.ytdl").write_text("resume state")
+                (directory / "media.info.json").write_text('{"title":"first attempt"}')
+                (directory / "keep.txt").write_text("unrelated file")
+                kwargs["stdout"].write(b"WARNING: first attempt diagnostic\n"
+                                       b"ERROR: unable to download video data: HTTP Error 403: Forbidden\n")
+                self.returncode = 1
+            else:
+                # A different format must never reuse the direct download's bytes.
+                assert not (directory / "media.mp4.part").exists()
+                assert not (directory / "media.mp4.ytdl").exists()
+                assert (directory / "keep.txt").read_text() == "unrelated file"
+                _make_twitch_transport_stream(directory / "media.mp4")
+                (directory / "media.info.json").write_text(json.dumps({"title": "Public reference", "duration": 2}))
+                kwargs["stdout"].write(b"[download] Public HLS download complete\n")
+                self.returncode = 0
+
+        def poll(self):
+            return self.returncode
+
+    monkeypatch.setattr(module.subprocess, "Popen", Download)
+    path, title = importer._download_youtube("youtube-hls", {"url": url}, threading.Event())
+    assert len(commands) == 2 and title == "Public reference"
+    log = (path.parent / "download.log").read_text()
+    assert "first attempt diagnostic" in log and "HTTP Error 403" in log
+    assert "Public HLS download complete" in log
+    assert (path.parent / "keep.txt").read_text() == "unrelated file"
+    assert path.read_bytes()[4:8] == b"ftyp"
+    with av.open(str(path)) as recording:
+        assert "mp4" in recording.format.name.split(",")
+        assert recording.streams.audio[0].codec_context.name == "aac"
+        frames = list(recording.decode(video=0))
+        assert len(frames) == 20 and 0 <= frames[0].time < .1
+    assert not (path.parent / "media.remux.mp4.part").exists()
+
+    fallback = commands[1]
+    assert fallback[-2:] == ["--", url]
+    assert "--ignore-config" in fallback and "--no-playlist" in fallback
+    assert not set(fallback) & {"--cookies", "--cookies-from-browser", "--username", "--password", "--netrc"}
+    assert fallback[fallback.index("--downloader") + 1] == "m3u8:native"
+    assert "--hls-use-mpegts" in fallback
+    assert fallback[fallback.index("--fixup") + 1] == "never"
+    assert fallback[fallback.index("--max-filesize") + 1] == str(module.MAX_BYTES)
+    assert fallback[fallback.index("--match-filter") + 1] == "!is_live & duration > 0 & duration <= 7200"
+
+    # Exercise the real yt-dlp selector against formats the provider could offer.
+    # Prefer H.264 for playback, while rejecting direct URLs and resolutions >1080p.
+    formats = [{"format_id": identifier, "height": height, "vcodec": codec, "acodec": "aac",
+                "protocol": protocol, "ext": "mp4", "url": f"https://example.test/{identifier}"}
+               for identifier, height, codec, protocol in [
+                   ("hls-h264", 720, "avc1.64001f", "m3u8_native"),
+                   ("hls-vp9", 1080, "vp09.00.40.08", "m3u8_native"),
+                   ("direct", 1080, "avc1.640028", "https"),
+                   ("hls-2160", 2160, "avc1.640033", "m3u8_native")]]
+    with yt_dlp.YoutubeDL({"quiet": True}) as downloader:
+        select = downloader.build_format_selector(fallback[fallback.index("-f") + 1])
+
+        def selected(available):
+            return [item["format_id"] for item in select({"formats": available,
+                    "incomplete_formats": False, "has_merged_format": True})]
+
+        assert selected(formats) == ["hls-h264"]
+        assert selected(formats[1:]) == ["hls-vp9"]
+        assert selected(formats[2:]) == []
+
+
+@pytest.mark.parametrize("diagnostic, attempts", [
+    ("ERROR: unable to download video data: HTTP Error 403: Forbidden", 2),
+    ("ERROR: unable to download webpage: HTTP Error 403: Forbidden", 1),
+    ("ERROR: Sign in to confirm you're not a bot", 1),
+    ("ERROR: Private video. Sign in if you've been granted access", 1),
+])
+def test_youtube_hls_retry_is_bounded_and_only_for_media_403(client, monkeypatch, diagnostic, attempts):
+    from telemetry import imports as module
+    from telemetry.download_errors import YouTubeDownloadError
+
+    importer = client.app.state.imports
+    commands = []
+
+    class FailedDownload:
+        returncode = 1
+
+        def __init__(self, command, **kwargs):
+            commands.append(command)
+            kwargs["stdout"].write((diagnostic + "\n").encode())
+
+        def poll(self):
+            return self.returncode
+
+    monkeypatch.setattr(module.subprocess, "Popen", FailedDownload)
+    with pytest.raises(YouTubeDownloadError):
+        importer._download_youtube("failed-youtube", {"url": "https://youtu.be/RJl2an-kbZk"}, threading.Event())
+    assert len(commands) == attempts
+    log = (importer.folder / "failed-youtube/download.log").read_text()
+    assert log.count(diagnostic) == attempts
+
+
+@pytest.mark.parametrize("outcome", ["cancel", "timeout"])
+def test_youtube_hls_retry_honors_cancellation_and_the_original_deadline(client, monkeypatch, outcome):
+    from types import SimpleNamespace
+    from telemetry import imports as module
+
+    importer = client.app.state.imports
+    stop = threading.Event()
+    commands = []
+    clock = [100.0]
+    monkeypatch.setattr(module, "time", SimpleNamespace(monotonic=lambda: clock[0]))
+
+    class FirstDownload:
+        returncode = 1
+
+        def __init__(self, command, **kwargs):
+            commands.append(command)
+            kwargs["stdout"].write(b"ERROR: unable to download video data: HTTP Error 403: Forbidden\n")
+            if outcome == "cancel":
+                stop.set()
+            else:
+                clock[0] += module.MAX_DOWNLOAD_SECONDS + 1
+
+        def poll(self):
+            return self.returncode
+
+    monkeypatch.setattr(module.subprocess, "Popen", FirstDownload)
+    expected = module.ImportCancelled if outcome == "cancel" else ValueError
+    with pytest.raises(expected) as error:
+        importer._download_youtube("stopped-youtube", {"url": "https://youtu.be/RJl2an-kbZk"}, stop)
+    assert len(commands) == 1
+    if outcome == "timeout":
+        assert "20 minutes" in str(error.value)

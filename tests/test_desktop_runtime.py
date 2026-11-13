@@ -55,9 +55,18 @@ def test_desktop_javascript_runtime_preserves_spaces(monkeypatch):
     monkeypatch.setenv("APEX_JS_RUNTIME", "node:/Applications/Previous app/runtime")
     monkeypatch.setenv("ACCC_JS_RUNTIME", "node:/Applications/ACCC Telemetry.app/Contents/MacOS/ACCC Telemetry")
     assert runtime.javascript_runtime_args() == [
-        "--js-runtimes", "node:/Applications/ACCC Telemetry.app/Contents/MacOS/ACCC Telemetry"]
+        "--no-js-runtimes", "--js-runtimes", "node:/Applications/ACCC Telemetry.app/Contents/MacOS/ACCC Telemetry"]
     monkeypatch.delenv("ACCC_JS_RUNTIME")
-    assert runtime.javascript_runtime_args() == ["--js-runtimes", "node:/Applications/Previous app/runtime"]
+    assert runtime.javascript_runtime_args() == ["--no-js-runtimes", "--js-runtimes", "node:/Applications/Previous app/runtime"]
+
+
+def test_bundled_javascript_runtime_replaces_ytdlp_default_deno(monkeypatch):
+    import yt_dlp
+
+    executable = "C:/Program Files/ACCC Telemetry/ACCC Telemetry.exe"
+    monkeypatch.setenv("ACCC_JS_RUNTIME", "node:" + executable)
+    parsed = yt_dlp.parse_options(["--ignore-config", *runtime.javascript_runtime_args()])
+    assert parsed.ydl_opts["js_runtimes"] == {"node": {"path": executable}}
 
 
 @pytest.mark.parametrize("stop", ["shutdown", "eof"])

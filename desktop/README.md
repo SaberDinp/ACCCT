@@ -4,7 +4,9 @@
 recorded-lap analysis UI in their own window and include Python, video decoding,
 analysis, and download helpers. End users do not need Python, Node.js, or a
 terminal to launch an installed app. Local recordings work offline; importing
-public recorded videos requires Internet access. No account is required.
+public recorded videos requires Internet access. No account is required to use
+the app. YouTube downloads are anonymous; some videos or connections may still
+require verification or account access that the downloader cannot provide.
 The app does not provide live monitoring or stream telemetry to a phone.
 
 ## Choose a package
@@ -12,7 +14,7 @@ The app does not provide live monitoring or stream telemetry to a phone.
 Download from the [README download table](../README.md#download-the-app) or
 [GitHub Releases](https://github.com/SaberDinp/ACCCT/releases/latest). Choose an
 installer, not GitHub's **Source code** archives. Local builds write version
-**1.4.0** packages to `dist/`. Match both the operating system and CPU:
+**1.4.1** packages to `dist/`. Match both the operating system and CPU:
 
 | Computer | Release target | Package formats |
 | --- | --- | --- |
@@ -22,9 +24,9 @@ installer, not GitHub's **Source code** archives. Local builds write version
 | Linux desktop, 64-bit Intel/AMD | `linux-x64` | `.AppImage`, `.deb`, `.rpm`, `.tar.gz` |
 | Linux desktop, 64-bit ARM/AArch64 | `linux-arm64` | `.AppImage`, `.deb`, `.rpm`, `.tar.gz` |
 
-Mac and Windows filenames follow `ACCC-Telemetry-1.4.0-<target>.<extension>`.
+Mac and Windows filenames follow `ACCC-Telemetry-1.4.1-<target>.<extension>`.
 Linux package formats use different spellings for the same CPU architecture.
-Every filename begins with `ACCC-Telemetry-1.4.0-`, followed by:
+Every filename begins with `ACCC-Telemetry-1.4.1-`, followed by:
 
 | Format | Intel/AMD 64-bit suffix | ARM64 suffix |
 | --- | --- | --- |
@@ -54,7 +56,7 @@ Keep the application bundle intact.
 
 ### Windows
 
-Double-click `ACCC-Telemetry-1.4.0-win-x64.exe`. The one-click installer installs
+Double-click `ACCC-Telemetry-1.4.1-win-x64.exe`. The one-click installer installs
 for your user, creates Start menu and Desktop shortcuts, and opens the app when
 finished. You do not need administrator access for this installation.
 
@@ -87,13 +89,13 @@ or use these Intel/AMD examples from the download folder. On ARM64, use
 
 ```sh
 # Ubuntu, Debian, Linux Mint
-sudo apt install ./ACCC-Telemetry-1.4.0-linux-amd64.deb
+sudo apt install ./ACCC-Telemetry-1.4.1-linux-amd64.deb
 
 # Fedora
-sudo dnf install ./ACCC-Telemetry-1.4.0-linux-x86_64.rpm
+sudo dnf install ./ACCC-Telemetry-1.4.1-linux-x86_64.rpm
 
 # openSUSE
-sudo zypper install ./ACCC-Telemetry-1.4.0-linux-x86_64.rpm
+sudo zypper install ./ACCC-Telemetry-1.4.1-linux-x86_64.rpm
 ```
 
 Then choose **ACCC Telemetry** in the applications menu. DEB and RPM installation
@@ -103,11 +105,11 @@ For AppImage, mark the file executable in its Properties dialog and open it.
 The terminal equivalent is:
 
 ```sh
-chmod +x ACCC-Telemetry-1.4.0-linux-x86_64.AppImage
-./ACCC-Telemetry-1.4.0-linux-x86_64.AppImage
+chmod +x ACCC-Telemetry-1.4.1-linux-x86_64.AppImage
+./ACCC-Telemetry-1.4.1-linux-x86_64.AppImage
 ```
 
-For ARM64, use `ACCC-Telemetry-1.4.0-linux-arm64.AppImage` instead. AppImage may
+For ARM64, use `ACCC-Telemetry-1.4.1-linux-arm64.AppImage` instead. AppImage may
 require FUSE 2 compatibility libraries (`libfuse2` on Ubuntu 22.04,
 `libfuse2t64` on Ubuntu 24.04). Keep any existing FUSE 3 installation. See the
 [AppImage FUSE instructions](https://docs.appimage.org/user-guide/troubleshooting/fuse.html).
@@ -126,7 +128,7 @@ the supported sandbox setup. Do not disable the sandbox to work around launch is
 
 ### Updating from an older version
 
-Close the older running app, install the matching **1.4.0** package, and reopen
+Close the older running app, install the matching **1.4.1** package, and reopen
 **ACCC Telemetry**. An older version can retain a cached Monitor interface after
 an update. Use **View > Force Reload** to refresh it: **Command+Shift+R** on macOS
 or **Ctrl+Shift+R** on Windows/Linux. Version 1.2.4 and later clear the HTTP cache
@@ -194,7 +196,8 @@ focuses an already-running instance. **Help > Show Logs** opens startup logs.
 | Linux DEB/RPM will not install from a file manager | Run the matching package-manager command above; it can explain a missing system dependency. |
 | AppImage will not launch | Prefer the DEB/RPM package for your distribution; check executable permission and the FUSE requirements above. |
 | App opens with no recordings | A fresh library is empty. Use **Import recording**, or **File > Open Existing Library** for an older library. |
-| Old Monitor UI appears after an update | Upgrade to **1.4.0** for the automatic fix. In an older version, use **View > Force Reload**: **Command+Shift+R** on macOS or **Ctrl+Shift+R** on Windows/Linux. |
+| Old Monitor UI appears after an update | Upgrade to **1.4.1** for the automatic fix. In an older version, use **View > Force Reload**: **Command+Shift+R** on macOS or **Ctrl+Shift+R** on Windows/Linux. |
+| YouTube download fails | Install **1.4.1** or later for automatic recovery from some HTTP 403 failures and a more specific error with a diagnostic log location. The app does not use browser sign-in; if YouTube still refuses the request, choose another public reference or import a local copy. |
 | App cannot start its analyzer | Wait for the initial launch to finish, then inspect **Help > Show Logs** and include the app/OS version in an issue. |
 
 ## Build from source

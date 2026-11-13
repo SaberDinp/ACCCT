@@ -836,6 +836,7 @@
   display: block;
   color: var(--muted);
   font-size: 9px;
+  overflow-wrap: anywhere;
   margin-top: 3px
 }
 

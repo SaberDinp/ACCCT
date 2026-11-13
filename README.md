@@ -31,13 +31,13 @@ telemetry. Your recordings and analysis stay on your computer.
 
 | Your computer | Download v1.4.0 | How to install |
 | --- | --- | --- |
-| **Mac with Apple Silicon** — M-series; macOS 14+ | [Download for Apple Silicon](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.4.0-mac-arm64.dmg) | Open the DMG, drag the app into **Applications**, then open it. |
-| **Mac with an Intel processor** — macOS 13+ | [Download for Intel Mac](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.4.0-mac-x64.dmg) | Open the DMG, drag the app into **Applications**, then open it. |
-| **Windows 10/11** — 64-bit Intel/AMD | [Download for Windows](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.4.0-win-x64.exe) | Run the installer, then open **ACCC Telemetry** from Start or the Desktop shortcut. |
-| **Ubuntu / Debian / Linux Mint** — Intel/AMD 64-bit | [Download DEB](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.4.0-linux-amd64.deb) | Open it in your software installer and choose **Install**. |
-| **Fedora / openSUSE** — Intel/AMD 64-bit | [Download RPM](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.4.0-linux-x86_64.rpm) | Open it in your software installer and choose **Install**. |
-| **Other compatible Linux desktops** — Intel/AMD 64-bit | [Download AppImage](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.4.0-linux-x86_64.AppImage) | In file Properties, allow executing it as a program, then open it. |
-| **Linux ARM64 / AArch64** | [DEB](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.4.0-linux-arm64.deb) · [RPM](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.4.0-linux-aarch64.rpm) · [AppImage](https://github.com/SaberDinp/ACCCT/releases/latest/download/ACCC-Telemetry-1.4.0-linux-arm64.AppImage) | Choose the package for your distribution, as above. |
+| **Mac with Apple Silicon** — M-series; macOS 14+ | [Download for Apple Silicon](https://github.com/SaberDinp/ACCCT/releases/download/v1.4.0/ACCC-Telemetry-1.4.0-mac-arm64.dmg) | Open the DMG, drag the app into **Applications**, then open it. |
+| **Mac with an Intel processor** — macOS 13+ | [Download for Intel Mac](https://github.com/SaberDinp/ACCCT/releases/download/v1.4.0/ACCC-Telemetry-1.4.0-mac-x64.dmg) | Open the DMG, drag the app into **Applications**, then open it. |
+| **Windows 10/11** — 64-bit Intel/AMD | [Download for Windows](https://github.com/SaberDinp/ACCCT/releases/download/v1.4.0/ACCC-Telemetry-1.4.0-win-x64.exe) | Run the installer, then open **ACCC Telemetry** from Start or the Desktop shortcut. |
+| **Ubuntu / Debian / Linux Mint** — Intel/AMD 64-bit | [Download DEB](https://github.com/SaberDinp/ACCCT/releases/download/v1.4.0/ACCC-Telemetry-1.4.0-linux-amd64.deb) | Open it in your software installer and choose **Install**. |
+| **Fedora / openSUSE** — Intel/AMD 64-bit | [Download RPM](https://github.com/SaberDinp/ACCCT/releases/download/v1.4.0/ACCC-Telemetry-1.4.0-linux-x86_64.rpm) | Open it in your software installer and choose **Install**. |
+| **Other compatible Linux desktops** — Intel/AMD 64-bit | [Download AppImage](https://github.com/SaberDinp/ACCCT/releases/download/v1.4.0/ACCC-Telemetry-1.4.0-linux-x86_64.AppImage) | In file Properties, allow executing it as a program, then open it. |
+| **Linux ARM64 / AArch64** | [DEB](https://github.com/SaberDinp/ACCCT/releases/download/v1.4.0/ACCC-Telemetry-1.4.0-linux-arm64.deb) · [RPM](https://github.com/SaberDinp/ACCCT/releases/download/v1.4.0/ACCC-Telemetry-1.4.0-linux-aarch64.rpm) · [AppImage](https://github.com/SaberDinp/ACCCT/releases/download/v1.4.0/ACCC-Telemetry-1.4.0-linux-arm64.AppImage) | Choose the package for your distribution, as above. |
 
 Not sure which Mac you have? **Apple menu → About This Mac** shows an Apple chip
 or an Intel processor. On Linux, `uname -m` shows `x86_64` or `aarch64`.
@@ -110,6 +110,11 @@ gameplay to that computer, then import it with the ACC input HUD visible.
 No account is required. You can analyze local video files without Internet access.
 Importing a public reference video needs an Internet connection; the recording
 and its analysis are then saved locally for reuse.
+
+YouTube imports use an anonymous downloader. A public video can still be refused
+by YouTube; signing into your browser does not sign the app in. See
+[YouTube download troubleshooting](docs/ANALYSIS.md#youtube-downloads-and-sign-in)
+for HTTP 403 errors, other failure messages, and diagnostic logs.
 
 ### Is this the same as live ACC telemetry or a MoTeC data logger?
 

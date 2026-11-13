@@ -22,7 +22,7 @@ This is a **recorded-lap analysis app**. Import a video, review your driving, an
 compare it with a strong lap. It does not monitor live racing or provide live
 telemetry. Your recordings and analysis stay on your computer.
 
-[Download](#download-the-app) · [How to use](#your-first-comparison)
+[Website](https://saberdinp.github.io/ACCCT/) · [Download](#download-the-app) · [How to use](#your-first-comparison)
 · [FAQ](#frequently-asked-questions) · [Report a problem](https://github.com/SaberDinp/ACCCT/issues)
 
 ## Download the app

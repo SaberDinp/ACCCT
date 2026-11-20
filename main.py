@@ -65,6 +65,10 @@ class ImportRequest(BaseModel):
     context: dict | None = None
 
 
+class ReanalysisRequest(BaseModel):
+    role: Literal["current", "reference"] | None = None
+
+
 class ComparisonRequest(BaseModel):
     reference_session_id: str
     current_session_id: str
@@ -523,6 +527,13 @@ def create_app(root=ROOT, database=None, port=8000):
         value = find_session(session_id)
         return {"session": value, "samples": engine.store.get_samples(session_id),
                 "summary": value.get("summary", {}), "events": value.get("events", []), "laps": value.get("laps", [])}
+
+    @app.post("/api/sessions/{session_id}/reanalyze")
+    def reanalyze_session(session_id: str, body: ReanalysisRequest):
+        try:
+            return imports.reanalyze(session_id, role=body.role)
+        except KeyError:
+            raise HTTPException(404, "Session not found.")
 
     def deletion_preview(session_id):
         try:

@@ -103,6 +103,108 @@ def test_import_validation_and_errors_are_actionable(client, monkeypatch):
     assert "local copy" in importer.get(job_id)["error"]
 
 
+def test_reanalysis_uses_cached_video_and_preserves_original_and_reviewed_times(client, monkeypatch):
+    engine, importer = client.app.state.engine, client.app.state.imports
+    video = engine.root / "cached-reference.mp4"
+    make_video(video)
+    url = "https://www.youtube.com/watch?v=hl5kv1-Dhv4"
+    entry = {"id": "youtube:hl5kv1-Dhv4", "url": url, "title": "Cached reference"}
+    old = engine.store.create_session({"kind": "file", "path": str(video), "name": "Saved lap",
+        "original_url": url, "reference_library_id": entry["id"], "role": "reference"}, {
+        "role": "reference", "profile": {"name": "Old failed calibration", "auto_calibrate": False},
+        "telemetry_context": {"track_id": "silverstone"}, "reference_library": entry,
+        "reviewed_laps": [{"id": "reviewed-lap", "start_time": .1, "end_time": .5,
+                           "segment_id": 99, "boundaries_verified": True,
+                           "start_marker": "finish", "end_marker": "finish"}],
+        "comparison_defaults": {"range_id": "reviewed-lap", "revision": "reviewed"}})
+    engine.store.add_sample(old, {"time": 0, "active": True, "speed": None})
+    engine.store.save_summary(old, {"speed": None}, status="completed")
+    original = client.get(f"/api/sessions/{old}").json()
+
+    def unexpected(*_):
+        raise AssertionError("Reanalysis must use the saved video without downloading")
+
+    monkeypatch.setattr(importer, "_download_youtube", unexpected)
+    response = client.post(f"/api/sessions/{old}/reanalyze", json={"role": "current"})
+    assert response.status_code == 200, response.text
+    job_id = response.json()["id"]
+    wait_until(lambda: importer.get(job_id)["state"] in {"completed", "error"})
+    job = importer.get(job_id)
+    assert job["state"] == "completed", job
+    assert job["role"] == "current"
+    assert job["session_id"] != old
+    refreshed = client.get("/api/sessions/" + job["session_id"]).json()
+    assert len(refreshed["samples"]) == 20
+    assert all(sample["speed"] == 72 for sample in refreshed["samples"])
+    source, metadata = refreshed["session"]["source"], refreshed["session"]["metadata"]
+    assert source["path"] == str(video) and source["original_url"] == url
+    assert source["reference_library_id"] == entry["id"]
+    assert source["name"] == "Saved lap"
+    assert metadata["reanalyzed_from"] == old
+    assert metadata["profile"]["auto_calibrate"] is True
+    assert metadata["profile"].get("name") != "Old failed calibration"
+    assert metadata["role"] == "current"
+    assert metadata["telemetry_context"]["track_id"] == "silverstone"
+    assert metadata["reference_library"] == entry
+    assert metadata["comparison_defaults"]["range_id"] == "reviewed-lap"
+    assert metadata["reviewed_laps"] == [{"id": "reviewed-lap", "start_time": .1, "end_time": .5,
+        "boundaries_verified": True, "start_marker": "finish", "end_marker": "finish"}]
+    assert client.get(f"/api/sessions/{old}").json() == original
+    preview = client.get(f"/api/sessions/{old}/deletion").json()
+    assert job["session_id"] in preview["video"]["shared_session_ids"]
+    assert not preview["video"]["can_delete"]
+
+
+def test_reanalysis_requires_finished_recording_and_existing_saved_video(client):
+    engine = client.app.state.engine
+    assert client.post("/api/sessions/missing/reanalyze", json={}).status_code == 404
+    browser = engine.store.create_session({"kind": "browser"})
+    response = client.post(f"/api/sessions/{browser}/reanalyze", json={})
+    assert response.status_code == 400 and "Finish" in response.json()["detail"]
+    engine.store.save_summary(browser, {}, status="completed")
+    response = client.post(f"/api/sessions/{browser}/reanalyze", json={})
+    assert response.status_code == 400 and "No saved video" in response.json()["detail"]
+    missing = engine.store.create_session({"kind": "file", "path": str(engine.root / "missing.mp4")})
+    engine.store.save_summary(missing, {}, status="completed")
+    response = client.post(f"/api/sessions/{missing}/reanalyze", json={})
+    assert response.status_code == 400 and "does not exist" in response.json()["detail"]
+    assert client.post(f"/api/sessions/{missing}/reanalyze", json={"role": "bad"}).status_code == 422
+    assert client.app.state.imports.worker is None
+
+
+def test_reanalysis_blocks_duplicate_and_video_deletion_until_cancelled(client, monkeypatch):
+    engine, importer = client.app.state.engine, client.app.state.imports
+    video = engine.root / "data/uploads/reanalysis.mp4"
+    video.parent.mkdir(parents=True, exist_ok=True)
+    make_video(video)
+    old = engine.store.create_session({"kind": "file", "path": str(video)})
+    engine.store.save_summary(old, {}, status="completed")
+    entered, release = threading.Event(), threading.Event()
+    original_extract = HUDExtractor.extract
+
+    def delayed(self, frame, timestamp):
+        entered.set()
+        assert release.wait(5)
+        return original_extract(self, frame, timestamp)
+
+    monkeypatch.setattr(HUDExtractor, "extract", delayed)
+    try:
+        job_id = client.post(f"/api/sessions/{old}/reanalyze", json={}).json()["id"]
+        assert entered.wait(3)
+        assert client.post(f"/api/sessions/{old}/reanalyze", json={}).status_code == 400
+        preview = client.get(f"/api/sessions/{old}/deletion").json()
+        assert not preview["can_delete"] and not preview["video"]["can_delete"]
+        assert client.delete(f"/api/sessions/{old}").status_code == 409
+        assert video.exists()
+        assert client.post(f"/api/imports/{job_id}/cancel").status_code == 200
+    finally:
+        release.set()
+    importer.worker.join(timeout=3)
+    assert importer.get(job_id)["state"] == "cancelled"
+    assert client.get(f"/api/sessions/{old}").json()["session"]["status"] == "completed"
+    assert video.exists()
+
+
 def test_profile_overrides_do_not_share_live_mutable_state(client):
     root = client.app.state.engine.root
     make_video(root / "manual.mp4")

@@ -88,7 +88,7 @@ window.ACCCComparison = (() => {
   const notifySelectedRecording = () => helpers.onCurrentLoaded?.(state.runs.current.data || state.runs.reference.data || null);
 
   function sourceMarkup(side) {
-    return `<div class="comparison-run"><div class="run-label"><span class="run-line ${side === 'reference' ? 'reference' : ''}"></span>${names[side].toUpperCase()}<span class="tag" id="${side}RecordingStatus">NO RECORDING</span></div><details class="run-video-options" open><summary>Video options</summary><div class="run-video-options-content"><button class="button subtle compact" id="${side}ImportRecording"><i data-lucide="video"></i>Import recording</button>${side === 'reference' ? '<button class="button subtle compact" id="findReferenceLap"><i data-lucide="search"></i>Find reference lap</button>' : ''}<select id="${side}Session" aria-label="${names[side]} saved recording"><option value="">Select a recording</option></select><a class="button subtle compact disabled" id="${side}OpenVideo" target="_blank" rel="noopener noreferrer" aria-label="Open ${names[side].toLowerCase()} video in browser" aria-disabled="true"><i data-lucide="external-link"></i>Open video in browser</a><a class="button subtle compact disabled" id="${side}ExportCsv" aria-label="Export ${names[side].toLowerCase()} CSV" aria-disabled="true"><i data-lucide="download"></i>Export CSV</a><button class="icon-button run-delete" id="${side}DeleteSession" title="Delete recording" aria-label="Delete ${names[side].toLowerCase()} recording" disabled><i data-lucide="trash-2"></i></button></div></details><div class="run-boundary-actions">${['Start', 'End'].map(edge => `<button class="button subtle lap-boundary-button inspect-boundary" id="${side}${edge}Boundary" data-side="${side}" data-edge="${edge}" disabled><span>${edge} of lap</span><small id="${side}${edge}BoundaryTime">Not selected</small></button>`).join('')}</div><div class="run-detail"><span id="${side}Detail">No recording selected</span></div><input type="hidden" id="${side}Range"><input type="hidden" id="${side}Start"><input type="hidden" id="${side}End"><div class="run-thumbnail" hidden><img id="${side}Frame" alt="${names[side]} source frame" hidden><span id="${side}FrameEmpty">NO FRAME</span><span id="${side}FrameTime" hidden></span></div></div>`;
+    return `<div class="comparison-run"><div class="run-label"><span class="run-line ${side === 'reference' ? 'reference' : ''}"></span>${names[side].toUpperCase()}<span class="tag" id="${side}RecordingStatus">NO RECORDING</span></div><details class="run-video-options" open><summary>Video options</summary><div class="run-video-options-content"><button class="button subtle compact" id="${side}ImportRecording"><i data-lucide="video"></i>Import recording</button>${side === 'reference' ? '<button class="button subtle compact" id="findReferenceLap"><i data-lucide="search"></i>Find reference lap</button>' : ''}<select id="${side}Session" aria-label="${names[side]} saved recording"><option value="">Select a recording</option></select><button class="button subtle compact" id="${side}Reanalyze" aria-label="Analyze ${names[side].toLowerCase()} again" title="Analyze the saved video again; keep the previous analysis" disabled><i data-lucide="scan-line"></i>Analyze again</button><a class="button subtle compact disabled" id="${side}OpenVideo" target="_blank" rel="noopener noreferrer" aria-label="Open ${names[side].toLowerCase()} video in browser" aria-disabled="true"><i data-lucide="external-link"></i>Open video in browser</a><a class="button subtle compact disabled" id="${side}ExportCsv" aria-label="Export ${names[side].toLowerCase()} CSV" aria-disabled="true"><i data-lucide="download"></i>Export CSV</a><button class="icon-button run-delete" id="${side}DeleteSession" title="Delete recording" aria-label="Delete ${names[side].toLowerCase()} recording" disabled><i data-lucide="trash-2"></i></button></div></details><div class="run-boundary-actions">${['Start', 'End'].map(edge => `<button class="button subtle lap-boundary-button inspect-boundary" id="${side}${edge}Boundary" data-side="${side}" data-edge="${edge}" disabled><span>${edge} of lap</span><small id="${side}${edge}BoundaryTime">Not selected</small></button>`).join('')}</div><div class="run-detail"><span id="${side}Detail">No recording selected</span></div><input type="hidden" id="${side}Range"><input type="hidden" id="${side}Start"><input type="hidden" id="${side}End"><div class="run-thumbnail" hidden><img id="${side}Frame" alt="${names[side]} source frame" hidden><span id="${side}FrameEmpty">NO FRAME</span><span id="${side}FrameTime" hidden></span></div></div>`;
   }
 
   function alignmentMarkup() {
@@ -269,6 +269,9 @@ window.ACCCComparison = (() => {
     for (const side of ['current', 'reference']) {
       const run = state.runs[side], available = Boolean(run.id && !run.loading);
       $(`${side}DeleteSession`).disabled = !available || !helpers.deleteSession;
+      const savedSource = run.data?.session?.source;
+      $(`${side}Reanalyze`).disabled = !available || state.importing || !!state.activeJob || !!state.pendingReanalysis ||
+        savedSource?.kind !== 'file' || !savedSource.path || run.data?.session?.status === 'recording';
       const link = $(`${side}ExportCsv`);
       link.classList.toggle('disabled', !available);
       link.setAttribute('aria-disabled', String(!available));
@@ -358,7 +361,10 @@ window.ACCCComparison = (() => {
     // Before initial restoration the saved ranges, not the empty controls, are authoritative.
     if (pendingRestore) persistPreferences(preferences);
     else savePreferences();
-    if (state.jobs.some(job => job.id === state.pendingImport && job.session_id === id)) state.pendingImport = null;
+    if (state.jobs.some(job => job.id === state.pendingImport && job.session_id === id)) {
+      state.pendingImport = null;
+      state.pendingReanalysis = null;
+    }
     renderSessionOptions();
     if (affected.length) markDirty();
     updateSessionActions();
@@ -1172,7 +1178,7 @@ window.ACCCComparison = (() => {
         result.warnings ||= [];
         result.warnings.unshift(boundaryFallback
           ? 'Showing Time to preserve the selected IN and OUT points. Speed data is missing or ambiguous at a boundary, so Distance playback would skip part of the selection.'
-          : 'Distance review is unavailable because a selected recording has no usable speed or movement. Showing Time for source video playback; track positions are not aligned.');
+          : 'Distance review is unavailable because a selected recording has no usable speed or movement. Showing Time for source video playback; track positions are not aligned. Use Video options → Analyze again to retry HUD detection from the saved video.');
       }
       state.result = result;
       state.exportResultRevision = exportRevision;
@@ -1647,6 +1653,7 @@ window.ACCCComparison = (() => {
         }
         await loadRun('reference', result.session_id, true);
       } else if (result.state === 'importing' && result.job?.id) {
+        if (state.pendingImport !== result.job.id) state.pendingReanalysis = null;
         state.pendingImport = result.job.id;
         await refreshJobs();
       } else throw new Error('This lap could not be imported. Try another lap or paste its video link.');
@@ -1694,6 +1701,7 @@ window.ACCCComparison = (() => {
       state.jobs = Array.isArray(response) ? response : response.jobs || response.imports || [];
       const active = state.jobs.find(job => !['completed', 'cancelled', 'error'].includes(job.state));
       state.activeJob = active || null;
+      updateSessionActions();
       $('activeImport').hidden = !active;
       if (active) {
         $('activeImportName').textContent = active.name || active.url || 'Recording import';
@@ -1708,19 +1716,50 @@ window.ACCCComparison = (() => {
       const failed = state.jobs.find(job => job.id === state.pendingImport && ['error', 'cancelled'].includes(job.state));
       if (failed) {
         state.pendingImport = null;
+        state.pendingReanalysis = null;
         helpers.notify(failed.error || 'The recording import was cancelled.', failed.state === 'error');
       }
       if (completed) {
-        state.pendingImport = null;
-        if (!state.deletedSessions.has(completed.session_id)) {
+        if (state.deletedSessions.has(completed.session_id)) {
+          state.pendingImport = null;
+          state.pendingReanalysis = null;
+        } else {
+          // A concurrent library refresh may not include the finished session.
+          // Keep the pending job so the next poll can finish selecting it.
+          if (state.refreshing) return;
           await refresh(true);
-          if (state.sessions.some(session => (session.id || session.session_id) === completed.session_id)) await loadRun(completed.role === 'current' ? 'current' : 'reference', completed.session_id);
+          if (state.pendingImport !== completed.id) return;
+          if (state.sessions.some(session => (session.id || session.session_id) === completed.session_id)) {
+            const reanalysis = state.pendingReanalysis?.jobId === completed.id ? state.pendingReanalysis : null;
+            state.pendingImport = null;
+            state.pendingReanalysis = null;
+            if (reanalysis) {
+              for (const side of ['current', 'reference']) {
+                if (state.runs[side].id !== reanalysis.sourceId) continue;
+                const run = state.runs[side], range = rangeInfo(side);
+                const locks = {...run.boundaryLocks};
+                await loadRun(side, completed.session_id);
+                if (state.runs[side].id !== completed.session_id || !range) continue;
+                // Keep the selected video boundaries, but discard extraction-
+                // specific segment IDs which may change after HUD recovery.
+                const reviewed = range.reviewed && state.runs[side].ranges?.find(item => item.reviewed && item.id === range.id);
+                $(`${side}Range`).value = reviewed ? range.id : 'custom';
+                $(`${side}Start`).value = Number(range.start).toFixed(3);
+                $(`${side}End`).value = Number(range.end).toFixed(3);
+                state.runs[side].segment = '';
+                state.runs[side].boundaryLocks = locks;
+                chooseRange(side);
+                markDirty();
+              }
+            } else await loadRun(completed.role === 'current' ? 'current' : 'reference', completed.session_id);
+          }
         }
       }
     } catch (error) {
       if ($('referenceImportDialog').open) $('referenceImportError').textContent = error.message;
     } finally {
       state.jobsLoading = false;
+      updateSessionActions();
     }
   }
 
@@ -1733,6 +1772,26 @@ window.ACCCComparison = (() => {
       await refreshJobs();
     } catch (error) {
       helpers.notify(error.message, true);
+    }
+  }
+
+  async function reanalyzeRun(side) {
+    const run = state.runs[side];
+    if ($(`${side}Reanalyze`).disabled || !run.id) return;
+    state.importing = true;
+    updateSessionActions();
+    try {
+      const job = await helpers.api(`/api/sessions/${encodeURIComponent(run.id)}/reanalyze`, {
+        method: 'POST', body: JSON.stringify({role: side})
+      });
+      state.pendingImport = job.id;
+      state.pendingReanalysis = {jobId: job.id, sourceId: run.id};
+      await refreshJobs();
+    } catch (error) {
+      helpers.notify(error.message, true);
+    } finally {
+      state.importing = false;
+      updateSessionActions();
     }
   }
 
@@ -1770,6 +1829,7 @@ window.ACCCComparison = (() => {
         }
       };
       $(`${side}ImportRecording`).onclick = () => openImport(side);
+      $(`${side}Reanalyze`).onclick = () => reanalyzeRun(side);
       $(`${side}Session`).onchange = () => loadRun(side, $(`${side}Session`).value);
       $(`${side}Range`).onchange = () => {
         resetAlignment(false);
@@ -1947,6 +2007,7 @@ window.ACCCComparison = (() => {
           body: JSON.stringify(body)
         });
         state.pendingImport = job.id || job.job?.id;
+        state.pendingReanalysis = null;
         $('referenceImportDialog').close();
         await refreshJobs();
       } catch (error) {

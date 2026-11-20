@@ -128,6 +128,13 @@ These are estimates from video, not GPS or measured car position.
 
 ## Missing data and interrupted laps
 
+If an older analysis has missing speed despite a readable HUD, select that
+recording and choose **Video options → Analyze again** after updating the app.
+This analyzes the saved video with fresh HUD detection, without downloading it
+again. The previous analysis stays in your library, and your selected lap
+boundaries and reviewed markers carry over to the new analysis. The saved video
+must still be available. Updating the app alone does not rewrite old telemetry.
+
 Hidden HUDs, timestamp jumps, frozen footage, unreadable inputs, and stopped
 driving break continuity. Menus create missing values instead of invented zero
 inputs. Distance and braking events are not inferred across long gaps.
@@ -140,7 +147,8 @@ locally. An interrupted lap is not presented as a complete lap.
 ## Footage quality
 
 HUD detection automatically locates supported ACC instrument clusters, including
-current and legacy overlays, at their visible scale and position. Units are
+current and legacy overlays, at their visible scale and position. Current HUD
+caption anchors include English, German, French, and Italian. Units are
 standardized to km/h when they can be read; ambiguous units suppress speed rather
 than corrupt distance. The legacy overlay has no usable steering strip.
 

@@ -101,7 +101,35 @@ class ReferenceImports:
         with self.engine.lifecycle_lock:
             return self._start(request)
 
-    def _start(self, request):
+    def reanalyze(self, session_id, *, role=None):
+        """Read the saved video again, retaining the previous analysis unchanged."""
+        with self.engine.lifecycle_lock:
+            session = self.store.get_session(session_id)
+            if session is None:
+                raise KeyError(session_id)
+            if session["status"] == "recording":
+                raise ValueError("Finish this recording before analyzing it again.")
+            source, metadata = session["source"], session["metadata"]
+            if not isinstance(source, dict) or source.get("kind") != "file" or not source.get("path"):
+                raise ValueError("No saved video is available. Import a recording to analyze it again.")
+            request = {"kind": "file", "path": source["path"], "name": source.get("name"),
+                       "role": role or metadata.get("role") or source.get("role") or "reference",
+                       "context": metadata.get("telemetry_context") or {},
+                       "url": source.get("original_url"), "auto_calibrate": True}
+            if metadata.get("reference_library"):
+                request["curated_reference"] = copy.deepcopy(metadata["reference_library"])
+            # Sample/segment IDs belong to the old extraction. Source-video
+            # timestamps and the user's physical markers remain valid.
+            reviewed = copy.deepcopy(metadata.get("reviewed_laps", []))
+            for lap in reviewed:
+                for key in ("segment_id", "start_sample", "end_sample", "start_index", "end_index"):
+                    lap.pop(key, None)
+            carry = {"reanalyzed_from": session_id, "reviewed_laps": reviewed}
+            if metadata.get("comparison_defaults"):
+                carry["comparison_defaults"] = copy.deepcopy(metadata["comparison_defaults"])
+            return self._start(request, preserved_metadata=carry)
+
+    def _start(self, request, *, preserved_metadata=None):
         source = dict(request)
         if source.get("context") is not None:
             from .session_context import validate_context
@@ -152,7 +180,7 @@ class ReferenceImports:
             self.jobs[job_id] = job
             while len(self.jobs) > 50:
                 del self.jobs[next(iter(self.jobs))]
-            self.worker = threading.Thread(target=self._run, args=(job_id, source, profile, self.stop_event),
+            self.worker = threading.Thread(target=self._run, args=(job_id, source, profile, self.stop_event, preserved_metadata),
                                            daemon=True, name="reference-import")
             self.worker.start()
             return copy.deepcopy(job)
@@ -365,7 +393,7 @@ class ReferenceImports:
                 if path.is_file() and path.name.startswith("media.") and path.name != "media.info.json":
                     path.unlink(missing_ok=True)
 
-    def _run(self, job_id, source, profile, stop):
+    def _run(self, job_id, source, profile, stop, preserved_metadata=None):
         started = time.monotonic()
         session_id = None
         analyzer = SessionAnalyzer(retain_samples=False)
@@ -402,6 +430,8 @@ class ReferenceImports:
                             "role": source["role"], "original_url": source.get("url")}
             metadata = {"profile": profile, "measurement": "video-derived", "role": source["role"],
                         "import_id": job_id, "telemetry_context": source.get("context") or {}}
+            if preserved_metadata:
+                metadata.update(preserved_metadata)
             if source.get("curated_reference"):
                 local_source["reference_library_id"] = source["curated_reference"]["id"]
                 metadata["reference_library"] = copy.deepcopy(source["curated_reference"])

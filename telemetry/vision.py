@@ -99,7 +99,7 @@ class HUDExtractor:
         # Pedal captions are localized even when the overlay geometry and
         # numerals are unchanged. Keep language anchors behind the same
         # geometric and digit validation used for the English HUD.
-        for language in ("de", "fr"):
+        for language in ("de", "fr", "it"):
             anchor = cv2.imread(str(ASSETS / f"labels_{language}.png"), cv2.IMREAD_GRAYSCALE)
             if anchor is not None:
                 self._anchor_variants[language] = anchor
@@ -109,11 +109,14 @@ class HUDExtractor:
             self._layout_anchors["legacy"] = {"en": legacy}
         self._layout = "legacy" if self.profile["hud_layout"] == "legacy" else "current"
         self._unit_templates = {}
+        # Caption calibration and numeral rendering round differently on small
+        # overlays. Include the slightly larger unit label seen on the Italian
+        # HUD; retain the same score and competing-unit margin checks.
         for unit, filename in (("km/h", "unit_kmh.png"), ("mph", "unit_mph.png")):
             template = cv2.imread(str(ASSETS / filename), cv2.IMREAD_GRAYSCALE)
             if template is not None:
                 self._unit_templates[unit] = [cv2.resize(template, None, fx=scale, fy=scale)
-                                              for scale in (0.9, 0.95, 1.0, 1.05)]
+                                              for scale in (0.9, 0.95, 1.0, 1.05, 1.1)]
         self._hud_speed_unit = None
         self._unit_confidence = 0.0
         self._unit_detail_templates = {unit: [self._text_detail(template) for template in bank]

@@ -1,3 +1,22 @@
+# Unreleased
+
+- Fix speed extraction for the Italian HUD in the reported Oulton Park reference
+  (`hl5kv1-Dhv4`). Its captions previously matched a French template at the wrong
+  scale, preventing speed-unit recognition and leaving distance and delta empty.
+  Italian caption calibration and an additional unit-label scale restore the
+  observed speed without weakening confidence checks or guessing units.
+- Add **Video options → Analyze again** to refresh saved telemetry using the
+  existing video. It preserves the previous analysis, source link, recording
+  context, reviewed markers, and selected lap boundaries.
+- These changes share the same backend, UI, and assets in the source app and all
+  macOS, Windows, and Linux builds. Previously saved telemetry needs reanalysis.
+
+Validation includes the complete 487-second 1080p reference import and API
+comparison of the selected lap: speed coverage recovered from 0% to 100%, with
+distance and delta available. Held-out image tests cover other timestamps,
+setup screens, HUD movement, and unreadable units. Very small or heavily
+compressed HUDs can still leave readings missing.
+
 # 1.4.1
 
 This patch improves recovery when YouTube refuses a public reference video's

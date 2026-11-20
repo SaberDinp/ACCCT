@@ -46,11 +46,13 @@ offer Open Anyway. On Windows, More info > Run anyway may be offered.
 Only approve a download you trust from this project's repository.
 
 FIRST COMPARISON
-Choose Import recording > Your run and browse to an ACC gameplay recording.
-Add a Reference lap from a local video or a supported public recorded-video link.
-Select each lap/range in Analysis and inspect your inputs alongside the reference.
+Open Your run > Video options > Import recording and choose an ACC gameplay video.
+Under Reference > Video options, choose Find reference lap or Import recording
+to add a local video or a supported public recorded-video link.
+In Analysis, use each video's Start of lap and End of lap to choose the crossing
+frames, then press Lock. Compare recordings from the same circuit layout.
+Inspect your inputs, speed, and estimated time delta alongside the reference.
 This app analyzes recordings. It does not provide live telemetry or monitoring.
-Recordings and Calibration are utility buttons inside Analysis.
 The Credits tab introduces Rice Racing and explains optional donations.
 
 YOUR DATA
@@ -58,6 +60,10 @@ Your library is stored separately from the installed app. Updating the app does
 not delete recordings. File > Show Library Folder reveals its location.
 Back up the whole library while the app is closed. File > Open Existing Library
 can select an older library. Close older app versions before sharing one library.
+After updating, use a recording's Video options > Analyze again to refresh old
+telemetry with the latest HUD detection. It uses the saved video without another
+download and preserves the previous analysis and your selected lap boundaries.
+The saved video must still be available; an update alone does not rewrite telemetry.
 
 COMPATIBILITY
 Linux needs a graphical desktop, GTK 3, glibc 2.28+, and GLIBCXX 3.4.22+.

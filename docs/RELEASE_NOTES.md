@@ -1,4 +1,4 @@
-# Unreleased
+# 1.4.2
 
 - Fix speed extraction for the Italian HUD in the reported Oulton Park reference
   (`hl5kv1-Dhv4`). Its captions previously matched a French template at the wrong
@@ -17,31 +17,11 @@ distance and delta available. Held-out image tests cover other timestamps,
 setup screens, HUD movement, and unreadable units. Very small or heavily
 compressed HUDs can still leave readings missing.
 
-# 1.4.1
-
-This patch improves recovery when YouTube refuses a public reference video's
-direct download with **HTTP 403**, and explains download failures more clearly.
-
-- A refused direct video download retries once using an available public HLS
-  stream. The app prepares it for playback while keeping the 1080p, two-hour,
-  4 GB, and 20-minute import limits.
-- Download errors now distinguish refused requests, account or bot verification,
-  unavailable videos, connection problems, and download-component failures.
-  The message includes the location of the local diagnostic log. Failed optional
-  audio downloads also retain their diagnostic log.
-- Installed apps consistently use their bundled JavaScript runtime for YouTube
-  downloads, including when another runtime is installed on the computer.
-
-The app downloads anonymously and does not use your browser's signed-in session.
-Public videos often work without sign-in, but YouTube can still refuse a request
-or offer no usable public stream. Account-restricted recordings require access
-that this anonymous downloader cannot provide. If a download still fails, choose
-another public reference or import a local copy you have permission to use.
-
-[Reference library coverage, creators, and verification notes](https://github.com/SaberDinp/ACCCT/blob/v1.4.1/assets/references/README.md)
-
-Close the older running app, install the matching **1.4.1** package, and reopen
-**ACCC Telemetry**. Your saved recordings and preferences are preserved.
+Close the older running app, install the matching **1.4.2** package, and reopen
+**ACCC Telemetry**. For the affected saved reference, choose
+**Reference → Video options → Analyze again**. Updating the app preserves your
+library; reanalysis refreshes the old telemetry using the existing video and
+keeps your selected lap boundaries. No new download is needed.
 
 Choose an installer for your OS and CPU from the assets below. You do not need
 Python or Node.js. GitHub's source-code archives are for developers.
@@ -52,7 +32,9 @@ Mac requirements: macOS 14+ on Apple Silicon; macOS 13+ on Intel. Windows requir
 Ubuntu/Debian/Mint or RPM for Fedora/openSUSE. Mac builds use ad-hoc signing for
 bundle integrity, without Apple Developer ID signing or notarization. Windows
 builds are unsigned. First launch may still be blocked or show an OS publisher
-warning.
+warning. Native build checks cover packaged backends, app launch, import/export,
+restart persistence, and cached-interface upgrades on the five build targets;
+they do not certify every supported OS version, distribution, or GPU.
 
 **ACCC Telemetry is completely free for everyone to use.** Every feature is
 available without a purchase, subscription, or donation. Report a bug or suggest
